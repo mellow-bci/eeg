@@ -96,6 +96,23 @@ public final class EEGRecordingStore {
         return result
     }
 
+    /// Stream analysis windows from a finalized recording using the same schema
+    /// validator and bounded line reader as replay. Callback output is provisional
+    /// until this method succeeds; callers must discard it if any read fails.
+    public func analysisWindows(recording: URL, consume: (EEGAnalysisWindow) throws -> Void) throws {
+        try validate(recording)
+        var validation = StreamValidation()
+        var assembler = EEGAnalysisWindowAssembler()
+        try Self.lines(recording) { data in
+            let sample = try validation.consume(data)
+            try assembler.event(data)
+            if let sample, let window = assembler.append(sample) { try consume(window) }
+        }
+        try validation.finish()
+        guard validation.summarized else { throw EEGRecordingError.invalidData }
+        if let tail = assembler.finish() { try consume(tail) }
+    }
+
     public func finish() throws {
         lock.lock(); defer { lock.unlock() }
         guard let handle = writer else { throw EEGRecordingError.notRecording }
@@ -196,7 +213,7 @@ public final class EEGRecordingStore {
     }
 
     private func validate(_ url: URL) throws {
-        guard url.standardizedFileURL.deletingLastPathComponent() == directory,
+        guard url.isFileURL, url.standardizedFileURL.deletingLastPathComponent().path == directory.path,
               url.pathExtension == "jsonl", url.lastPathComponent != ".jsonl" else { throw EEGRecordingError.invalidPath }
     }
 

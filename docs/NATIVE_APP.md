@@ -199,3 +199,24 @@ keys and reject recomputed-checksum files with unsupported design, missing setti
 invalid provenance or zero scales. Local Swift suite: 37 tests passed. macOS, iOS and
 visionOS builds passed after adding the inspection UI. Interactive profile-import
 accessibility, native training, replay inference and physiological validation remain.
+
+### Native recording-aware analysis windows
+
+`EEGRecordingStore.analysisWindows` shares replay's bounded line reader and schema
+validation, and requires a final sample-count summary. Its callback is provisional:
+consumers must discard all results if reading fails, including a missing summary.
+This is an offline core API; it is not yet wired into the inference UI.
+
+The assembler emits nonoverlapping 256-sample windows, rejecting partial tails,
+missing/unsupported device configuration, unstable transport, recovery boundaries,
+sample discontinuities, counter/index gaps (including between windows), timing gaps,
+unobserved 128 Hz rate, invalid ADC word mapping and inconsistent calibration.
+Original samples remain unchanged. Valid here means structurally eligible;
+spectral artifact checks and detector rejection still apply. Metadata and a completed
+file do not establish physiological validity or authenticate the source.
+
+The recording path check compares standardized file paths, accepting equivalent
+Foundation directory URLs with or without a trailing slash while rejecting paths
+outside the store. Native tests cover completed/unfinished files, missing metadata,
+recovery and cross-window gaps. No live hardware qualification was performed for
+this change. Standalone local EEG parity remains the priority; Cast is unchanged.
