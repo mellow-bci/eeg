@@ -576,3 +576,26 @@ controls-only scope, null task recall, missing cue timing and explicit rejection
 The full Swift suite passed 72 tests. The native save panel itself has not been
 interactively qualified; the previously documented external picker problem and
 physiological evaluation gates remain open.
+
+### Recording stability during reads (2026-09-15)
+
+The shared bounded recording reader now captures device/inode, size and
+nanosecond modification/change timestamps from the open file descriptor before
+reading. Before returning a successful digest it compares those values again and
+checks that the named path still identifies the same regular file. A mismatch
+throws `sourceChanged` with a retry message. This applies to analysis, replay,
+inventory and CSV export because they share this reader. Inventory marks a failed
+read unavailable/corrupt; CSV removes its failed partial destination. Analysis
+callbacks remain provisional until the whole method succeeds.
+
+The change prevents silently accepting an appended prefix, a detected same-length
+edit, or an atomic path replacement during analysis. It does not lock the file,
+create an immutable snapshot, authenticate its owner, or prevent later edits.
+The saved source digest remains necessary when reproducing a result. A file being
+actively written can now fail review rather than presenting a changing prefix.
+
+`AnalysisWindowTests.testConcurrentSourceChangesRejectProvisionalAnalysis`
+mutates a synthetic recording during the first analysis callback: append,
+same-length rewrite (with an explicitly changed mtime), and same-content atomic
+replacement. Each fails with `sourceChanged`. These are deterministic filesystem
+checks, not a radio-interruption or hardware-durability qualification.

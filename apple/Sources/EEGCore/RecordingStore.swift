@@ -14,7 +14,7 @@ public struct EEGRecordingInfo: Identifiable, Sendable {
 }
 
 public enum EEGRecordingError: Error, LocalizedError {
-    case invalidPath, alreadyRecording, notRecording, invalidData, unavailableUnits, lineTooLarge
+    case invalidPath, alreadyRecording, notRecording, invalidData, unavailableUnits, lineTooLarge, sourceChanged
     public var errorDescription: String? {
         switch self {
         case .invalidPath: return "Recording path is not a regular private recording file."
@@ -23,6 +23,7 @@ public enum EEGRecordingError: Error, LocalizedError {
         case .invalidData: return "Recording contains invalid or incomplete data."
         case .unavailableUnits: return "Calibrated microvolts are unavailable in this recording."
         case .lineTooLarge: return "Recording event exceeds the supported size."
+        case .sourceChanged: return "Recording changed during reading. Retry with a completed, unchanged source."
         }
     }
 }
@@ -230,9 +231,24 @@ public final class EEGRecordingStore {
         return FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
     }
 
+    /// Detects ordinary concurrent edits; not a lock or tamper-proof snapshot.
+    private struct ReadStamp: Equatable {
+        let device: dev_t, inode: ino_t, size: off_t
+        let modifiedSeconds: Int, modifiedNanos: Int, changedSeconds: Int, changedNanos: Int
+        init(descriptor: Int32) throws {
+            var info = stat()
+            guard fstat(descriptor, &info) == 0, (info.st_mode & S_IFMT) == S_IFREG,
+                  info.st_size >= 0 else { throw EEGRecordingError.invalidData }
+            device = info.st_dev; inode = info.st_ino; size = info.st_size
+            modifiedSeconds = info.st_mtimespec.tv_sec; modifiedNanos = info.st_mtimespec.tv_nsec
+            changedSeconds = info.st_ctimespec.tv_sec; changedNanos = info.st_ctimespec.tv_nsec
+        }
+    }
+
     @discardableResult private static func lines(_ url: URL, body: (Data) throws -> Void) throws -> String {
         let handle = try open(url, writing: false); defer { try? handle.close() }
-        var remaining = try handle.seekToEnd(); try handle.seek(toOffset: 0)
+        let initial = try ReadStamp(descriptor: handle.fileDescriptor)
+        var remaining = UInt64(initial.size)
         var buffer = Data()
         var digest = SHA256()
         while remaining > 0 {
@@ -247,6 +263,13 @@ public final class EEGRecordingStore {
             guard buffer.count <= maximumLine else { throw EEGRecordingError.lineTooLarge }
         }
         guard buffer.isEmpty else { throw EEGRecordingError.invalidData }
+        let final = try ReadStamp(descriptor: handle.fileDescriptor)
+        var named = stat()
+        guard initial == final, lstat(url.path, &named) == 0,
+              (named.st_mode & S_IFMT) == S_IFREG,
+              named.st_dev == initial.device, named.st_ino == initial.inode else {
+            throw EEGRecordingError.sourceChanged
+        }
         return digest.finalize().map { String(format: "%02x", $0) }.joined()
     }
 }

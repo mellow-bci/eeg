@@ -74,4 +74,39 @@ final class AnalysisWindowTests: XCTestCase {
         XCTAssertThrowsError(try store.analysisWindows(recording: directory.deletingLastPathComponent().appendingPathComponent(url.lastPathComponent)) { _ in })
     }
 
+    func testConcurrentSourceChangesRejectProvisionalAnalysis() throws {
+        for mutation in ["append", "rewrite", "replace"] {
+            let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            defer { try? FileManager.default.removeItem(at: directory) }
+            let store = try EEGRecordingStore(directory: directory)
+            let url = try store.start()
+            for i in 0..<512 { try store.append(sample: sample(i)) }
+            try store.finish()
+            let original = try Data(contentsOf: url)
+            var changed = false
+            XCTAssertThrowsError(try store.analysisWindows(recording: url) { _ in
+                guard !changed else { return }; changed = true
+                switch mutation {
+                case "append":
+                    let file = try FileHandle(forWritingTo: url)
+                    defer { try? file.close() }
+                    try file.seekToEnd(); try file.write(contentsOf: Data(" ".utf8)); try file.synchronize()
+                case "rewrite":
+                    // Rewrite bytes already read without changing length. Ensure a
+                    // distinct mtime even on filesystems with coarse timestamps.
+                    let file = try FileHandle(forWritingTo: url)
+                    defer { try? file.close() }
+                    try file.write(contentsOf: Data(" ".utf8)); try file.synchronize()
+                    try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSince1970: 1)], ofItemAtPath: url.path)
+                default:
+                    // Identical bytes under a new inode still invalidate path identity.
+                    try original.write(to: url, options: .atomic)
+                }
+            }) { error in
+                XCTAssertEqual(error as? EEGRecordingError, .sourceChanged, mutation)
+            }
+            XCTAssertTrue(changed)
+        }
+    }
+
 }
