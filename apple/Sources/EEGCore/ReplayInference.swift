@@ -9,6 +9,7 @@ public struct EEGReplayInferenceReport: Sendable {
     }
     public let profileID: String
     public let recordingSHA256: String
+    public let eegContentSHA256: String
     public let participantID: String
     public let sessionID: String
     public let windows: [Window]
@@ -40,7 +41,9 @@ public enum EEGReplayInference {
         guard !profile.trainingSessions.contains(sessionID) else { throw Failure.trainingRecording }
         var detector = try profile.makeDetector()
         var rows = [EEGReplayInferenceReport.Window]()
+        var fingerprint = EEGRecordingFingerprint()
         let digest = try store.analysisWindows(recording: recording) { window in
+            for sample in window.samples { try fingerprint.append(sample) }
             guard rows.count < maximumWindows else { throw Failure.windowLimitExceeded }
             if !window.valid {
                 detector.reset()
@@ -66,8 +69,9 @@ public enum EEGReplayInference {
         }
         // Content check happens after the same read that generated the windows.
         // Renaming a training recording cannot turn it into a held-out recording.
-        guard !profile.trainingRecordingHashes.values.contains(digest) else { throw Failure.trainingRecording }
-        return EEGReplayInferenceReport(profileID: profile.id, recordingSHA256: digest,
+        let contentDigest = try fingerprint.finalize()
+        guard !profile.trainingRecordingHashes.values.contains(contentDigest) else { throw Failure.trainingRecording }
+        return EEGReplayInferenceReport(profileID: profile.id, recordingSHA256: digest, eegContentSHA256: contentDigest,
             participantID: participantID, sessionID: sessionID, windows: rows)
     }
 }

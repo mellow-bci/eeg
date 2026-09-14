@@ -37,6 +37,7 @@ struct ReplayInferenceView: View {
                 LabeledContent("Experimental candidates", value: String(report.windows.filter { $0.candidate != nil }.count))
                 Text("No reliable command · system control disabled").font(.headline)
                 Text("Recording SHA-256: \(report.recordingSHA256)").font(.caption.monospaced()).textSelection(.enabled)
+                Text("EEG content SHA-256: \(report.eegContentSHA256)").font(.caption.monospaced()).textSelection(.enabled)
                 Text("Participant: \(report.participantID) · Session: \(report.sessionID)").font(.caption)
                 ForEach(Array(report.windows.prefix(100).enumerated()), id: \.offset) { _, row in
                     HStack(alignment: .top) {

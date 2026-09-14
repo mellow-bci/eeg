@@ -232,9 +232,11 @@ the first 100 rows and complete report counts. It does not alter acquisition.
 
 The report includes the SHA-256 of the exact bytes consumed by the recording reader,
 profile identity and user-asserted participant/session identity. Training session IDs
-and identical training recording hashes are rejected, even after renaming. This
-prevents exact-content reuse, not reuse transformed into a different serialization
-or recording format. Source identity assertions remain unverified. The reader works
+and canonical EEG fingerprints are rejected, even after renaming or reserializing.
+The fingerprint matches the Python trainer: ordered counter and fourteen-channel ADC
+values, with metadata, timestamps and file encoding excluded. The separate byte hash
+identifies the source file representation. Neither fingerprint detects arbitrary
+shared excerpts or altered counters. Source identity assertions remain unverified. The reader works
 from a file-length snapshot; the digest identifies consumed bytes, not an authenticated
 immutable file. Do not edit recordings during analysis.
 
@@ -244,3 +246,16 @@ Native labeled training, cross-format provenance matching, report export, cancel
 and interactive accessibility/performance qualification remain outstanding. Tests use
 synthetic recordings and synthetic profiles; they establish rejection paths and
 plumbing, not successful intent decoding.
+
+
+### Replay provenance correction
+
+Inspection of `processing.workflow.recording_fingerprint` found that native replay's
+initial check used a file-byte hash against the trainer's canonical measurement hash.
+That initial check did not protect ordinary Python-trained profiles from content reuse.
+`EEGRecordingFingerprint` now implements the same bounded integer-ADC JSON spelling
+and chronological counter/channel sequence as Python. A fixed Python SHA-256 oracle
+checks the complete 512-sample synthetic recording; timestamp/serialization changes
+leave its content identity unchanged. A profile carrying that canonical digest is
+rejected under a different session name. This is a correctness fix, not new evidence
+of mental-command accuracy.

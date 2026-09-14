@@ -4,6 +4,8 @@ import XCTest
 @testable import EEGCore
 
 final class ReplayInferenceTests: XCTestCase {
+    // Python hashlib/json oracle for 512 synthetic counter/ADC rows.
+    private let contentDigest = "d7d9aa146e0d8b827a3129719ef8ee6fea55d8cc7972a12d24b5b0a473a0fc63"
     private func profileData() throws -> Data {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         return try Data(contentsOf: root.appendingPathComponent("Fixtures/spectrum/mental-profile.json"))
@@ -30,6 +32,7 @@ final class ReplayInferenceTests: XCTestCase {
         let profile = try EEGMentalProfile.load(data: profileData())
         let report = try EEGReplayInference.run(store: store, recording: url, profile: profile, participantID: "participant", sessionID: "held-out")
         XCTAssertEqual(report.windows.count, 2)
+        XCTAssertEqual(report.eegContentSHA256, contentDigest)
         XCTAssertFalse(report.systemControlEnabled)
         XCTAssertEqual(report.status, "experimental_unvalidated")
         XCTAssertEqual(report.recordingSHA256, SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined())
@@ -41,7 +44,7 @@ final class ReplayInferenceTests: XCTestCase {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }
         let store = try EEGRecordingStore(directory: directory), url = try recording(store)
-        let digest = SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined()
+        let digest = contentDigest
         var object = try JSONSerialization.jsonObject(with: profileData()) as! [String: Any]
         var hashes = object["training_recording_hashes"] as! [String: String]
         hashes["train-a"] = digest; object["training_recording_hashes"] = hashes
@@ -59,4 +62,24 @@ final class ReplayInferenceTests: XCTestCase {
         XCTAssertThrowsError(try EEGReplayInference.run(store: store, recording: url, profile: profile, participantID: "participant", sessionID: "held-out"))
         try store.finish()
     }
+    func testMetadataAndTimestampRewriteDoesNotChangeEEGIdentity() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = try EEGRecordingStore(directory: directory), url = try recording(store)
+        let data = try Data(contentsOf: url)
+        let rewritten = try String(decoding: data, as: UTF8.self).split(separator: "\n").map { line -> String in
+            var event = try JSONSerialization.jsonObject(with: Data(line.utf8)) as! [String: Any]
+            if var sample = event["sample"] as? [String: Any] {
+                sample["receivedAt"] = (sample["receivedAt"] as! Double) + 30
+                event["sample"] = sample
+            }
+            return String(decoding: try JSONSerialization.data(withJSONObject: event, options: [.sortedKeys]), as: UTF8.self)
+        }.joined(separator: "\n") + "\n"
+        try Data(rewritten.utf8).write(to: url)
+        let profile = try EEGMentalProfile.load(data: profileData())
+        let report = try EEGReplayInference.run(store: store, recording: url, profile: profile, participantID: "participant", sessionID: "held-out")
+        XCTAssertEqual(report.eegContentSHA256, contentDigest)
+        XCTAssertNotEqual(report.recordingSHA256, SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined())
+    }
+
 }
