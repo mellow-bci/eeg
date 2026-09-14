@@ -80,22 +80,16 @@ struct SpectrumAnalysisView: View {
             }
         }.task(id: refreshKey) { await compute() }
     }
-    @ViewBuilder private var densityChart: some View {
-        if #available(macOS 15, iOS 18, visionOS 2, *) {
-            vectorizedDensityChart
-        } else {
-            Chart {
-                ForEach(bins) { bin in LineMark(x: .value("Frequency (Hz)", bin.frequency), y: .value("Power density", bin.density)).foregroundStyle(.teal) }
-                if let bin = selectedBin { RuleMark(x: .value("Frequency", bin.frequency)).foregroundStyle(.orange) }
-            }
-        }
-    }
-    @available(macOS 15, iOS 18, visionOS 2, *)
-    private var vectorizedDensityChart: some View {
+    private var densityChart: some View {
         Chart {
-            LinePlot(bins, x: .value("Frequency (Hz)", \.frequency), y: .value(logarithmic ? "PSD (dB re 1 µV²/Hz)" : "PSD (µV²/Hz)", \.density))
-                .foregroundStyle(.teal).lineStyle(StrokeStyle(lineWidth: 2))
-            if let bin = selectedBin { RuleMark(x: .value("Frequency", bin.frequency)).foregroundStyle(.orange).lineStyle(StrokeStyle(lineWidth: 1, dash: [4])) }
+            ForEach(bins) { bin in
+                LineMark(x: .value("Frequency (Hz)", bin.frequency), y: .value("Power density", bin.density))
+                    .foregroundStyle(.teal).lineStyle(StrokeStyle(lineWidth: 2))
+            }
+            if let bin = selectedBin {
+                RuleMark(x: .value("Frequency", bin.frequency)).foregroundStyle(.orange)
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4]))
+            }
         }
     }
     @ViewBuilder private var options: some View {

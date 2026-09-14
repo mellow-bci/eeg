@@ -86,7 +86,7 @@ Inventory, paged replay and CSV export now share the same native-v1 schema, samp
 
 ## Interactive analysis and native chart references
 
-The current UI implementation uses Swift Charts for spectral density and band powers, including frequency selection and explicit scientific units. On newer supported systems it uses vectorized line plots; earlier deployment targets use the same data and standard line marks. Scientific waveform rendering must preserve gaps and distinguish ADC values from calibrated voltage. A visually plausible trace is not evidence of valid contact or mental-command decoding.
+The current UI implementation uses Swift Charts for spectral density and band powers, including frequency selection and explicit scientific units. A single LineMark path renders the 129-bin spectrum on all supported targets; this also builds against the CI SDK, which does not expose LinePlot. Scientific waveform rendering must preserve gaps and distinguish ADC values from calibrated voltage. A visually plausible trace is not evidence of valid contact or mental-command decoding.
 
 Official design/implementation references reviewed:
 
@@ -146,3 +146,18 @@ recorded numerical fixture, not cross-session mental-command validation. The
 native profile trainer/classifier, transport/epoch readiness integration and
 prospective command/neutral evaluation remain unfinished. A usable feature vector
 alone never authorizes a command or system action.
+
+### Native classifier numerical kernel
+
+`EEGMentalScoring` now performs feature normalization/selection, PCA projection,
+equal-prior diagonal Gaussian log likelihoods, stable softmax and trained-distance
+comparison. It validates parameter shapes, finite values and positive scales/variances,
+and rejects numerical overflow. Six manufactured feature cases match the independent
+Python reference's class scores within 1e-10. Regenerate the oracle with
+`python -m tools.generate_native_scoring_fixture`.
+
+This kernel deliberately is not a profile loader, training UI or command detector.
+Profile integrity/provenance, configuration matching, valid-window delivery,
+persistence/rejection policy and session-separated evaluation must be integrated
+before exposing native inference previews. It emits no command or system action.
+The current local Swift suite passes 30 tests; physiological validity is untested.
