@@ -356,3 +356,40 @@ This is a core API, not yet native trial-collection/training UI. Supplied featur
 records contain assertions; the app must derive them from validated recordings and
 accepted trials before presenting training as a complete workflow. No hardware or
 physiological qualification follows from this synthetic profile.
+
+### Recording-backed native training action
+
+Calibration now has **Train from recorded trials**. Open an `eeg.dataset.v1` JSON
+manifest, then explicitly select **Train and save experimental profile**. It reads
+saved Processing settings, validates recordings and trial declarations, fits the
+native classifier and writes `Application Support/EEG/Profiles/<profile-id>.json`.
+The profile can then be opened in the existing inspection/offline-inference panel.
+Work executes away from the main thread and the action is disabled during capture
+or an active headset session. Existing profile files are not overwritten.
+
+`EEGTrainingDataset` resolves recording filenames only within the local recording
+library. It validates every declared session, including evaluation files, with the
+same recording/window/feature functions. It rejects duplicate session IDs, reused
+canonical EEG content across any splits, overlapping or uncertain trials, unsupported
+conditions and trials containing no windows. Only eligible training windows enter
+the fit; invalid/artifact windows are counted. Evaluation windows never enter the
+training records. This is stricter than the Python loader for an empty training
+trial: the native loader rejects it rather than silently omitting it.
+
+The existing manifest fields are used: `schema`, `participant_id`, `sessions`; each
+session has `id`, `recording` (library filename), `split` (`train`/`evaluation`),
+`independent_session: true`, and `trials`. Each trial supplies `id`, `label`, `start`,
+`end`, `accepted: true`, and `label_verified: true`. Times use recorded arrival
+seconds. Optional condition/shadow/cue fields follow the existing dataset contract.
+An entire window must fit within a trial, using its first and last arrival times.
+Native replay's end timestamp was aligned to that same last-arrival convention.
+
+Keep the source manifest and recordings: this action currently saves the profile,
+not a complete reproducibility bundle. Interactive trial editing, a native cue runner,
+cancellation/progress by stage, labeled evaluation reports and hardware qualification
+remain. The UI import/save flow still needs interactive accessibility testing.
+
+The end-to-end synthetic test creates two distinct training recordings plus a third
+evaluation recording, derives 40 training feature windows, fits a native profile and
+runs held-out replay. It checks that evaluation session IDs never enter the profile.
+These manufactured sinusoids test wiring and leakage rejection, not mental commands.

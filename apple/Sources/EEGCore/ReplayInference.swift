@@ -61,7 +61,7 @@ public enum EEGReplayInference {
                 artifact_flags: features.artifactFlags, usable: features.usable, participant_id: participantID,
                 session_id: sessionID, continuity_id: "segment-\(window.segment!)",
                 window_id: "\(sessionID):\(window.ordinal)", start: window.samples.first!.receivedAt,
-                end: window.samples.last!.receivedAt + 1.0 / 128)
+                end: window.samples.last!.receivedAt)
             let proposal = detector.infer(input)
             rows.append(.init(ordinal: window.ordinal,
                 reasons: features.artifactFlags.isEmpty ? [proposal.reason] : features.artifactFlags,
