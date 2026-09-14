@@ -108,7 +108,15 @@ def validate_profile(profile):
     if (not isinstance(selected,list) or len(selected)!=design['selected_features'] or
         any(type(i) is not int or not 0<=i<len(NAMES) for i in selected) or len(set(selected))!=len(selected)):
         raise ValueError('Invalid feature selection')
-    dimensions=min(design['pca_components'],len(profile['training_window_ids'])-len(classes),len(selected))
+    window_ids=profile.get('training_window_ids')
+    if (not isinstance(window_ids,list) or not window_ids or
+        any(not isinstance(w,str) or not w for w in window_ids) or
+        len(set(window_ids))!=len(window_ids)):
+        raise ValueError('Invalid training window identities')
+    training_digest=profile.get('training_records_sha256')
+    if not isinstance(training_digest,str) or re.fullmatch(r'[0-9a-f]{64}',training_digest) is None:
+        raise ValueError('Invalid training records digest')
+    dimensions=min(design['pca_components'],len(window_ids)-len(classes),len(selected))
     if dimensions<1:raise ValueError('Insufficient PCA dimensions')
     array('pca_mean',(len(selected),));array('components',(dimensions,len(selected)))
     gaussians=profile.get('gaussians')
@@ -143,6 +151,7 @@ class Detector:
         if record.get('feature_config_id')!=CONFIG_ID:reason='feature_configuration_mismatch'
         elif record.get('artifact_flags') or record.get('usable') is not True:reason='invalid_or_artifact_window'
         elif record.get('participant_id')!=p['participant_id']:reason='participant_mismatch'
+        elif any(not isinstance(record.get(key),str) or not record[key] for key in ('session_id','window_id')):reason='missing_recording_identity'
         elif not isinstance(record.get('continuity_id'),str) or not record['continuity_id']:reason='missing_continuity_identity'
         if reason:self.pending=None;self.count=0;return dict(base,reason=reason)
         try: x=np.asarray(record.get('values'),dtype=float)
@@ -156,11 +165,20 @@ class Detector:
             return dict(base,reason='invalid_timing')
         if self.session!=record.get('session_id') or self.continuity!=record['continuity_id'] or self.last_end is None or abs(start-self.last_end)>.05:self.pending=None;self.count=0
         self.session=record.get('session_id');self.continuity=record['continuity_id'];self.last_end=end
-        z=((x-p['center'])/p['scale'])[p['selected']];q=(z-p['pca_mean'])@np.asarray(p['components']).T
-        scores=[];distances=[]
-        for g in p['gaussians']:
-            variance=np.asarray(g['variance']);d=float(np.sum((q-g['mean'])**2/variance));distances.append(d);scores.append(-.5*(d+np.log(2*np.pi*variance).sum()))
-        scores=np.asarray(scores);prob=np.exp(scores-scores.max());prob/=prob.sum();order=np.argsort(-prob);best=int(order[0]);label=p['classes'][best]
+        # Finite inputs can still overflow normalization or squared distances.
+        # Reject numerical failure explicitly instead of exposing NaN class scores.
+        try:
+            with np.errstate(over='raise',invalid='raise',divide='raise',under='ignore'):
+                z=((x-p['center'])/p['scale'])[p['selected']];q=(z-p['pca_mean'])@np.asarray(p['components']).T
+                scores=[];distances=[]
+                for g in p['gaussians']:
+                    variance=np.asarray(g['variance']);d=float(np.sum((q-g['mean'])**2/variance));distances.append(d);scores.append(-.5*(d+np.log(2*np.pi*variance).sum()))
+                scores=np.asarray(scores);prob=np.exp(scores-scores.max());prob/=prob.sum()
+                if not np.isfinite(prob).all():raise FloatingPointError('Nonfinite class scores')
+        except FloatingPointError:
+            self.pending=None;self.count=0;self.pending_start=None
+            return dict(base,reason='numerical_failure')
+        order=np.argsort(-prob);best=int(order[0]);label=p['classes'][best]
         base['uncalibrated_class_scores']=dict(zip(p['classes'],prob.tolist()));base['candidate_label']=label
         if distances[best]>p['gaussians'][best]['distance_limit']:reason='out_of_training_distribution'
         elif prob[best]<p['design']['score_threshold'] or prob[best]-prob[order[1]]<p['design']['margin_threshold']:reason='ambiguous_score'

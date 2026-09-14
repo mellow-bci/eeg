@@ -193,3 +193,38 @@ class MentalTests(unittest.TestCase):
             if change=='schema':profile['schema']='unsupported'
             with self.subTest(change=change):
                 with self.assertRaises(ValueError):validate_profile(resigned(profile))
+
+
+class NumericalRejectionTests(unittest.TestCase):
+    def test_extreme_finite_features_reject_without_nan_or_persistence(self):
+        detector=Detector(train(records(),'participant'))
+        self.assertEqual(detector.infer(inference(4,0))['reason'],'insufficient_persistence')
+        result=detector.infer(inference(1e308,2))
+        self.assertEqual(result['reason'],'numerical_failure')
+        self.assertNotIn('experimental_candidate',result)
+        self.assertNotIn('uncalibrated_class_scores',result)
+        json.dumps(result,allow_nan=False)
+        self.assertEqual(detector.infer(inference(4,4))['reason'],'insufficient_persistence')
+
+    def test_profile_provenance_fields_are_validated_after_integrity(self):
+        baseline=train(records(),'participant')
+        for value in (None,[],['duplicate','duplicate'],[42],['']):
+            profile=copy.deepcopy(baseline);profile['training_window_ids']=value
+            with self.subTest(value=value),self.assertRaises(ValueError):
+                validate_profile(resigned(profile))
+        for value in (None,'not-a-digest',42):
+            profile=copy.deepcopy(baseline);profile['training_records_sha256']=value
+            with self.subTest(value=value),self.assertRaises(ValueError):
+                validate_profile(resigned(profile))
+
+    def test_missing_recording_identity_rejects_and_resets_candidate(self):
+        profile=train(records(),'participant')
+        for key in ('session_id','window_id'):
+            for value in (None,'',42):
+                detector=Detector(profile)
+                detector.infer(inference(4,0))
+                row=inference(4,2);row[key]=value
+                result=detector.infer(row)
+                self.assertEqual(result['reason'],'missing_recording_identity')
+                self.assertNotIn('experimental_candidate',result)
+                self.assertEqual(detector.infer(inference(4,4))['reason'],'insufficient_persistence')

@@ -62,3 +62,18 @@ Record hashes block full-capture reuse across changed filenames/serialization; t
 ## Shadow measurements
 
 [SHADOW_EVALUATION.md](SHADOW_EVALUATION.md) defines condition-specific episode counts, exposure, cue-associated latency and conditional false-activation upper bounds. Use `evaluate --controls-only` for explicitly labeled neutral challenge/ordinary-activity sessions; no dummy task trials are required. A prospective task protocol is documented in [MENTAL_QUALIFICATION_PROTOCOL.md](MENTAL_QUALIFICATION_PROTOCOL.md). No experiment is started by these documents.
+
+### Numerical and provenance rejection checkpoint — 2026-09-15
+
+Profile loading validates nonempty unique training-window identities and the format
+of the training-record digest after checking profile integrity. Recomputing a hash
+does not make malformed metadata valid; neither check proves the truth of labels.
+Inference requires explicit session/window identities. Missing identities reset
+candidate persistence and return `missing_recording_identity`.
+
+Finite feature values can overflow normalization or Gaussian distances. The detector
+now traps numerical failure, clears candidate persistence, returns
+`numerical_failure`, and omits class scores rather than serializing NaN or presenting
+an arbitrary winning class. The next acceptable window must begin persistence again.
+These software regression tests use manufactured vectors and do not validate neural
+intent. Run `python -m unittest discover -s tests` in the research environment.
