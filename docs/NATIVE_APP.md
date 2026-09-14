@@ -438,3 +438,19 @@ The Python evaluation fixture agrees on exposure, episode counts and rates. Dedi
 synthetic tests cover repeated candidates, trial carry-in, rejection/disabled exposure,
 new episodes after rejection and invalid evidence timing. Prospective ordinary-activity
 recordings, latency, uncertainty and physiological artifact controls remain required.
+
+### Native cue-relative trial timing
+
+Evaluation now retains one timing record per session/trial. A new matching task
+candidate receives cue-associated latency only when its accumulated evidence starts
+at or after the recorded cue completion. Latency is last input arrival minus cue
+completion. Repeated candidates and pre-cue evidence are not credited as new responses.
+A missing cue produces unavailable timing/detection status, rather than zero latency.
+
+Trial duration minus covered window duration is reported as unobserved seconds.
+It is not counted as successful neutral exposure. Conflicting trial metadata and
+invalid containment/timing are rejected. Tests cover pre-cue persistence, a subsequent
+eligible onset, absent cues and conflicting metadata; fixture trial coverage agrees
+with the Python evaluator. These measurements do not establish physiological onset,
+user compliance or end-to-end live latency. Uncertainty and prospective qualification
+remain outstanding.

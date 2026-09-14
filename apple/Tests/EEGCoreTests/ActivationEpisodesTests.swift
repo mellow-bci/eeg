@@ -38,4 +38,29 @@ final class ActivationEpisodesTests: XCTestCase {
         var counter = EEGActivationEpisodes()
         XCTAssertThrowsError(try counter.consume(row(0), proposal: candidate(2)))
     }
+    private func task(_ start: Double, cue: Double?) -> EEGTrainingDataset.EvaluationWindow {
+        let base = row(start)
+        return .init(input: base.input, label: "task", trialID: "task-trial", condition: "cued_task",
+                     shadowEnabled: true, trialStart: 0, trialEnd: 20, cueCompletedAt: cue)
+    }
+    func testPreCueEvidenceDoesNotReceiveCueLatencyCredit() throws {
+        var counter = EEGActivationEpisodes()
+        try counter.consume(task(0, cue: 1), proposal: candidate(0))
+        try counter.consume(task(2, cue: 1), proposal: candidate(0))
+        XCTAssertNil(counter.trials[0].firstCueAssociatedCandidateLatency)
+        XCTAssertEqual(counter.trials[0].cuedTargetDetected, false)
+        try counter.consume(task(4, cue: 1), proposal: nil)
+        try counter.consume(task(6, cue: 1), proposal: candidate(6))
+        XCTAssertEqual(counter.trials[0].firstCueAssociatedCandidateLatency, 7)
+        XCTAssertEqual(counter.trials[0].cuedTargetDetected, true)
+        XCTAssertEqual(counter.trials[0].unobservedSeconds, 12)
+    }
+    func testMissingCueAndConflictingTrialMetadata() throws {
+        var counter = EEGActivationEpisodes()
+        try counter.consume(task(0, cue: nil), proposal: candidate(0))
+        XCTAssertNil(counter.trials[0].firstCueAssociatedCandidateLatency)
+        XCTAssertNil(counter.trials[0].cuedTargetDetected)
+        XCTAssertThrowsError(try counter.consume(task(2, cue: 1), proposal: candidate(0)))
+    }
+
 }

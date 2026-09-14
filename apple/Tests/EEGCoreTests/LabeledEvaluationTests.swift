@@ -48,6 +48,12 @@ final class LabeledEvaluationTests: XCTestCase {
             XCTAssertEqual(metrics.carryInCandidates, oracle["carry_in_candidates"] as! Int)
             XCTAssertEqual(metrics.episodeOnsetsPerHour, oracle["episode_onsets_per_hour"] as? Double)
         }
+        let trials = (expected["shadow_measurements"] as! [String: Any])["trials"] as! [[String: Any]]
+        for (trial, oracle) in zip(result.trials, trials) {
+            XCTAssertEqual(trial.unobservedSeconds, oracle["unobserved_seconds"] as! Double, accuracy: 1e-12)
+            XCTAssertEqual(trial.firstCueAssociatedCandidateLatency, oracle["first_cue_associated_candidate_latency_seconds"] as? Double)
+            XCTAssertEqual(trial.cuedTargetDetected, oracle["cued_target_detected"] as? Bool)
+        }
         XCTAssertNil(result.predictions[1].predictedLabel)
         XCTAssertNil(result.predictions[2].predictedLabel)
     }
