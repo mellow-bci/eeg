@@ -535,3 +535,44 @@ evaluation toggle changed its scope description correctly. The temporary fixture
 was removed afterward. No EEG acquisition or physiological experiment occurred.
 The full train-from-manifest UI sequence and external file-picker problem remain
 unqualified; the saved-library check is not proof that those paths work.
+
+### Evaluation receipt export (2026-09-15)
+
+The labeled evaluator now produces `eeg.native-evaluation.v1` through
+`EEGEvaluationArtifact.run(manifest:store:profile:controlsOnly:)`. The public entry
+point loads the manifest and original recordings, runs the existing canonical
+feature/detector/evaluation path, and serializes that result. The UI retains this
+artifact together with the displayed report; changing scope or starting a new
+run discards the previous artifact. Export evaluation JSON uses the native save
+panel. Nothing is uploaded.
+
+The receipt contains exact manifest bytes (base64) and their SHA-256, profile ID,
+feature configuration ID, processing settings, source file and canonical EEG
+hashes for every loaded session, per-window timing/continuity/labels/rejections,
+class counts and precision/recall, condition exposure and episode rates/bounds,
+and trial coverage/cue latency. Unavailable values are JSON null; a rejected
+prediction is never rewritten as neutral. The versioned metric definitions and
+limitations travel with the result. Algorithm version `native-labeled-evaluation-1`
+identifies the receipt's metric semantics; it is not a hardware qualification.
+
+This is a receipt, not a full archive. Reproduction still requires the matching
+profile and original recordings. Decode `manifest_base64`, verify its SHA-256,
+load the referenced sources in the recording store, call the same public entry
+point with the saved scope, and compare the source hashes before interpreting
+metric differences. Preserve the receipt with its referenced files. Hashes are
+integrity identifiers, not signatures or proof of physiological labels.
+
+Reproduction checks:
+
+```sh
+swift test --package-path apple --filter TrainingDatasetTests.testRecordingsAndLabelsTrainNativeProfileWithoutEvaluationLeakage
+swift test --package-path apple --filter LabeledEvaluationTests.testReceiptKeepsUnavailableValuesAndRejectionsExplicit
+```
+
+The first test executes synthetic recordings through profile training and receipt
+production, verifies exact manifest recovery and both source hash types, and
+rejects a malformed manifest. The second verifies deterministic serialization,
+controls-only scope, null task recall, missing cue timing and explicit rejection.
+The full Swift suite passed 72 tests. The native save panel itself has not been
+interactively qualified; the previously documented external picker problem and
+physiological evaluation gates remain open.

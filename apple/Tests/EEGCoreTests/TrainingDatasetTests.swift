@@ -30,13 +30,27 @@ final class TrainingDatasetTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: directory) }
         let store = try EEGRecordingStore(directory: directory)
         let a = try recording(store, offset: 0), b = try recording(store, offset: 10), c = try recording(store, offset: 20)
-        let dataset = try EEGTrainingDataset.load(manifest([session("a", a), session("b", b), session("c", c, split: "evaluation")]), store: store)
+        let manifestData = try manifest([session("a", a), session("b", b), session("c", c, split: "evaluation")])
+        let dataset = try EEGTrainingDataset.load(manifestData, store: store)
         XCTAssertEqual(dataset.records.count, 40)
         XCTAssertEqual(dataset.sessions.map(\.usableWindows), [20, 20, 20])
         XCTAssertEqual(Set(dataset.records.map(\.session_id)), ["a", "b"])
         let artifact = try EEGProfileCreation.train(dataset.records, participantID: dataset.participantID)
         XCTAssertEqual(Set(artifact.profile.trainingSessions), ["a", "b"])
         XCTAssertFalse(try EEGReplayInference.run(store: store, recording: c, profile: artifact.profile, participantID: "synthetic", sessionID: "c").systemControlEnabled)
+        let receipt = try EEGEvaluationArtifact.run(manifest: manifestData, store: store, profile: artifact.profile)
+        let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
+        XCTAssertEqual(object["schema"] as? String, "eeg.native-evaluation.v1")
+        XCTAssertEqual(Data(base64Encoded: object["manifest_base64"] as! String), manifestData)
+        XCTAssertEqual(object["profile_id"] as? String, artifact.profile.id)
+        XCTAssertEqual((object["predictions"] as! [[String: Any]]).count, 20)
+        let sources = object["sources"] as! [[String: Any]]
+        XCTAssertEqual(sources.map { $0["file_sha256"] as! String }, dataset.sessions.map(\.fileSHA256))
+        XCTAssertEqual(sources.map { $0["eeg_content_sha256"] as! String }, dataset.sessions.map(\.eegSHA256))
+        XCTAssertEqual(object["system_control_enabled"] as? Bool, false)
+        XCTAssertEqual(object["hardware_validated"] as? Bool, false)
+        XCTAssertThrowsError(try EEGEvaluationArtifact.run(manifest: Data("{}".utf8), store: store, profile: artifact.profile))
+
     }
     func testDuplicateRecordingCannotBecomeEvaluationSession() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

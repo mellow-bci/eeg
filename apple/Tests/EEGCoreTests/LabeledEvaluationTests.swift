@@ -81,4 +81,26 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertThrowsError(try EEGLabeledEvaluation.run(profile: profile, dataset: full, controlsOnly: true))
     }
 
+    func testReceiptKeepsUnavailableValuesAndRejectionsExplicit() throws {
+        let (profile, full, _) = try fixture()
+        let dataset = EEGTrainingDataset(evaluation: full.evaluation.filter { $0.label == "neutral" },
+            participantID: profile.participantID, records: [], sessions: full.sessions)
+        let report = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset, controlsOnly: true)
+        let manifest = Data("synthetic internal serialization test".utf8)
+        let receipt = try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile)
+        XCTAssertEqual(receipt.data, try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile).data)
+        let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
+        XCTAssertEqual(object["controls_only"] as? Bool, true)
+        let metrics = object["metrics"] as! [String: [String: Any]]
+        XCTAssertTrue(metrics["task"]!["recall"] is NSNull)
+        let predictions = object["predictions"] as! [[String: Any]]
+        for (serialized, expected) in zip(predictions, report.predictions) {
+            if let label = expected.predictedLabel { XCTAssertEqual(serialized["predicted_label"] as? String, label) }
+            else { XCTAssertTrue(serialized["predicted_label"] is NSNull) }
+            XCTAssertEqual(serialized["reason"] as? String, expected.reason)
+        }
+        let trials = object["trials"] as! [[String: Any]]
+        XCTAssertTrue(trials.allSatisfy { $0["cue_completed_at_seconds"] is NSNull })
+    }
+
 }

@@ -8,14 +8,17 @@ struct DatasetEvaluationView: View {
     @State private var controlsOnly = false
     @State private var importing = false
     @State private var running = false
-    @State private var report: EEGLabeledEvaluation?
+    @State private var artifact: EEGEvaluationArtifact?
+    @State private var exporting = false
+    @State private var exportMessage: String?
+    private var report: EEGLabeledEvaluation? { artifact?.report }
     @State private var failure: String?
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Divider()
             Text("Evaluate labeled sessions").font(.headline)
             Toggle("Controls-only evaluation", isOn: $controlsOnly).disabled(running)
-                .onChange(of: controlsOnly) { _, _ in report = nil; failure = nil }
+                .onChange(of: controlsOnly) { _, _ in artifact = nil; failure = nil; exportMessage = nil }
             Text(controlsOnly ? "Only neutral-labeled control conditions are accepted. Task recall cannot be measured from control trials." : "Full evaluation requires at least 10 windows per class.").font(.caption)
             Text("Choose a dataset manifest with evaluation sessions. Rejected windows remain in the denominator; labels are declarations, not independently verified mental states.").foregroundStyle(.secondary)
             Button("Open dataset and evaluate", systemImage: "chart.bar") { importing = true }
@@ -23,6 +26,8 @@ struct DatasetEvaluationView: View {
             if running { ProgressView("Evaluating held-out recordings…") }
             if let failure { Text(failure).foregroundStyle(.red).textSelection(.enabled) }
             if let report {
+                Button("Export evaluation JSON", systemImage: "square.and.arrow.up") { exporting = true }
+                if let exportMessage { Text(exportMessage).font(.caption) }
                 LabeledContent("Scope", value: report.controlsOnly ? "Controls only" : "Full labeled evaluation")
                 LabeledContent("Evaluation windows", value: String(report.predictions.count))
                 LabeledContent("Rejected", value: report.rejectionFraction.formatted(.percent.precision(.fractionLength(1))))
@@ -61,29 +66,45 @@ struct DatasetEvaluationView: View {
             case .success(let url): evaluate(url)
             }
         }
+        .fileExporter(isPresented: $exporting, document: EvaluationDocument(data: artifact?.data ?? Data()), contentType: .json, defaultFilename: "eeg-evaluation.json") { result in
+            switch result {
+            case .success: exportMessage = "Evaluation receipt exported. Keep the matching profile and original recordings for reproduction."
+            case .failure(let error): failure = "Export failed: \(error.localizedDescription)"
+            }
+        }
     }
     private func percent(_ value: Double?) -> String { value?.formatted(.percent.precision(.fractionLength(1))) ?? "Unavailable" }
     private func evaluate(_ url: URL) {
         guard !running, !model.recording, !model.ready else { return }
         let directory = model.directory, controls = controlsOnly
-        running = true; report = nil; failure = nil
+        running = true; artifact = nil; failure = nil; exportMessage = nil
         Task { @MainActor in
             let result = await Task.detached(priority: .utility) {
-                Result { () throws -> EEGLabeledEvaluation in
+                Result { () throws -> EEGEvaluationArtifact in
                     let access = url.startAccessingSecurityScopedResource()
                     defer { if access { url.stopAccessingSecurityScopedResource() } }
                     let file = try FileHandle(forReadingFrom: url)
                     defer { try? file.close() }
                     let data = try file.read(upToCount: 8 * 1024 * 1024 + 1) ?? Data()
-                    let dataset = try EEGTrainingDataset.load(data, store: EEGRecordingStore(directory: directory), settings: profile.settings)
-                    return try EEGLabeledEvaluation.run(profile: profile, dataset: dataset, controlsOnly: controls)
+                    return try EEGEvaluationArtifact.run(manifest: data, store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls)
                 }
             }.value
             running = false
             switch result {
-            case .success(let value): report = value
+            case .success(let value): artifact = value
             case .failure(let error): failure = "Evaluation rejected: \(error)"
             }
         }
     }
+}
+
+private struct EvaluationDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.json] }
+    let data: Data
+    init(data: Data) { self.data = data }
+    init(configuration: ReadConfiguration) throws {
+        guard let contents = configuration.file.regularFileContents else { throw CocoaError(.fileReadCorruptFile) }
+        data = contents
+    }
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper { FileWrapper(regularFileWithContents: data) }
 }
