@@ -8,7 +8,7 @@
 
 ## Evidence versus design
 
-The reference body trace confirms a feature-selection/PCA/canonical/Gaussian-density/posterior path in selected Cortex routines. It does not establish all window, spectral, training, score or timing parameters. See MENTAL_REFERENCE_TRACE.md. Every parameter below is **our independent experimental design**, not an approximation silently presented as recovered Cortex behavior.
+The reference body trace confirms a feature-selection/PCA/canonical/Gaussian-density/posterior path in selected Cortex routines. It does not establish all window, spectral, training, score or timing parameters. See MENTAL_REFERENCE_TRACE.md. The parameters below are defaults in [PROCESSING_SETTINGS.md](PROCESSING_SETTINGS.md), stored with each profile. Every parameter is **our independent experimental design**, not an approximation silently presented as recovered Cortex behavior.
 
 | Component | Explicit implementation |
 |---|---|
@@ -17,7 +17,7 @@ The reference body trace confirms a feature-selection/PCA/canonical/Gaussian-den
 | Spectrum | SciPy Welch, Hann256, no overlap, linear detrend, density normalization; no resampling/interpolation |
 | Features |70 log10 integrated power features:14channels × bands1–4,4–8,8–13,13–30,30–40Hz; power floor1e-12uV² |
 | Artifact flags | Any detrended channel peak-to-peak>500uV or RMS>100uV; flat/rail/nonfinite rejection. Thresholds are unvalidated conservative engineering defaults, not blink/jaw classifiers. |
-| Training acceptance | Explicit accepted and verified labels; neutral plus1–4 task classes; at least20 windows/class across at least2 sessions; same feature/config/participant; unique windows and canonical recording content |
+| Training acceptance | Explicit accepted and verified labels; neutral plus one or more task classes; at least20 windows/class across at least2 sessions; same feature/config/participant; unique windows and canonical recording content |
 | Scaling/selection | Training-only mean/std; between/within variance ratio ranks70features; select20 deterministically |
 | PCA | Training-only SVD, up to8components; deterministic sign convention; no recovered canonical transform is claimed or substituted |
 | Gaussian model | Per-class mean and diagonal variance in PCA space; variance floor0.05; equal priors |
@@ -58,3 +58,7 @@ Reports include per-class precision/recall, trial/session counts, rejection frac
 Record hashes block full-capture reuse across changed filenames/serialization; they cannot independently prove session independence or exclude every partial reuse. Participant declarations are not objective behavioral measurement. The latest uncertain-cue eyes capture is excluded from model training. Neural command claims require prospective separated sessions plus blink/jaw/head-motion controls and continuous neutral exposure.
 
 `--parent-profile` accepts a previously saved profile path and validates its participant before storing its profile ID as retraining lineage. Feature timing diagnostics are excluded from model identity, so repeated extraction does not change the profile hash solely because CPU timing differs.
+
+## Shadow measurements
+
+[SHADOW_EVALUATION.md](SHADOW_EVALUATION.md) defines condition-specific episode counts, exposure, cue-associated latency and conditional false-activation upper bounds. Use `evaluate --controls-only` for explicitly labeled neutral challenge/ordinary-activity sessions; no dummy task trials are required. A prospective task protocol is documented in [MENTAL_QUALIFICATION_PROTOCOL.md](MENTAL_QUALIFICATION_PROTOCOL.md). No experiment is started by these documents.

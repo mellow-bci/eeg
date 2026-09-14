@@ -68,6 +68,11 @@ class EndToEndSoftwareTests(unittest.TestCase):
             self.assertEqual(len(report['predictions']),20)
             self.assertFalse(report['mental_command_hardware_validated'])
             self.assertIsNone(report['ordinary_activity_false_activations_per_hour'])
+            controls=[dict(r,condition='ordinary_activity') for r in groups['evaluation'] if r['label']=='neutral']
+            control_report=evaluate_profile(profile,controls,controls_only=True)
+            self.assertEqual(control_report['evaluation_scope'],'controls_only')
+            self.assertEqual(control_report['shadow_measurements']['conditions']['ordinary_activity']['trials'],10)
+            with self.assertRaises(ValueError):evaluate_profile(profile,groups['evaluation'],controls_only=True)
             detector=Detector(profile)
             replay=[detector.infer(row) for row in windows_from(root/'synthetic-2.jsonl','s2','synthetic')]
             self.assertEqual(replay,[p['event'] for p in report['predictions']])

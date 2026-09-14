@@ -34,7 +34,7 @@ It must not become a second user-facing setup flow or a competing configuration 
    `processing/mental.py` fits mean/std scaling and between/within-class feature ranking
    on supplied training data only, selects 20 features, projects through up to eight
    train-only PCA components and fits regularized diagonal Gaussian class models with equal
-   priors. Training requires neutral plus 1–4 task labels, at least 20 windows/class across
+   priors. Training requires neutral plus one or more task labels, at least 20 windows/class across
    at least two sessions, accepted/verified-label declarations and consistent participant
    and feature configuration. These are engineering minimums, not physiological sufficiency.
    This implementation is **not the older `calibration/evaluate.py` LDA baseline**.
@@ -115,3 +115,9 @@ Attach source/test/report identifiers when promoting an entry and retain explici
 parameters/data/dependencies. Report what was trained, whose sessions were held out,
 how labels were verified and which outputs remain disabled. An attractive UI, class-name
 inventory, successful build or completed audio-cue sequence is not scientific validation.
+
+## Availability policy
+
+[PRODUCT_CAPABILITY_POLICY.md](PRODUCT_CAPABILITY_POLICY.md) is a release requirement: one unified application, no subscription tiers or artificial capture/export/training restrictions. Useful service capabilities are independent implementations. Technical validity, permissions and real resource budgets remain explicit; vendor licensing is not part of the runtime.
+
+Supported classifier tuning now uses [PROCESSING_SETTINGS.md](PROCESSING_SETTINGS.md); complete settings are frozen in v2 profiles. The native editor remains pending. Shadow evaluation now separates explicit ordinary-activity/control conditions from cued neutral and preserves proposal episodes, carry-in and exposure; physiological qualification is unchanged.

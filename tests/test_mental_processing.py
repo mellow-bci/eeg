@@ -78,6 +78,23 @@ class MentalTests(unittest.TestCase):
         self.assertEqual(profile,train(data,'participant'))
         self.assertIsNot(profile['design'],DESIGN)
 
+    def test_no_arbitrary_window_or_task_class_cap(self):
+        # Manufactured records exercise availability, not classifier performance.
+        data=[]
+        for i in range(10001):
+            source=self.training[i%len(self.training)]
+            data.append(dict(source,window_id=f'synthetic-large-{i}'))
+        profile=train(data,'participant')
+        self.assertEqual(len(profile['training_window_ids']),10001)
+        expanded=[]
+        for class_index in range(7):
+            for source in self.training:
+                if source['label']!='neutral':continue
+                expanded.append(dict(source,label='neutral' if class_index==0 else f'task-{class_index}',
+                                     window_id=f"{class_index}-{source['window_id']}",
+                                     values=(np.asarray(source['values'])+class_index).tolist()))
+        self.assertEqual(len(validate_profile(train(expanded,'participant'))['classes']),7)
+
     def test_class_session_label_and_feature_requirements(self):
         variants=[]
         data=copy.deepcopy(self.training);data[0]['label_verified']=False;variants.append(data)
