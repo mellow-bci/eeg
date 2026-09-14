@@ -24,6 +24,7 @@ struct ProfileInspectionView: View {
                 Text(profile.id).font(.caption.monospaced()).textSelection(.enabled)
                 Label("Experimental · command output disabled", systemImage: "hand.raised")
                 Text("Integrity does not verify task labels or physiological accuracy. Opening this file does not change acquisition settings. An offline check can be started below.").font(.callout).foregroundStyle(.secondary)
+                DatasetEvaluationView(profile: profile).id(profile.id)
                 ReplayInferenceView(profile: profile).id(profile.id)
             } else {
                 Text("Open an eeg.mental-profile.v2 JSON file from the independent offline trainer. Native training and session evaluation are still being implemented.").foregroundStyle(.secondary)

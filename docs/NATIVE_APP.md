@@ -393,3 +393,29 @@ The end-to-end synthetic test creates two distinct training recordings plus a th
 evaluation recording, derives 40 training feature windows, fits a native profile and
 runs held-out replay. It checks that evaluation session IDs never enter the profile.
 These manufactured sinusoids test wiring and leakage rejection, not mental commands.
+
+### Native labeled held-out evaluation
+
+Loaded profiles now expose **Evaluate labeled sessions**. The selected dataset's
+recordings and trials pass through `EEGTrainingDataset`; evaluation windows retain
+feature validity, trial identity, condition, shadow state and observed time fields.
+Only feature vectors/metadata are retained, not all raw window samples. The native
+evaluator rejects training session/content overlap and requires ten evaluation windows
+per profile class. It preserves chronological order and rejects invalid timing.
+
+A neutral prediction requires the detector's explicit neutral result. Invalid input,
+artifacts, disabled trials, ambiguous scores and other rejection states remain null
+predictions. Per-class TP/FP/FN, precision/recall and rejection fraction include those
+windows; undefined precision is shown as unavailable. Labels named `reject` are not
+confused with a rejection because the native result uses optional labels.
+
+The manufactured Python evaluation fixture includes an artifact window and a disabled
+window. Native predictions and metrics match `processing.workflow.evaluate_profile`.
+Generate it with `python tools/generate_native_evaluation_fixture.py`; runtime timing
+measurements are deliberately omitted from the fixture. No live evidence is added.
+
+This is the window-metric portion of evaluation. Native episode onset rates, ordinary
+activity exposure accounting, Poisson uncertainty, cue-relative latency, controls-only
+mode, reproducible report export and interactive accessibility checks remain incomplete.
+Window counts are correlated observations, not independent participants. Every report
+keeps hardware validation and system control false.
