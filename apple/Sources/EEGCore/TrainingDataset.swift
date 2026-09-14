@@ -32,6 +32,7 @@ public struct EEGTrainingDataset: Sendable {
     private struct Session: Decodable {
         let id: String, split: String, recording: String
         let independent_session: Bool
+        let file_sha256: String?
         let trials: [Trial]
     }
     private struct Trial: Decodable {
@@ -96,6 +97,7 @@ public struct EEGTrainingDataset: Sendable {
                     pending.append((window.ordinal, trial.label, features.values))
                 }
             }
+            if let expected=session.file_sha256 { guard expected == fileHash else { throw Failure.invalidManifest } }
             guard matched == trialIDs else { throw Failure.trialWithoutWindows }
             let eegHash = try fingerprint.finalize()
             guard seenContent.insert(eegHash).inserted else { throw Failure.duplicateRecording }

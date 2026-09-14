@@ -104,3 +104,27 @@ it does not pad a stopped acquisition to 24 trials. A finalized stream with no
 plan is still readable as EEG but cannot pass planned-trial recovery. Tests cover
 missing plan, swapped order, seed alteration and both sides of a rest boundary.
 These consistency checks do not prove physical independence or participant labels.
+
+## Dataset manifest builder
+
+`EEGTrialDatasetExport.manifest` accepts selected recording URLs, explicit train
+or evaluation splits and a nonempty independence declaration for each source.
+It recovers planned evidence, includes only reviewed/accepted intervals, retains
+counts of excluded/unreviewed trials, and writes the existing `eeg.dataset.v1`
+format. Independence is an operator declaration, not inferred from filenames.
+
+The manifest pins each original file's SHA-256 from the same read that recovered
+its evidence. The canonical dataset loader checks this hash again during window
+extraction and on subsequent loads. Existing externally authored manifests without
+a hash remain accepted by that loader; this builder always supplies one. A mixed
+participant set, duplicate session/content, missing accepted intervals, missing
+coverage or a session with no usable windows fails export. Trainer sample-count,
+class-balance and independent-session requirements remain separate gates; a
+successful manifest is not a trained or validated classifier.
+
+A synthetic native regression covers planned recording → reviewed trial history
+→ manifest → canonical evaluation windows, plus missing independence declaration,
+duplicate selection and source modification rejection. It does not constitute
+physiological validation. The builder returns JSON data; a native source-selection
+and save UI still needs to be connected. Raw recordings must accompany manifests
+for replay; the manifest itself does not contain EEG samples.

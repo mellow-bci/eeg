@@ -108,13 +108,20 @@ public final class EEGRecordingStore {
 
     /// Recover all trial revisions from a finalized, unchanged recording. This
     /// validates lifecycle evidence, not physiological truth or source authenticity.
+    public struct TrialRecordingEvidence: Sendable {
+        public let trials: [EEGTrialEvidence]
+        public let fileSHA256: String
+    }
     public func recoveredTrials(recording: URL) throws -> [EEGTrialEvidence] {
+        try recoverTrialRecording(recording:recording).trials
+    }
+    public func recoverTrialRecording(recording: URL) throws -> TrialRecordingEvidence {
         try validate(recording)
         var validation = StreamValidation()
         var history: [String:EEGTrialEvidence] = [:], order: [String] = []
         var samples = 0
         var plan: EEGTrialPlan?
-        try Self.lines(recording) { data in
+        let hash = try Self.lines(recording) { data in
             if try validation.consume(data) != nil { samples += 1 }
             guard let object=try JSONSerialization.jsonObject(with:data) as? [String:Any] else { throw EEGRecordingError.invalidData }
             if object["kind"] as? String == "trial_plan" {
@@ -149,7 +156,7 @@ public final class EEGRecordingStore {
         }
         try validation.finish()
         guard validation.summarized,plan != nil else { throw EEGRecordingError.invalidData }
-        return order.compactMap { history[$0] }
+        return TrialRecordingEvidence(trials:order.compactMap { history[$0] },fileSHA256:hash)
     }
 
     public func replay(recording: URL, offset: Int = 0, limit: Int = 1280) throws -> [EEGSample] {
