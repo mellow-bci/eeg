@@ -14,8 +14,9 @@ cue-associated outcomes are not evidence for the new classifier's neural validit
 
 **Collect → Review → Analyze → Calibrate → inference preview → separately gated output.**
 SwiftUI is the native application target and performs acquisition without Python/Cortex.
-The new offline Python processing service is a research consumer of explicit adapters for
-native and Python recordings; native trained inference and its UI integration remain work.
+The offline Python processing service is a research consumer of explicit adapters for
+native and Python recordings. Native training, profile inspection and offline evaluation
+now exist; prospective physiological and complete interactive workflow qualification remain work.
 It must not become a second user-facing setup flow or a competing configuration authority.
 
 1. **Canonical samples and valid windows — implemented, software tests exist.**
@@ -31,7 +32,7 @@ It must not become a second user-facing setup flow or a competing configuration 
    experimental design, not recovered vendor defaults. Remaining: artifact-threshold
    validation, prospective signal interpretation and measured end-to-end timing.
    Native `EEGMentalFeatures` now matches all 70 values on a real-recording Python
-   oracle within 1e-7 log-power units; native readiness/profile integration remains pending.
+   oracle within 1e-7 log-power units; native physical readiness remains unqualified.
 3. **Profile training — implemented and tested at software level.**
    `processing/mental.py` fits mean/std scaling and between/within-class feature ranking
    on supplied training data only, selects 20 features, projects through up to eight
@@ -64,12 +65,18 @@ It must not become a second user-facing setup flow or a competing configuration 
    are not ordinary-activity false activations/hour. Remaining: independently verified
    mental-task/neutral labels from genuinely separate acquisitions, an untouched future
    session after headset reapplication, artifact controls and representative neutral exposure.
-7. **Native trained-inference workspace — pending.**
-   Port the explicit feature/model/profile contract into native code and match fixed Python
-   golden vectors. Then expose collect/review/train/evaluate/preview through the existing
-   native recording and Calibration workspace. Verify bounded delivery, profile lifecycle,
-   invalid-data states and physical-device timing. No claim of a complete native mental
-   command app follows from the offline CLI implementation alone.
+7. **Native trained-inference workspace — implemented subsets, qualification incomplete.**
+   Swift training, profile persistence/inspection, finalized-recording dataset loading,
+   labeled evaluation and receipt export use EEGCore. `EEGEvaluate` shares the app's
+   evaluation entry point; the CLI is a reproducibility interface, not another pipeline.
+   Synthetic/reference tests cover these components. Saved-profile inspection and the
+   controls-only toggle were exercised in the native UI. The external file picker remains
+   unresolved, and the full native training/evaluation flow has not passed interactive
+   acceptance. Next priorities are a usable native cue/label-evidence workflow, explicit
+   cancellation and interruption handling, then fresh-participant prospective sessions
+   under `MENTAL_QUALIFICATION_PROTOCOL.md`. No prior ready message or uncertain eye-test
+   labels may stand in for those sessions. Physical timing and long-session durability
+   remain gates; software agreement does not establish mental-command accuracy.
 8. **Controlled output — disabled, acceptance pending.**
    Only after prospective scientific and hardware gates: explicit arming, neutral/abstention,
    confirmation, expiry, cancel/kill switch and a reversible local test action. Neural claims
@@ -123,3 +130,14 @@ inventory, successful build or completed audio-cue sequence is not scientific va
 [PRODUCT_CAPABILITY_POLICY.md](PRODUCT_CAPABILITY_POLICY.md) is a release requirement: one unified application, no subscription tiers or artificial capture/export/training restrictions. Useful service capabilities are independent implementations. Technical validity, permissions and real resource budgets remain explicit; vendor licensing is not part of the runtime.
 
 Supported classifier tuning now uses [PROCESSING_SETTINGS.md](PROCESSING_SETTINGS.md); complete settings are frozen in v2 profiles. The native editor remains pending. Shadow evaluation now separates explicit ordinary-activity/control conditions from cued neutral and preserves proposal episodes, carry-in and exposure; physiological qualification is unchanged.
+
+
+## CI compatibility checkpoint
+
+[Run 34908821255](https://github.com/autonomy-cloud/eeg/actions/runs/34908821255)
+passed for `3fe3c9b`: Python regressions, native tests, native profile loading in
+Python, and native CLI receipt comparison. Earlier revisions failed to compile
+an overloaded concatenation expression in `TrainingDataTests` on the runner's
+Swift compiler. The assertion now compares explicit vectors/rows and verifies
+lengths before element comparisons. No numerical tolerance was relaxed.
+This checkpoint does not qualify live hardware or physiological performance.
