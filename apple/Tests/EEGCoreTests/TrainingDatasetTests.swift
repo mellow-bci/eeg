@@ -50,6 +50,17 @@ final class TrainingDatasetTests: XCTestCase {
         XCTAssertEqual(object["system_control_enabled"] as? Bool, false)
         XCTAssertEqual(object["hardware_validated"] as? Bool, false)
         XCTAssertThrowsError(try EEGEvaluationArtifact.run(manifest: Data("{}".utf8), store: store, profile: artifact.profile))
+        if let exportPath = ProcessInfo.processInfo.environment["EEG_NATIVE_EVALUATION_TEST_EXPORT"] {
+            let export = URL(fileURLWithPath: exportPath, isDirectory: true)
+            try FileManager.default.createDirectory(at: export, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+            try manifestData.write(to: export.appendingPathComponent("manifest.json"), options: .withoutOverwriting)
+            try artifact.data.write(to: export.appendingPathComponent("profile.json"), options: .withoutOverwriting)
+            try receipt.data.write(to: export.appendingPathComponent("expected.json"), options: .withoutOverwriting)
+            for source in [a, b, c] {
+                try FileManager.default.copyItem(at: source, to: export.appendingPathComponent(source.lastPathComponent))
+            }
+        }
+
 
     }
     func testDuplicateRecordingCannotBecomeEvaluationSession() throws {

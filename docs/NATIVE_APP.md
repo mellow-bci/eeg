@@ -599,3 +599,35 @@ mutates a synthetic recording during the first analysis callback: append,
 same-length rewrite (with an explicitly changed mtime), and same-content atomic
 replacement. Each fails with `sourceChanged`. These are deterministic filesystem
 checks, not a radio-interruption or hardware-durability qualification.
+
+### Native evaluation command line (2026-09-15)
+
+`EEGEvaluate` is a macOS Swift package executable over the **same**
+`EEGEvaluationArtifact.run` entry point used by the app. It adds no preprocessing,
+classifier or metric implementation. It reads an existing recording directory,
+a validated profile and a bounded regular-file manifest, then writes the complete
+JSON receipt to stdout. No acquisition or vendor process is started. Argument
+errors exit 2; evaluation/I/O failures exit 1 and report on stderr. Evaluation
+failures emit no provisional JSON. As with any stream, a broken output pipe can
+interrupt writing; consumers must check exit status and parse the complete JSON.
+
+```sh
+umask 077
+swift run --package-path apple EEGEvaluate \
+  --manifest /absolute/path/manifest.json \
+  --profile /absolute/path/profile.json \
+  --recordings /absolute/path/Recordings > /absolute/path/evaluation.json
+```
+
+Use a new destination filename: shell redirection can overwrite an existing file.
+Add `--controls-only` only for a neutral-labeled control dataset; it does not waive
+label, source-integrity or leakage checks. `--help` documents the interface. The
+recording directory must already exist; invalid arguments do not create one.
+
+`python3 tools/check_native_evaluation_cli.py` generates temporary synthetic
+recordings through the native test, executes the CLI, and compares the receipt
+byte-for-byte with the canonical evaluator's output. It checks wrong flags,
+duplicate arguments, a mixed-task dataset in controls-only mode and a malformed
+manifest: each must fail with stderr diagnostics and no stdout receipt. Temporary
+fixtures are removed by the test script. CI runs this check; synthetic agreement
+is not physiological validation or completion of interactive app qualification.
