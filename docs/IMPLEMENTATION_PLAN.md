@@ -141,3 +141,20 @@ an overloaded concatenation expression in `TrainingDataTests` on the runner's
 Swift compiler. The assertion now compares explicit vectors/rows and verifies
 lengths before element comparisons. No numerical tolerance was relaxed.
 This checkpoint does not qualify live hardware or physiological performance.
+
+## Native recording abort semantics
+
+The acquisition model now aborts the existing recording on storage errors,
+including startup metadata, transport checkpoints and annotations. Abort closes
+without writing a completion summary; existing samples remain reviewable, but
+finalized-dataset analysis rejects the unfinished recording. Sample write errors
+and generic event serialization/write errors also close the writer internally.
+Normal user stop still finalizes a healthy recording. A new recording can start
+explicitly after an abort; the failed file is never resumed automatically.
+
+Regression coverage exercises explicit abort, retained sample replay, analysis
+rejection, restart into a distinct file and oversized-event failure. These tests
+are not disk-full, forced-kill or power-loss qualification. The completion-summary
+write/synchronize boundary still needs failure-injection qualification. Native
+trial cue/controller integration remains pending; this fixes its recording
+failure prerequisite without creating another acquisition path.

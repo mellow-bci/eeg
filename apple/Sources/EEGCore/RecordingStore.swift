@@ -72,8 +72,8 @@ public final class EEGRecordingStore {
         var data = try encoder.encode(SampleEvent(kind: "eeg_sample", sample: sample))
         guard data.count < Self.maximumLine else { throw EEGRecordingError.lineTooLarge }
         data.append(0x0a)
-        try handle.write(contentsOf: data)
-        count += 1
+        do { try handle.write(contentsOf: data); count += 1 }
+        catch { abortLocked(); throw error }
     }
 
     public func appendEvent(kind: String, fields: [String: String]) throws {
@@ -81,7 +81,7 @@ public final class EEGRecordingStore {
         guard !kind.isEmpty, kind != "summary", kind != "stream_start", kind != "eeg_sample", kind != "trial_evidence", fields["kind"] == nil else { throw EEGRecordingError.invalidData }
         var event: [String: Any] = fields
         event["kind"] = kind
-        try writeEvent(event)
+        do { try writeEvent(event) } catch { abortLocked(); throw error }
     }
 
     /// Persist each trial transition alongside original samples. Call from a file-I/O
@@ -148,6 +148,17 @@ public final class EEGRecordingStore {
         guard validation.summarized else { throw EEGRecordingError.invalidData }
         if let tail = assembler.finish() { try consume(tail) }
         return digest
+    }
+
+    /// Close without a completion summary after a failed or cancelled acquisition.
+    /// Existing bytes remain available for inspection; this is not a completed dataset.
+    public func abort() {
+        lock.lock(); defer { lock.unlock() }
+        abortLocked()
+    }
+    private func abortLocked() {
+        try? writer?.close()
+        writer = nil; recordingID = nil; trialEvidence = [:]
     }
 
     public func finish() throws {

@@ -15,6 +15,31 @@ final class RecordingStoreTests: XCTestCase {
                          electrodesMicrovolts: calibrated ? values.mapValues { $0 / 7.8 } : nil,
                          notificationSlot: 0, recordFlag: 0)
     }
+    func testAbortPreservesSamplesButPreventsCompletionAndAnalysis() throws {
+        let store = try EEGRecordingStore(directory: root)
+        let file = try store.start()
+        try store.append(sample: sample(0))
+        store.abort(); store.abort()
+        XCTAssertThrowsError(try store.finish())
+        XCTAssertThrowsError(try store.append(sample: sample(1)))
+        let info = try XCTUnwrap(store.inventory().first)
+        XCTAssertFalse(info.complete); XCTAssertFalse(info.corrupt)
+        XCTAssertEqual(try store.replay(recording: file).count, 1)
+        XCTAssertThrowsError(try store.analysisWindows(recording: file) { _ in })
+        let next = try store.start()
+        XCTAssertNotEqual(next, file)
+        try store.append(sample: sample(0)); try store.finish()
+        XCTAssertTrue(try XCTUnwrap(store.inventory().first { $0.name == next.lastPathComponent }).complete)
+    }
+    func testOversizedEventClosesRecordingWithoutSummary() throws {
+        let store = try EEGRecordingStore(directory: root)
+        let file = try store.start()
+        try store.append(sample: sample(0))
+        XCTAssertThrowsError(try store.appendEvent(kind: "annotation", fields: ["text": String(repeating: "x", count: 4 * 1024 * 1024)]))
+        XCTAssertThrowsError(try store.finish())
+        XCTAssertFalse(try XCTUnwrap(store.inventory().first).complete)
+        XCTAssertEqual(try store.replay(recording: file).count, 1)
+    }
     func testLifecycleReplayAndExport() throws {
         let store = try EEGRecordingStore(directory: root)
         XCTAssertThrowsError(try store.append(sample: sample(0)))

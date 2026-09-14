@@ -182,8 +182,8 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     private func storageFailed(_ error:Error) {
         event("Recording storage failed: "+error.localizedDescription)
-        stopRecording()
-        message="Recording stopped after a storage failure: "+error.localizedDescription
+        store?.abort();recording=false;refreshRecordings()
+        message="Recording aborted after a storage failure: "+error.localizedDescription
     }
     private func fail(_ error:Error) { message=error.localizedDescription;event(error.localizedDescription);disconnect() }
     func disconnect() { connectionTimer?.invalidate();scanTimer?.invalidate();central?.stopScan();scanning=false;configuring=false;setTransport(false,reason:"disconnect_requested");if recording { stopRecording() };if let p=peripheral { central?.cancelPeripheralConnection(p) };ready=false;transportStable=false }
@@ -194,11 +194,11 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
             try store.appendEvent(kind:"device_metadata",fields:metadata.mapValues{$0.map{String(format:"%02x",$0)}.joined()})
             try recordTransport(reason:"recording_start")
             event("Recording started: "+url.lastPathComponent)
-        } catch { message=error.localizedDescription;if recording { stopRecording() } }
+        } catch { storageFailed(error) }
     }
     func stopRecording() {
         guard recording else { return }
-        do { try store?.appendEvent(kind:"transport_checkpoint",fields:["stable":String(transportStable),"decode_errors":String(decodeErrors),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]) } catch { message=error.localizedDescription }
+        do { try store?.appendEvent(kind:"transport_checkpoint",fields:["stable":String(transportStable),"decode_errors":String(decodeErrors),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]) } catch { storageFailed(error);return }
         do { try store?.finish() } catch { message=error.localizedDescription }
         recording=false;refreshRecordings();event("Recording stopped")
     }
@@ -242,7 +242,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     func annotate(_ text:String) {
         guard recording,!text.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty else { return }
-        do { try store?.appendEvent(kind:"annotation",fields:["text":String(text.prefix(1000)),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]);event("Marker: "+text) } catch { message=error.localizedDescription;stopRecording() }
+        do { try store?.appendEvent(kind:"annotation",fields:["text":String(text.prefix(1000)),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]);event("Marker: "+text) } catch { storageFailed(error) }
     }
     /// Import work is isolated from main-thread interaction and Bluetooth callbacks.
     func importRawCapture(_ url:URL) {
