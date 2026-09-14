@@ -1,15 +1,14 @@
-# Native individual trial controls
+# Native planned trial controls
 
 Implemented in `TrialCueController.swift` and `TrialCaptureView.swift`, under
-Calibration. This is an individual research-trial tool, not a complete qualified
-session runner. It does not start capture, speech or an experiment automatically.
+Calibration. This is a planned research-trial tool, not a qualified session runner. It does not start capture, speech or an experiment automatically.
 
 ## Flow
 
 1. Connect and start a recording through the existing acquisition controls.
-2. Enter a participant pseudonym, independent session identity, condition and
-   starting number. Manual choice is suitable for checking the controls, not a
-   balanced prospective qualification study.
+2. Enter a participant pseudonym and independent session identity. Save the
+   session plan before the first trial. The seed, 24 conditions and starting
+   numbers are written as a `trial_plan` event in the same recording.
 3. Play the audio check. Its completion enables the heard-check declaration.
    Explicitly confirm current readiness and hearing the check before Start trial.
 4. Instruction start/completion callbacks commit evidence in the original recording.
@@ -42,15 +41,36 @@ No speech recognition, vendor runtime or online language model is used.
 
 ## Evidence and remaining work
 
-The 83 core tests pass and macOS/iOS/visionOS targets compile with these controls.
+The initial cue-control checkpoint passed 83 core tests and compiled all three
+native targets.
 Those tests validate the underlying evidence/session transitions, not the new
 AVSpeech UI driver. Interactive inspection was unavailable because the Mac was
 locked. No audio or physiological experiment was run for this change.
 
 Remaining before a qualification acquisition: inspect the rendered controls;
 verify speaker route, start/finish/cancel/timeout behavior on hardware; test stop
-and disconnection during each phase; persist a balanced precommitted session
-plan/seed and enforce rest/break intervals; generate an evidence-linked dataset
-manifest; replay its trials through canonical extraction. Manual trial choice
-must not stand in for that session protocol. Move blocking recording I/O off the
+and disconnection during each phase; qualify plan persistence and rest/break behavior interactively; generate an evidence-linked dataset
+manifest; replay its trials through canonical extraction. The session plan must remain independent of observed EEG. Move blocking recording I/O off the
 main queue and measure timing under load before relying on cue precision.
+
+## Balanced plan implementation
+
+`EEGTrialPlan` uses a versioned SplitMix64 PRNG, unbiased bounded draws and
+Fisher–Yates shuffling. It rejects orders with more than three consecutive trials
+of one condition. Each order has 12 neutral and 12 silent-subtraction trials;
+starting numbers range from 100 through 999. The complete plan and decimal seed
+are retained; this is reproducibility metadata, not cryptographic randomness.
+The implementation fails explicitly after 10,000 unsuccessful proposals.
+
+The app saves one plan per recording and validates every trial against the next
+planned slot. Interrupted trials consume their slot and remain excluded; they are
+not silently replaced. A new recording requires a new plan. The next trial cannot
+start before the preceding trial is reviewed or interrupted, then at least ten
+seconds have elapsed. Every eighth trial requires sixty seconds. Counting from
+review rather than the earlier participant report is a conservative independent
+choice. Each subsequent start still requires an audio check and current readiness.
+The UI does not restart a plan after a process crash or resume a completed file.
+
+Software tests cover multiple seeds including zero and UInt64.max, balance,
+three-trial run limits, unique trial IDs, terminal-state checks, rest boundaries
+and exhaustion. This does not validate acoustic timing or participant compliance.

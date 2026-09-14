@@ -6,20 +6,24 @@ struct TrialCaptureView: View {
     @ObservedObject var cues: TrialCueController
     @State private var participant = ""
     @State private var session = ""
-    @State private var number = 431
-    @State private var task = false
     @State private var ready = false
     @State private var heard = false
     @State private var reviewer = ""
     @State private var reason = ""
     @State private var error: String?
     var body: some View {
-        Panel(title: "Individual research trial") {
-            Text("Record a cued task and review the participant report. This is a single-trial control; balanced session scheduling and dataset export are not yet available here. Do not use hand-picked trials as a qualification study.").foregroundStyle(.secondary)
-            TextField("Participant pseudonym", text: $participant)
-            TextField("Independent session ID", text: $session)
-            Toggle("Silent subtraction (off = neutral)", isOn: $task)
-            Stepper("Starting number: \(number)", value: $number, in: 100...999)
+        Panel(title: "Planned research session") {
+            Text("Save a balanced 24-trial order before the first cue. Each trial requires fresh readiness, a report and review. Dataset export and physiological qualification remain pending.").foregroundStyle(.secondary)
+            TextField("Participant pseudonym", text: $participant).disabled(model.trialPlan != nil)
+            TextField("Independent session ID", text: $session).disabled(model.trialPlan != nil)
+            Button("Save session plan") {
+                do { try model.commitTrialPlan(participantID: participant,sessionID: session);error=nil }
+                catch { self.error=error.localizedDescription }
+            }.disabled(!model.recording || model.trialPlan != nil)
+            if let plan=model.trialPlan {
+                Text("Seed: " + plan.seed).font(.caption.monospaced()).textSelection(.enabled)
+                Text("Trials started: \(model.trialsStarted) / 24. At least 10 seconds rest after review; 60 seconds after each block of eight.")
+            }
             Button("Play audio check") { ready=false;heard=false;cues.audioCheck() }.disabled(cues.busy)
             Toggle("I heard the completed audio check", isOn: $heard).disabled(!cues.checkCompleted)
             Toggle("Participant is ready now and understands how to stop", isOn: $ready)
@@ -27,11 +31,10 @@ struct TrialCaptureView: View {
             HStack {
                 Button("Start trial") {
                     do {
-                        let planned = try EEGTrialEvidence(id: UUID().uuidString, sessionID: session, participantID: participant,
-                            condition: task ? .silentSerialSubtraction : .neutral, startingNumber: number)
+                        let planned = try model.nextPlannedTrial()
                         cues.start(planned, ready: ready, heard: heard);ready=false;heard=false
                     } catch { self.error=error.localizedDescription }
-                }.disabled(!ready || !heard || !cues.checkCompleted || cues.busy || !model.recording || !model.transportStable || participant.trimmingCharacters(in: .whitespaces).isEmpty || session.trimmingCharacters(in: .whitespaces).isEmpty || active)
+                }.disabled(!ready || !heard || !cues.checkCompleted || cues.busy || !model.recording || !model.transportStable || participant.trimmingCharacters(in: .whitespaces).isEmpty || session.trimmingCharacters(in: .whitespaces).isEmpty || active || model.trialPlan == nil || model.trialsStarted >= 24)
                 Button("Stop trial", role: .destructive) { cues.stop() }.disabled(!active && !cues.busy)
             }
             Text("Requires an active recording with stable transport. Keep eyes open. Reports and reviews must occur after the end cue; they are not objective evidence of a mental state.").font(.caption).foregroundStyle(.secondary)

@@ -8,6 +8,8 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     @Published var phase = "Disconnected"
     @Published var message: String?
     @Published var samples: [EEGSample] = []
+    @Published private(set) var trialPlan: EEGTrialPlan?
+    @Published private(set) var trialsStarted = 0
     lazy var trialCues = TrialCueController(acquisition: self)
     @Published private(set) var trial: EEGTrialEvidence?
     private var trialSession: EEGTrialSession?
@@ -196,7 +198,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         guard ready,!recording,!playback,fileOperation==nil,let store=store else { return }
         do {
             let url=try store.start();recording=true
-            trial=nil;trialSession=EEGTrialSession { try store.appendTrialEvidence($0) }
+            trial=nil;trialPlan=nil;trialsStarted=0;trialSession=EEGTrialSession { try store.appendTrialEvidence($0) }
             try store.appendEvent(kind:"device_metadata",fields:metadata.mapValues{$0.map{String(format:"%02x",$0)}.joined()})
             try recordTransport(reason:"recording_start")
             event("Recording started: "+url.lastPathComponent)
@@ -212,9 +214,29 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     /// Uses exactly the receipt clock used by the decoder, not wall-clock time.
     var recordingClock: Double { ProcessInfo.processInfo.systemUptime-origin }
+    func commitTrialPlan(participantID: String, sessionID: String) throws {
+        guard recording,trialPlan == nil,trial == nil,let store else { throw EEGTrialEvidence.Failure.invalidTransition }
+        let plan = try EEGTrialPlan(sessionID: sessionID,participantID: participantID,seed: UInt64.random(in: .min ... .max))
+        let json = String(decoding: try JSONEncoder().encode(plan),as: UTF8.self)
+        do {
+            try store.appendEvent(kind: "trial_plan",fields: ["json":json,"receivedAt":String(recordingClock)])
+            trialPlan=plan
+        } catch { storageFailed(error);throw error }
+    }
+    func nextPlannedTrial() throws -> EEGTrialEvidence {
+        guard let trialPlan else { throw EEGTrialEvidence.Failure.invalidTransition }
+        do { return try trialPlan.next(after:trial,started:trialsStarted,at:recordingClock) }
+        catch EEGTrialEvidence.Failure.readinessMissing {
+            throw NSError(domain: "EEGTrialPlan",code:1,userInfo:[NSLocalizedDescriptionKey:"Rest before the next trial: at least 10 seconds after review or interruption, or 60 seconds after each block of eight."])
+        }
+    }
     func beginTrial(_ planned: EEGTrialEvidence) throws {
         guard recording,ready,transportStable,!playback,let trialSession else { throw EEGTrialEvidence.Failure.readinessMissing }
-        do { try trialSession.begin(planned);trial=trialSession.trial }
+        let expected = try nextPlannedTrial()
+        guard planned.id == expected.id,planned.sessionID == expected.sessionID,
+              planned.participantID == expected.participantID,planned.requestedCondition == expected.requestedCondition,
+              planned.startingNumber == expected.startingNumber else { throw EEGTrialEvidence.Failure.invalidTransition }
+        do { try trialSession.begin(planned);trial=trialSession.trial;trialsStarted+=1 }
         catch { if trialSession.persistenceFailure != nil { storageFailed(error) };throw error }
     }
     func transitionTrial(_ change: (inout EEGTrialEvidence, Double) throws -> Void) throws {
