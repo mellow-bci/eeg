@@ -454,3 +454,25 @@ eligible onset, absent cues and conflicting metadata; fixture trial coverage agr
 with the Python evaluator. These measurements do not establish physiological onset,
 user compliance or end-to-end live latency. Uncertainty and prospective qualification
 remain outstanding.
+
+### Native episode-rate uncertainty
+
+Condition exposure now includes the one-sided 95% Poisson upper rate used by the
+Python evaluator: `chi2.ppf(.95, 2*(onsets+1))/2 * 3600/eligible_seconds`. Zero onsets
+therefore retain a positive upper bound. No eligible exposure or carry-in candidates
+produce an unavailable result. This is a constant independent-event-rate model,
+not participant-level uncertainty or proof of physiological reliability.
+
+`EEGPoissonBound` inverts the Poisson lower-tail probability of .05 using a descending
+term recurrence and bisection. It uses a Stirling correction above small counts to
+avoid cancellation of large log-factorials. Invalid inputs, unrepresentable integer
+counts or numerical nonconvergence return unavailable; no approximate success is
+substituted. The recurrence is bounded at 100,000 terms and bisection at 100 iterations.
+These are numerical convergence guards, not dataset or subscription limits.
+
+Tests compare counts from zero through one million with SciPy's chi-square oracle,
+including the small-count/Stirling boundary, with relative tolerance 1e-10. Existing
+condition fixtures also match Python's upper rates. See the [SciPy Poisson definition](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.poisson.html).
+Clustered/temporally dependent activations can violate the model; prospective ordinary
+activity and artifact-control trials remain required. This bound does not qualify
+system control or mental-command accuracy.

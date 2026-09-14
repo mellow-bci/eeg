@@ -7,7 +7,13 @@ public struct EEGConditionExposure: Sendable {
     public internal(set) var candidateWindows = 0
     public internal(set) var episodeOnsets = 0
     public internal(set) var carryInCandidates = 0
-    /// Empirical rate only. No physiological validation or uncertainty bound implied.
+    public var poissonUpper95PerHour: Double? {
+        guard eligibleSeconds.isFinite, eligibleSeconds > 0, carryInCandidates == 0,
+              let countBound = EEGPoissonBound.upper95(count: episodeOnsets) else { return nil }
+        let rate = countBound * 3600 / eligibleSeconds
+        return rate.isFinite ? rate : nil
+    }
+    /// Empirical rate only; no physiological validation implied.
     public var episodeOnsetsPerHour: Double? {
         eligibleSeconds > 0 && carryInCandidates == 0 ? Double(episodeOnsets) * 3600 / eligibleSeconds : nil
     }

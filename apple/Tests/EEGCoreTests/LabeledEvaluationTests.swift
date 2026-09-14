@@ -47,6 +47,9 @@ final class LabeledEvaluationTests: XCTestCase {
             XCTAssertEqual(metrics.episodeOnsets, oracle["episode_onsets"] as! Int)
             XCTAssertEqual(metrics.carryInCandidates, oracle["carry_in_candidates"] as! Int)
             XCTAssertEqual(metrics.episodeOnsetsPerHour, oracle["episode_onsets_per_hour"] as? Double)
+            if let bound = oracle["one_sided_95_percent_poisson_upper_per_hour"] as? Double {
+                XCTAssertEqual(try XCTUnwrap(metrics.poissonUpper95PerHour), bound, accuracy: max(1e-9, bound * 1e-10))
+            } else { XCTAssertNil(metrics.poissonUpper95PerHour) }
         }
         let trials = (expected["shadow_measurements"] as! [String: Any])["trials"] as! [[String: Any]]
         for (trial, oracle) in zip(result.trials, trials) {
