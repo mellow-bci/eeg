@@ -1,0 +1,129 @@
+(lldb) target create "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService" --arch arm64
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -s 0x101203004 -e 0x1012031f8
+CortexService`Cortex::StreamFileStore::generateKey:
+CortexService[0x101203004] <+0>:   sub    sp, sp, #0x50
+CortexService[0x101203008] <+4>:   stp    x22, x21, [sp, #0x20]
+CortexService[0x10120300c] <+8>:   stp    x20, x19, [sp, #0x30]
+CortexService[0x101203010] <+12>:  stp    x29, x30, [sp, #0x40]
+CortexService[0x101203014] <+16>:  add    x29, sp, #0x40
+CortexService[0x101203018] <+20>:  mov    x20, x2
+CortexService[0x10120301c] <+24>:  mov    x21, x1
+CortexService[0x101203020] <+28>:  mov    x22, x0
+CortexService[0x101203024] <+32>:  mov    x19, x8
+CortexService[0x101203028] <+36>:  add    x0, sp, #0x18
+CortexService[0x10120302c] <+40>:  mov    w1, #0x4                  ; =4 
+CortexService[0x101203030] <+44>:  bl     0x1024b4e34               ; symbol stub for: QCryptographicHash::QCryptographicHash(QCryptographicHash::Algorithm)
+CortexService[0x101203034] <+48>:  ldp    x0, x1, [x22, #0x8]
+CortexService[0x101203038] <+52>:  mov    x8, sp
+CortexService[0x10120303c] <+56>:  bl     0x1024b5794               ; symbol stub for: QString::toLocal8Bit_helper(QChar const*, long long)
+CortexService[0x101203040] <+60>:  ldr    x1, [sp, #0x10]
+CortexService[0x101203044] <+64>:  tbnz   x1, #0x3f, 0x101203190    ; <+396>
+CortexService[0x101203048] <+68>:  ldr    x2, [sp, #0x8]
+CortexService[0x10120304c] <+72>:  cbnz   x2, 0x101203054           ; <+80>
+CortexService[0x101203050] <+76>:  cbnz   x1, 0x101203194           ; <+400>
+CortexService[0x101203054] <+80>:  add    x0, sp, #0x18
+CortexService[0x101203058] <+84>:  bl     0x1024b4e28               ; symbol stub for: QCryptographicHash::addData(QByteArrayView)
+CortexService[0x10120305c] <+88>:  ldr    x8, [sp]
+CortexService[0x101203060] <+92>:  cbz    x8, 0x101203088           ; <+132>
+CortexService[0x101203064] <+96>:  mov    w9, #-0x1                 ; =-1 
+CortexService[0x101203068] <+100>: ldaddal w9, w8, [x8]
+CortexService[0x10120306c] <+104>: cmp    w8, #0x1
+CortexService[0x101203070] <+108>: b.ne   0x101203088               ; <+132>
+CortexService[0x101203074] <+112>: ldr    x0, [sp]
+CortexService[0x101203078] <+116>: cbz    x0, 0x1012031a8           ; <+420>
+CortexService[0x10120307c] <+120>: ldr    w8, [x0]
+CortexService[0x101203080] <+124>: cbnz   w8, 0x1012031ac           ; <+424>
+CortexService[0x101203084] <+128>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101203088] <+132>: ldp    x0, x1, [x21, #0x8]
+CortexService[0x10120308c] <+136>: mov    x8, sp
+CortexService[0x101203090] <+140>: bl     0x1024b5794               ; symbol stub for: QString::toLocal8Bit_helper(QChar const*, long long)
+CortexService[0x101203094] <+144>: ldr    x1, [sp, #0x10]
+CortexService[0x101203098] <+148>: tbnz   x1, #0x3f, 0x101203198    ; <+404>
+CortexService[0x10120309c] <+152>: ldr    x2, [sp, #0x8]
+CortexService[0x1012030a0] <+156>: cbnz   x2, 0x1012030a8           ; <+164>
+CortexService[0x1012030a4] <+160>: cbnz   x1, 0x10120319c           ; <+408>
+CortexService[0x1012030a8] <+164>: add    x0, sp, #0x18
+CortexService[0x1012030ac] <+168>: bl     0x1024b4e28               ; symbol stub for: QCryptographicHash::addData(QByteArrayView)
+CortexService[0x1012030b0] <+172>: ldr    x8, [sp]
+CortexService[0x1012030b4] <+176>: cbz    x8, 0x1012030dc           ; <+216>
+CortexService[0x1012030b8] <+180>: mov    w9, #-0x1                 ; =-1 
+CortexService[0x1012030bc] <+184>: ldaddal w9, w8, [x8]
+CortexService[0x1012030c0] <+188>: cmp    w8, #0x1
+CortexService[0x1012030c4] <+192>: b.ne   0x1012030dc               ; <+216>
+CortexService[0x1012030c8] <+196>: ldr    x0, [sp]
+CortexService[0x1012030cc] <+200>: cbz    x0, 0x1012031b0           ; <+428>
+CortexService[0x1012030d0] <+204>: ldr    w8, [x0]
+CortexService[0x1012030d4] <+208>: cbnz   w8, 0x1012031b4           ; <+432>
+CortexService[0x1012030d8] <+212>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x1012030dc] <+216>: ldp    x0, x1, [x20, #0x8]
+CortexService[0x1012030e0] <+220>: mov    x8, sp
+CortexService[0x1012030e4] <+224>: bl     0x1024b5794               ; symbol stub for: QString::toLocal8Bit_helper(QChar const*, long long)
+CortexService[0x1012030e8] <+228>: ldr    x1, [sp, #0x10]
+CortexService[0x1012030ec] <+232>: tbnz   x1, #0x3f, 0x1012031a0    ; <+412>
+CortexService[0x1012030f0] <+236>: ldr    x2, [sp, #0x8]
+CortexService[0x1012030f4] <+240>: cbnz   x2, 0x1012030fc           ; <+248>
+CortexService[0x1012030f8] <+244>: cbnz   x1, 0x1012031a4           ; <+416>
+CortexService[0x1012030fc] <+248>: add    x0, sp, #0x18
+CortexService[0x101203100] <+252>: bl     0x1024b4e28               ; symbol stub for: QCryptographicHash::addData(QByteArrayView)
+CortexService[0x101203104] <+256>: ldr    x8, [sp]
+CortexService[0x101203108] <+260>: cbz    x8, 0x101203130           ; <+300>
+CortexService[0x10120310c] <+264>: mov    w9, #-0x1                 ; =-1 
+CortexService[0x101203110] <+268>: ldaddal w9, w8, [x8]
+CortexService[0x101203114] <+272>: cmp    w8, #0x1
+CortexService[0x101203118] <+276>: b.ne   0x101203130               ; <+300>
+CortexService[0x10120311c] <+280>: ldr    x0, [sp]
+CortexService[0x101203120] <+284>: cbz    x0, 0x1012031b8           ; <+436>
+CortexService[0x101203124] <+288>: ldr    w8, [x0]
+CortexService[0x101203128] <+292>: cbnz   w8, 0x1012031bc           ; <+440>
+CortexService[0x10120312c] <+296>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101203130] <+300>: mov    x8, sp
+CortexService[0x101203134] <+304>: add    x0, sp, #0x18
+CortexService[0x101203138] <+308>: bl     0x1024b6448               ; symbol stub for: QCryptographicHash::result() const
+CortexService[0x10120313c] <+312>: mov    x0, sp
+CortexService[0x101203140] <+316>: mov    x8, x19
+CortexService[0x101203144] <+320>: bl     0x1024b5f44               ; symbol stub for: QByteArray::toStdString() const
+CortexService[0x101203148] <+324>: ldr    x8, [sp]
+CortexService[0x10120314c] <+328>: cbz    x8, 0x101203174           ; <+368>
+CortexService[0x101203150] <+332>: mov    w9, #-0x1                 ; =-1 
+CortexService[0x101203154] <+336>: ldaddal w9, w8, [x8]
+CortexService[0x101203158] <+340>: cmp    w8, #0x1
+CortexService[0x10120315c] <+344>: b.ne   0x101203174               ; <+368>
+CortexService[0x101203160] <+348>: ldr    x0, [sp]
+CortexService[0x101203164] <+352>: cbz    x0, 0x1012031c0           ; <+444>
+CortexService[0x101203168] <+356>: ldr    w8, [x0]
+CortexService[0x10120316c] <+360>: cbnz   w8, 0x1012031c4           ; <+448>
+CortexService[0x101203170] <+364>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101203174] <+368>: add    x0, sp, #0x18
+CortexService[0x101203178] <+372>: bl     0x1024b4e40               ; symbol stub for: QCryptographicHash::~QCryptographicHash()
+CortexService[0x10120317c] <+376>: ldp    x29, x30, [sp, #0x40]
+CortexService[0x101203180] <+380>: ldp    x20, x19, [sp, #0x30]
+CortexService[0x101203184] <+384>: ldp    x22, x21, [sp, #0x20]
+CortexService[0x101203188] <+388>: add    sp, sp, #0x50
+CortexService[0x10120318c] <+392>: ret    
+CortexService[0x101203190] <+396>: bl     0x1022f6bb4               ; ___lldb_unnamed_symbol_1022f6bb4
+CortexService[0x101203194] <+400>: bl     0x1022f6b98               ; ___lldb_unnamed_symbol_1022f6b98
+CortexService[0x101203198] <+404>: bl     0x1022f6bb4               ; ___lldb_unnamed_symbol_1022f6bb4
+CortexService[0x10120319c] <+408>: bl     0x1022f6b98               ; ___lldb_unnamed_symbol_1022f6b98
+CortexService[0x1012031a0] <+412>: bl     0x1022f6bb4               ; ___lldb_unnamed_symbol_1022f6bb4
+CortexService[0x1012031a4] <+416>: bl     0x1022f6b98               ; ___lldb_unnamed_symbol_1022f6b98
+CortexService[0x1012031a8] <+420>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x1012031ac] <+424>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x1012031b0] <+428>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x1012031b4] <+432>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x1012031b8] <+436>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x1012031bc] <+440>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x1012031c0] <+444>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x1012031c4] <+448>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x1012031c8] <+452>: mov    x19, x0
+CortexService[0x1012031cc] <+456>: mov    x0, sp
+CortexService[0x1012031d0] <+460>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x1012031d4] <+464>: b      0x1012031e8               ; <+484>
+CortexService[0x1012031d8] <+468>: b      0x1012031e4               ; <+480>
+CortexService[0x1012031dc] <+472>: b      0x1012031e4               ; <+480>
+CortexService[0x1012031e0] <+476>: b      0x1012031e4               ; <+480>
+CortexService[0x1012031e4] <+480>: mov    x19, x0
+CortexService[0x1012031e8] <+484>: add    x0, sp, #0x18
+CortexService[0x1012031ec] <+488>: bl     0x1024b4e40               ; symbol stub for: QCryptographicHash::~QCryptographicHash()
+CortexService[0x1012031f0] <+492>: mov    x0, x19
+CortexService[0x1012031f4] <+496>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
