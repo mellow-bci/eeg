@@ -259,3 +259,35 @@ checks the complete 512-sample synthetic recording; timestamp/serialization chan
 leave its content identity unchanged. A profile carrying that canonical digest is
 rejected under a different session name. This is a correctness fix, not new evidence
 of mental-command accuracy.
+
+### Native training preparation
+
+`EEGTrainingData.prepare` accepts explicitly usable, accepted and label-verified
+70-feature records for one participant. It requires unique window identities,
+one canonical recording fingerprint per session, distinct content across at least
+two sessions, neutral plus a task class, and at least 20 windows spanning two
+sessions for each class. The optional processing-settings training budget is
+honored with an error rather than truncation. These are eligibility rules, not
+evidence that labels are true or sessions physiologically independent.
+
+It fits population mean/standard deviation on supplied training data only, replaces
+standard deviations below 1e-8 with one, ranks features by equal-class between/within
+variance ratio with a 1e-6 denominator regularizer, uses original feature order to
+break ties, and prepares centered selected columns for PCA. This implements the
+existing independent Python recipe; no parameters are claimed to come from Cortex.
+Nonfinite intermediate results are rejected. Original records remain immutable.
+
+Reproduce the manufactured Python oracle with:
+
+```sh
+/tmp/chorus-epoc-ble-env/bin/python tools/generate_native_training_fixture.py
+swift test --package-path apple
+```
+
+The environment path is the local validation environment; the generator needs Python,
+NumPy and the repository's test fixture module. The committed fixture contains 80
+synthetic records and expected normalization/selection/PCA input values. Native values
+match within 1e-10 in the current test run. It contains no physiological data. This
+core API does not yet perform SVD, fit Gaussians, save a profile, or expose native
+training controls. Recording-based label collection must establish input provenance;
+decoding a feature JSON alone does not do so.
