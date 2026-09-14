@@ -18,9 +18,18 @@ final class TrainingDataTests: XCTestCase {
         let result = try EEGTrainingData.prepare(fixture.records, participantID: "participant")
         XCTAssertEqual(result.classes, fixture.expected.classes)
         XCTAssertEqual(result.selected, fixture.expected.selected)
-        for (actual, expected) in zip(result.center + result.scale + result.pcaMean + result.centeredSelected.flatMap { $0 },
-                                      fixture.expected.center + fixture.expected.scale + fixture.expected.pca_mean + fixture.centered_selected.flatMap { $0 }) {
-            XCTAssertEqual(actual, expected, accuracy: 1e-10)
+        func compare(_ actual: [Double], _ expected: [Double], file: StaticString = #filePath, line: UInt = #line) {
+            XCTAssertEqual(actual.count, expected.count, file: file, line: line)
+            for (value, reference) in zip(actual, expected) {
+                XCTAssertEqual(value, reference, accuracy: 1e-10, file: file, line: line)
+            }
+        }
+        compare(result.center, fixture.expected.center)
+        compare(result.scale, fixture.expected.scale)
+        compare(result.pcaMean, fixture.expected.pca_mean)
+        XCTAssertEqual(result.centeredSelected.count, fixture.centered_selected.count)
+        for (actual, expected) in zip(result.centeredSelected, fixture.centered_selected) {
+            compare(actual, expected)
         }
         XCTAssertEqual(result.centeredSelected.count, 80)
         XCTAssertEqual(result.recordingHashes.count, 2)

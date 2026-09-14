@@ -300,7 +300,7 @@
       "id": "capability-09",
       "capability": "Mental command training, PCA and Gaussian classification \u00b7 Calibrate",
       "status": "tested",
-      "status_scope": "Independent offline mental-command processing software with synthetic/state tests; no validated participant model or native trained inference",
+      "status_scope": "Independent Python and native Swift training/inference/evaluation with synthetic and reference-vector tests; no physiologically validated participant model or actionable output",
       "symbol_evidence": {
         "readable_names_and_links": "[GaussianTraining::buildSignatureFromPCA](../archive/current-state/local-app-analysis/all-symbols.txt#L6958), [runPCA](../archive/current-state/local-app-analysis/all-symbols.txt#L6965), [GaussianData::setCovariance](../archive/current-state/local-app-analysis/all-symbols.txt#L6898), [CognitivDetectionManager::crossValidate](../archive/current-state/local-app-analysis/all-symbols.txt#L6986)",
         "references": [
@@ -323,13 +323,25 @@
         ]
       },
       "body_evidence": "Selected bounded body evidence now exists: docs/MENTAL_REFERENCE_TRACE.md and evidence/mental-command-reference/manifest.json establish named feature-selection/PCA/canonical/Gaussian-density/posterior call sites and neutral-training state. Complete raw-to-feature path, numeric settings and vendor-trained state remain unresolved.",
-      "missing_parameters_assets_dependencies": "Independently acquired verified mental-task/neutral sessions, prospective artifact controls and ordinary-activity false-activation exposure, held-out physiological performance, native inference/workspace integration. Vendor weights/settings are not required or imported; our experimental parameters are explicit.",
-      "current_implementation": "processing/contract.py + windows.py + workflow.py adapt native/Python recordings into shared valid windows. mental.py implements train-only scaling/feature ranking, PCA, diagonal Gaussian classes including neutral, score/distance rejection, persistence, validated versioned profiles and read-only proposals. workflow.py provides extract/train/evaluate/replay; synthetic tests cover numerical/state/profile/provenance invariants. Older calibration LDA/eyes/blinks is separate research, not this implementation or proof of mental intent. Inference now rejects numerical overflow and absent recording identities; profile validation rejects malformed training-window IDs and record digests. Native feature extraction exists; native trained profile inference remains pending.",
+      "missing_parameters_assets_dependencies": "Prospective independently acquired task/neutral sessions, behavioral/artifact controls, ordinary-activity exposure, cross-session performance and native cue/label workflow qualification. External native file picker remains unresolved. Vendor weights/settings are neither required nor imported.",
+      "current_implementation": "Python processing/mental.py and the native EEGCore implement train-only scaling/feature ranking, PCA, diagonal Gaussian classification including neutral, score/distance rejection and persistence. Native profile creation and integrity-checked local storage, finalized-recording dataset loading, held-out labeled evaluation, exposure/cue metrics and provenance receipts now exist. EEGEvaluate uses the same native receipt/evaluation entry point as the app. Output remains experimental and system control disabled. This is an independent design, not a recovered vendor algorithm.",
       "target_component": "One mental-processing service and versioned profile contract, consumed by the native Calibration workspace. Offline Python processing.workflow is the first research implementation, not a second user-facing application.",
       "acceptance_gate": "Synthetic numerical/state/profile tests plus real prospective whole-session evaluation with independently verified task labels, no content reuse, artifact controls, neutral exposure and uncertainty. Native port must match fixed reference vectors before physical integration; outputs stay disabled.",
-      "delivery_notes": "Highest-priority independent mental-command workflow; software implemented and tested in scoped components, physiological/native/output validation pending.",
+      "delivery_notes": "Saved-profile inspection and controls-only scope were exercised in the native app using a temporary synthetic fixture. Full native cue/training/evaluation UI and prospective physiology remain unqualified. Recent CI compiler failure is being repaired; local passing tests alone do not prove CI compatibility.",
       "vendor_equivalence_claimed": false,
-      "native_hardware_validated": false
+      "native_hardware_validated": false,
+      "software_evidence": [
+        "apple/Sources/EEGCore/MentalTraining.swift",
+        "apple/Sources/EEGCore/ExperimentalDetector.swift",
+        "apple/Sources/EEGCore/ProfileStore.swift",
+        "apple/Sources/EEGCore/TrainingDataset.swift",
+        "apple/Sources/EEGCore/LabeledEvaluation.swift",
+        "apple/Sources/EEGCore/EvaluationArtifact.swift",
+        "apple/Tests/EEGCoreTests/TrainingDataTests.swift",
+        "apple/Tests/EEGCoreTests/LabeledEvaluationTests.swift",
+        "tools/check_native_evaluation_cli.py",
+        "docs/NATIVE_APP.md"
+      ]
     },
     {
       "id": "capability-10",
@@ -464,7 +476,7 @@
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
       "missing_parameters_assets_dependencies": "Native durability/failure-status qualification, indexed library and prolonged recording tests.",
-      "current_implementation": "Native append-only JSONL with raw/sample/event records; Python archive and `RecordingLibrary`; cue markers and reference Parquet recovery.",
+      "current_implementation": "Native append-only JSONL raw/sample/event records, completion/schema validation, library review, bounded replay/CSV export and analysis. Shared reads detect size/timestamp or named-inode changes and reject provisional results. Python archive and RecordingLibrary also exist; cue markers and reference Parquet recovery remain research evidence.",
       "target_component": "One recording service owns acquisition, metadata, markers, library index and completion/failure state.",
       "acceptance_gate": "Disk failure/crash recovery, exclusive private writes, schema/count validation, corruption reporting and complete export round trips.",
       "delivery_notes": "Core implemented; long-session durability/indexing qualification pending.",
