@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 import EEGCore
 
 struct DatasetTrainingView: View {
+    let onSaved: (EEGMentalProfile) -> Void
     @EnvironmentObject private var model: AcquisitionModel
     @State private var importing = false
     @State private var running = false
@@ -57,21 +58,21 @@ struct DatasetTrainingView: View {
         running = true; result = nil; failure = nil
         Task { @MainActor in
             let trained = await Task.detached(priority: .utility) {
-                Result { () throws -> String in
+                Result { () throws -> (EEGMentalProfile, String) in
                     let root = directory.deletingLastPathComponent()
                     let settings = try ProcessingSettingsStore(directory: root).load()
                     let dataset = try EEGTrainingDataset.load(data, store: EEGRecordingStore(directory: directory), settings: settings)
                     let artifact = try EEGProfileCreation.train(dataset.records, participantID: dataset.participantID, settings: settings)
                     let profiles = root.appendingPathComponent("Profiles", isDirectory: true)
-                    try FileManager.default.createDirectory(at: profiles, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+                    let store = EEGProfileStore(directory: profiles)
                     let path = profiles.appendingPathComponent(artifact.profile.id + ".json")
-                    try EEGProfileCreation.save(artifact, to: path)
-                    return "Saved experimental profile from \(dataset.records.count) usable training windows. Rejected labeled windows: \(dataset.sessions.reduce(0) { $0 + $1.rejectedWindows }).\n\(path.path)\nOpen this profile below to run an offline check."
+                    let saved = try store.save(artifact)
+                    return (saved, "Saved experimental profile from \(dataset.records.count) usable training windows. Rejected labeled windows: \(dataset.sessions.reduce(0) { $0 + $1.rejectedWindows }).\n\(path.path)\nProfile opened below for a separate evaluation.")
                 }
             }.value
             running = false
             switch trained {
-            case .success(let text): result = text
+            case .success(let saved): result = saved.1; onSaved(saved.0)
             case .failure(let error): failure = "Training rejected: \(error)"
             }
         }

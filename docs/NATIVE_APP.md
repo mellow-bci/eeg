@@ -509,3 +509,29 @@ regression check remain necessary. No profile was loaded in this UI run and no
 training/evaluation success is claimed from it. Core tests and prior Python
 interop checks do not replace this missing UI qualification. No headset recording,
 Cast changes, or vendor-runtime dependency was introduced.
+
+### Saved profile library and training handoff (2026-09-15)
+
+Calibration now owns the selected profile. After native training, `EEGProfileStore`
+saves through the existing exclusive private writer, reopens the persisted bytes,
+checks their v2 integrity and filename identity, then hands that profile directly
+to inspection/evaluation. Save or read-back failure produces an error instead of
+handing an in-memory fit to the evaluation UI. Existing files are not replaced.
+
+The local `EEG/Profiles` library lists metadata, with explicit Refresh and Inspect
+controls. Inspect uses the same bounded reader as external profile import:
+regular files only, final-component symlinks rejected, maximum 8 MiB, followed by
+canonical profile validation. Library filenames must match the 64-character
+lowercase hexadecimal profile ID. A malformed library entry currently causes a
+visible library error; listing itself does not certify contents. The existing
+parent-directory trust and power-loss durability limitations still apply.
+
+Verification: 71 Swift tests passed, including save/read-back, refusal to replace,
+corruption, filename mismatch, traversal identifiers, symlink, directory and size
+checks. macOS, iOS Simulator and visionOS Simulator builds passed. In the running
+macOS app, a temporary copy of the synthetic scoring profile was listed, inspected,
+and displayed as experimental with command output disabled. The controls-only
+evaluation toggle changed its scope description correctly. The temporary fixture
+was removed afterward. No EEG acquisition or physiological experiment occurred.
+The full train-from-manifest UI sequence and external file-picker problem remain
+unqualified; the saved-library check is not proof that those paths work.

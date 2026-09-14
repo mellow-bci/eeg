@@ -5,10 +5,11 @@ import EEGCore
 struct ProfileInspectionView: View {
     @State private var importing = false
     @State private var loading = false
-    @State private var profile: EEGMentalProfile?
+    @Binding var profile: EEGMentalProfile?
     @State private var failure: String?
     var body: some View {
         Panel(title: "Independent training profile") {
+            ProfileLibraryView { profile = $0; failure = nil }
             HStack {
                 Button("Open profile", systemImage: "doc.badge.plus") { importing = true }.disabled(loading)
                 if loading { ProgressView().controlSize(.small) }
@@ -41,10 +42,7 @@ struct ProfileInspectionView: View {
                         Result { () throws -> EEGMentalProfile in
                             let access = url.startAccessingSecurityScopedResource()
                             defer { if access { url.stopAccessingSecurityScopedResource() } }
-                            let file = try FileHandle(forReadingFrom: url)
-                            defer { try? file.close() }
-                            let data = try file.read(upToCount: 8 * 1024 * 1024 + 1) ?? Data()
-                            return try EEGMentalProfile.load(data: data)
+                            return try EEGProfileStore.readDocument(url)
                         }
                     }.value
                     loading = false
