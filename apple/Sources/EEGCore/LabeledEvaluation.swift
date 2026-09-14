@@ -12,6 +12,7 @@ public struct EEGLabeledEvaluation: Sendable {
         public let reason: String
         public let inputUsable: Bool
     }
+    public let controlsOnly: Bool
     public let profileID: String
     public let predictions: [Prediction]
     public let metrics: [String: Metric]
@@ -24,12 +25,16 @@ public struct EEGLabeledEvaluation: Sendable {
 
     /// Window-level experimental metrics only. Correlated windows are not
     /// independent physiological trials. Rejection is never a neutral prediction.
-    public static func run(profile: EEGMentalProfile, dataset: EEGTrainingDataset) throws -> EEGLabeledEvaluation {
+    public static func run(profile: EEGMentalProfile, dataset: EEGTrainingDataset, controlsOnly: Bool = false) throws -> EEGLabeledEvaluation {
         guard dataset.participantID == profile.participantID else { throw Failure.participantMismatch }
         guard !dataset.evaluation.isEmpty else { throw Failure.noEvaluation }
         let sessions = dataset.sessions.filter { $0.split == "evaluation" }
         guard sessions.allSatisfy({ !profile.trainingSessions.contains($0.id) && !profile.trainingRecordingHashes.values.contains($0.eegSHA256) }) else { throw Failure.trainingOverlap }
-        for label in profile.parameters.classes {
+        if controlsOnly {
+            let controls = ["cued_neutral", "ordinary_activity", "blink_control", "jaw_control", "head_movement_control"]
+            guard dataset.evaluation.allSatisfy({ $0.label == "neutral" && controls.contains($0.condition) }) else { throw Failure.invalidLabels }
+        }
+        for label in (controlsOnly ? [] : profile.parameters.classes) {
             guard dataset.evaluation.filter({ $0.label == label }).count >= 10 else { throw Failure.insufficientClassWindows }
         }
         var detector = try profile.makeDetector(), predictions = [Prediction](), lastEnd = [String: Double]()
@@ -54,6 +59,6 @@ public struct EEGLabeledEvaluation: Sendable {
                 falsePositive: predictions.filter { $0.actual != label && $0.predictedLabel == label }.count,
                 falseNegative: predictions.filter { $0.actual == label && $0.predictedLabel != label }.count)
         }
-        return EEGLabeledEvaluation(profileID: profile.id, predictions: predictions, metrics: metrics, trials: episodes.trials, conditions: episodes.conditions)
+        return EEGLabeledEvaluation(controlsOnly: controlsOnly, profileID: profile.id, predictions: predictions, metrics: metrics, trials: episodes.trials, conditions: episodes.conditions)
     }
 }

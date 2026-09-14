@@ -476,3 +476,17 @@ condition fixtures also match Python's upper rates. See the [SciPy Poisson defin
 Clustered/temporally dependent activations can violate the model; prospective ordinary
 activity and artifact-control trials remain required. This bound does not qualify
 system control or mental-command accuracy.
+
+### Controls-only evaluation scope
+
+The evaluation panel now offers explicit controls-only mode, matching the Python
+workflow's scope. It accepts only neutral-labeled cued-neutral, ordinary-activity,
+blink, jaw and head-movement controls. It rejects any task trial. Full evaluation
+still requires ten windows per class; controls-only does not fabricate task coverage
+or recall. The report stores and displays its scope, and changing the toggle clears
+the previous report. Session/content exclusion, rejection accounting and experimental
+control-disabled status apply identically in both modes.
+
+Tests establish that a neutral-only dataset fails full evaluation, passes controls-only,
+has unavailable task recall, and that mixed task/control data fails controls-only.
+No control condition has been prospectively validated by these synthetic tests.

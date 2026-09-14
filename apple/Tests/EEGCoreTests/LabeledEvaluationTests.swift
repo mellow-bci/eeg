@@ -69,4 +69,16 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertThrowsError(try EEGLabeledEvaluation.run(profile: profile,
             dataset: EEGTrainingDataset(evaluation: Array(dataset.evaluation.prefix(5)), participantID: profile.participantID, records: [], sessions: dataset.sessions)))
     }
+    func testControlsOnlyCannotBeMistakenForTaskEvaluation() throws {
+        let (profile, full, _) = try fixture()
+        let controls = EEGTrainingDataset(evaluation: full.evaluation.filter { $0.label == "neutral" },
+            participantID: profile.participantID, records: [], sessions: full.sessions)
+        XCTAssertThrowsError(try EEGLabeledEvaluation.run(profile: profile, dataset: controls))
+        let result = try EEGLabeledEvaluation.run(profile: profile, dataset: controls, controlsOnly: true)
+        XCTAssertTrue(result.controlsOnly)
+        XCTAssertEqual(result.predictions.count, 10)
+        XCTAssertNil(result.metrics["task"]?.recall)
+        XCTAssertThrowsError(try EEGLabeledEvaluation.run(profile: profile, dataset: full, controlsOnly: true))
+    }
+
 }

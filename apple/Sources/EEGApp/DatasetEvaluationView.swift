@@ -5,6 +5,7 @@ import EEGCore
 struct DatasetEvaluationView: View {
     let profile: EEGMentalProfile
     @EnvironmentObject private var model: AcquisitionModel
+    @State private var controlsOnly = false
     @State private var importing = false
     @State private var running = false
     @State private var report: EEGLabeledEvaluation?
@@ -13,12 +14,16 @@ struct DatasetEvaluationView: View {
         VStack(alignment: .leading, spacing: 12) {
             Divider()
             Text("Evaluate labeled sessions").font(.headline)
-            Text("Choose a dataset manifest with evaluation sessions. At least 10 evaluation windows per class are required. Rejected windows remain in the denominator; labels are declarations, not independently verified mental states.").foregroundStyle(.secondary)
+            Toggle("Controls-only evaluation", isOn: $controlsOnly).disabled(running)
+                .onChange(of: controlsOnly) { _, _ in report = nil; failure = nil }
+            Text(controlsOnly ? "Only neutral-labeled control conditions are accepted. Task recall cannot be measured from control trials." : "Full evaluation requires at least 10 windows per class.").font(.caption)
+            Text("Choose a dataset manifest with evaluation sessions. Rejected windows remain in the denominator; labels are declarations, not independently verified mental states.").foregroundStyle(.secondary)
             Button("Open dataset and evaluate", systemImage: "chart.bar") { importing = true }
                 .disabled(running || model.recording || model.ready)
             if running { ProgressView("Evaluating held-out recordings…") }
             if let failure { Text(failure).foregroundStyle(.red).textSelection(.enabled) }
             if let report {
+                LabeledContent("Scope", value: report.controlsOnly ? "Controls only" : "Full labeled evaluation")
                 LabeledContent("Evaluation windows", value: String(report.predictions.count))
                 LabeledContent("Rejected", value: report.rejectionFraction.formatted(.percent.precision(.fractionLength(1))))
                 ForEach(report.metrics.keys.sorted(), id: \.self) { label in
@@ -60,7 +65,7 @@ struct DatasetEvaluationView: View {
     private func percent(_ value: Double?) -> String { value?.formatted(.percent.precision(.fractionLength(1))) ?? "Unavailable" }
     private func evaluate(_ url: URL) {
         guard !running, !model.recording, !model.ready else { return }
-        let directory = model.directory
+        let directory = model.directory, controls = controlsOnly
         running = true; report = nil; failure = nil
         Task { @MainActor in
             let result = await Task.detached(priority: .utility) {
@@ -71,7 +76,7 @@ struct DatasetEvaluationView: View {
                     defer { try? file.close() }
                     let data = try file.read(upToCount: 8 * 1024 * 1024 + 1) ?? Data()
                     let dataset = try EEGTrainingDataset.load(data, store: EEGRecordingStore(directory: directory), settings: profile.settings)
-                    return try EEGLabeledEvaluation.run(profile: profile, dataset: dataset)
+                    return try EEGLabeledEvaluation.run(profile: profile, dataset: dataset, controlsOnly: controls)
                 }
             }.value
             running = false
