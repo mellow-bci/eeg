@@ -74,3 +74,25 @@ The UI does not restart a plan after a process crash or resume a completed file.
 Software tests cover multiple seeds including zero and UInt64.max, balance,
 three-trial run limits, unique trial IDs, terminal-state checks, rest boundaries
 and exhaustion. This does not validate acoustic timing or participant compliance.
+
+## Trial evidence recovery
+
+`EEGTrialEvidence.recover` reconstructs a snapshot by replaying its allowed
+transitions, then compares the complete serialized state with that reconstruction.
+A changed acceptance Boolean, cue time, phase, omitted evidence or invalid
+transition is rejected. Replayed readiness flags remain historical declarations;
+recovery does not independently prove that the participant was ready or heard cues.
+
+`EEGRecordingStore.recoveredTrials` checks recording finalization and the shared
+stream schema, source stability, filename binding, sample count at each snapshot,
+revision order and unchanged event prefixes. Live writing and recovery use the same
+revision invariant. It retains interrupted and unfinished trial states for review;
+only the existing `datasetTrial()` gate can yield accepted interval metadata.
+A completed recording can contain excluded or unfinished trials.
+
+Regression tests exercise accepted-state round trips, edited cue time, forged
+acceptance, numeric Boolean substitution, unfinished recordings and missing
+journal revisions. This validates consistency, not cryptographic authenticity:
+a complete rewritten history can still be fabricated. Recovery does not yet
+verify the saved balanced plan against trial order or build a dataset manifest;
+those are required before the automatic export flow is complete.

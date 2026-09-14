@@ -91,17 +91,7 @@ public final class EEGRecordingStore {
         lock.lock(); defer { lock.unlock() }
         guard let handle = writer, let recordingID else { throw EEGRecordingError.notRecording }
         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
-        if let previous = trialEvidence[trial.id] {
-            guard previous.phase != .reviewed, previous.phase != .interrupted,
-                  previous.sessionID == trial.sessionID, previous.participantID == trial.participantID,
-                  previous.requestedCondition == trial.requestedCondition, previous.startingNumber == trial.startingNumber,
-                  trial.events.count == previous.events.count + 1,
-                  try encoder.encode(Array(trial.events.dropLast())) == encoder.encode(previous.events) else {
-                throw EEGRecordingError.invalidData
-            }
-        } else {
-            guard trial.phase == .planned, trial.events.isEmpty else { throw EEGRecordingError.invalidData }
-        }
+        try trial.validateRevision(after: trialEvidence[trial.id])
         let object = try JSONSerialization.jsonObject(with: encoder.encode(trial))
         do {
             try writeEvent(["kind": "trial_evidence", "recording_id": recordingID,
@@ -114,6 +104,31 @@ public final class EEGRecordingStore {
             try? handle.close(); writer = nil; self.recordingID = nil
             throw error
         }
+    }
+
+    /// Recover all trial revisions from a finalized, unchanged recording. This
+    /// validates lifecycle evidence, not physiological truth or source authenticity.
+    public func recoveredTrials(recording: URL) throws -> [EEGTrialEvidence] {
+        try validate(recording)
+        var validation = StreamValidation()
+        var history: [String:EEGTrialEvidence] = [:], order: [String] = []
+        var samples = 0
+        try Self.lines(recording) { data in
+            if try validation.consume(data) != nil { samples += 1 }
+            guard let object=try JSONSerialization.jsonObject(with:data) as? [String:Any],
+                  object["kind"] as? String == "trial_evidence" else { return }
+            guard object["recording_id"] as? String == recording.lastPathComponent,
+                  object["sample_count_at_write"] as? Int == samples,
+                  let raw=object["evidence"] else { throw EEGRecordingError.invalidData }
+            let trial=try EEGTrialEvidence.recover(JSONSerialization.data(withJSONObject:raw))
+            guard object["revision"] as? Int == trial.events.count else { throw EEGRecordingError.invalidData }
+            try trial.validateRevision(after:history[trial.id])
+            if history[trial.id] == nil { order.append(trial.id) }
+            history[trial.id]=trial
+        }
+        try validation.finish()
+        guard validation.summarized else { throw EEGRecordingError.invalidData }
+        return order.compactMap { history[$0] }
     }
 
     public func replay(recording: URL, offset: Int = 0, limit: Int = 1280) throws -> [EEGSample] {
