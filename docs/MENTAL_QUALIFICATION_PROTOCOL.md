@@ -228,3 +228,35 @@ Use [COGNITIVE_VALIDATION.md](COGNITIVE_VALIDATION.md) and
 Throughout this protocol `command=null`, `system_control_enabled=false` and the explicit
 experimental status remain unchanged. No score, completed trial or favorable report can
 automatically enable Apple HID, Cast, application automation or any system-wide action.
+
+## Native evidence state machine
+
+`apple/Sources/EEGCore/TrialEvidence.swift` implements the trial evidence sequence
+as `EEGTrialEvidence` (`eeg.trial-evidence.v1`). It is an independent protocol
+implementation, not a vendor algorithm. It does not play cues or start acquisition.
+
+Transitions separate cue request, actual playback start/completion, the condition
+period, end-cue request/start/completion, participant report and operator review.
+The controller must supply recording-clock timestamps from actual callbacks; a
+scheduled playback time must not be substituted for playback completion. Times
+must be finite, nonnegative and nondecreasing. Starting requires explicit readiness,
+heard audio-check, stable transport and active-recording assertions. These inputs
+are controller assertions, not independent measurements by this state machine.
+
+Only an explicitly accepted operator review of an `attempted` report can emit an
+`eeg.dataset.v1` trial row. The emitted interval is cue completion +5 through +17
+seconds; the end cue cannot be requested before +20 seconds. `uncertain`,
+`notAttempted` and `missedCue` reports cannot be accepted. Interrupted trials retain
+an event/reason and cannot resume or emit labels. Reviewed records are terminal;
+a correction must be recorded separately rather than mutating the completed trial.
+Unknown behavioral observation remains `unknown`, including for an accepted
+reported-task label. The evidence sidecar must be retained with the dataset.
+
+Remaining controller duties: persist events durably, bind recording identity/clock,
+connect actual audio callbacks, detect playback/timing/transport failures and call
+interrupt, implement pause/stop, precommit balanced trial order, collect review in
+the UI, and preserve a reproducibility bundle. There is no automatic late-cue
+tolerance or evidence of precise playback timing here: the controller must treat
+its detected timing failures as interruptions. No live experiment has exercised
+this state machine yet. Unit tests verify explicit review, scored intervals,
+readiness/sequence/time rejection, interrupted trials and missed-cue exclusion.
