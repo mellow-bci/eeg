@@ -2,8 +2,8 @@ import Foundation
 
 /// Numerical kernel for our independent classifier, not a profile loader or an
 /// authorization gate. Callers still need validated provenance and valid windows.
-public struct EEGMentalScoringParameters: Decodable, Sendable {
-    public struct Gaussian: Decodable, Sendable {
+public struct EEGMentalScoringParameters: Codable, Sendable {
+    public struct Gaussian: Codable, Sendable {
         public let label: String
         public let mean: [Double]
         public let variance: [Double]

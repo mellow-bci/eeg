@@ -320,3 +320,39 @@ The Swift package enables `ACCELERATE_NEW_LAPACK` through the Clang importer and
 uses `__LAPACK_int`, avoiding the deprecated CLAPACK interface. This is a compiler
 header selection, not an alternate processing path. The local numerical tests pass
 with that interface enabled.
+
+### Native versioned profile creation and storage
+
+`EEGProfileCreation.train` connects native eligibility, normalization, selection, PCA
+and Gaussian fitting to an `eeg.mental-profile.v2` artifact. It records the complete
+settings/design snapshot, participant, training sessions/content fingerprints/window
+identities, digest of the encoded training records and optional parent profile ID.
+The parent ID is checked for format; its lineage relationship remains a caller assertion.
+Every artifact remains experimental with system control disabled. The existing native
+loader validates the created artifact before it is returned.
+
+The serializer emits ASCII string escapes and finite numeric tokens compatible with
+the Python checksum convention. The synthetic native profile (including Unicode
+participant text) passes `processing.mental.load_profile` without modifications.
+That cross-runtime check now runs in CI after Swift tests. Matching serialization
+is tested for the supported artifact values; it is not a universal canonical JSON
+standard or an authentication signature.
+
+`save` writes and synchronizes a private temporary file, then publishes it with a
+same-directory hard link that fails if the destination already exists. It cleans up
+the temporary name and never overwrites an existing profile. It does not yet fsync
+the parent directory, so power-loss directory durability remains unqualified.
+Tests verify roundtrip integrity, deterministic repeated fitting on the current
+backend, parent ID validation, mode 0600 and overwrite rejection.
+
+Reproduce the cross-runtime check:
+
+```sh
+EEG_NATIVE_PROFILE_TEST_EXPORT=/tmp/eeg-native-created-profile.json swift test --package-path apple
+python -c "from processing.mental import load_profile; load_profile('/tmp/eeg-native-created-profile.json')"
+```
+
+This is a core API, not yet native trial-collection/training UI. Supplied feature
+records contain assertions; the app must derive them from validated recordings and
+accepted trials before presenting training as a complete workflow. No hardware or
+physiological qualification follows from this synthetic profile.

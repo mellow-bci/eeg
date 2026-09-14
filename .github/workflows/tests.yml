@@ -12,4 +12,19 @@ jobs:
           python-version: '3.9'
       - run: python -m pip install -r requirements.txt -r requirements-analysis.txt
       - run: python -W error::ResourceWarning -m unittest discover -s tests -p 'test_*.py' -v
-      - run: swift test --package-path apple
+      - name: Native tests and synthetic profile export
+        env:
+          EEG_NATIVE_PROFILE_TEST_EXPORT: ${{ runner.temp }}/eeg-native-profile.json
+        run: swift test --package-path apple
+      - name: Validate native profile with Python loader
+        env:
+          EEG_NATIVE_PROFILE_TEST_EXPORT: ${{ runner.temp }}/eeg-native-profile.json
+        run: |
+          python - <<'PYTHON'
+          import os
+          from processing.mental import load_profile
+          profile = load_profile(os.environ['EEG_NATIVE_PROFILE_TEST_EXPORT'])
+          assert profile['system_control_enabled'] is False
+          assert profile['validation_status'] == 'experimental_unvalidated'
+          print('Native profile accepted by Python:', profile['profile_id'])
+          PYTHON

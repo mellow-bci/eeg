@@ -2,7 +2,7 @@ import Foundation
 
 /// Explicitly accepted feature records. These declarations do not prove physiology;
 /// the recording/label workflow must establish their provenance before construction.
-public struct EEGTrainingRecord: Decodable, Sendable {
+public struct EEGTrainingRecord: Codable, Sendable {
     public let accepted: Bool
     public let label_verified: Bool
     public let artifact_flags: [String]
