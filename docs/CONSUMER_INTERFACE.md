@@ -75,3 +75,23 @@ Unknown psychological meaning remains unknown even if a vendor score correlates.
 
 Cast object mapping, authentication transport, independent service supervision,
 scientific rendering benchmarks and accessibility qualification remain open work.
+
+## Decision: independent EEG application, optional MCP publication
+
+Confirmed direction: EEG remains the standalone local application and scientific
+source of truth. Cast is an optional destination reached through authorized MCP tools.
+Cast is not required to start, record, review, process, train or evaluate EEG locally.
+
+Publication should be explicitly selected by the user and default to metadata,
+versioned analysis results or reports. Raw recording upload is a distinct operation.
+The bridge records destination workspace/object identity, source recording identity,
+source content hash, result version and publication operation ID. Retries must reuse
+the operation identity; destination-side deduplication/upsert behavior must be verified
+against actual Cast tools before promising exactly-once publication. A failed or
+unavailable bridge must never stop acquisition or alter a local scientific result.
+
+The bridge may store publication receipts and retry state. It must not duplicate
+headset settings, profile authority, decoding or model training. Cast edits are
+collaboration annotations or explicit new requests, not silent rewrites of local
+recordings or processing configuration. No MCP transport or Cast object mapping has
+been implemented in this checkpoint.

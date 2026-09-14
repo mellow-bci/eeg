@@ -106,9 +106,11 @@ class ConsumerDelivery:
             if self.abort.is_set():
                 break
             self.thread.join(min(0.02, max(0, deadline-time.monotonic())))
+        # The final join may resume after both deadlines. Recheck callback/queue
+        # expiry before assigning a generic shutdown timeout.
+        self.check()
         if self.thread.is_alive() and not self.abort.is_set():
             self.fail('sample_consumer_shutdown_timeout')
-        self.check()
         with self.lock:
             return {'submitted': self.submitted, 'delivered': self.delivered,
                     'undelivered': self.submitted-self.delivered,

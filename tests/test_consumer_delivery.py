@@ -7,6 +7,7 @@ import tempfile
 import threading
 import time
 import unittest
+from unittest.mock import patch
 
 from stream import ConsumerDelivery, Pipeline, AcquisitionFailure
 
@@ -42,6 +43,25 @@ class ConsumerDeliveryTests(unittest.TestCase):
         finally:
             release.set()
             worker.thread.join(1)
+
+    def test_expired_callback_is_checked_when_shutdown_loop_is_skipped(self):
+        entered, release = threading.Event(), threading.Event()
+        def sink(sample):
+            entered.set(); release.wait(2)
+        worker = ConsumerDelivery(sink, 4, 0.04)
+        try:
+            worker.submit({})
+            self.assertTrue(entered.wait(1))
+            with worker.lock:
+                active = worker.active_since
+            # Simulate the closing thread resuming after its deadline without
+            # depending on the runner's scheduler or wall-clock sleep precision.
+            with patch('stream.time.monotonic', return_value=active + 1):
+                result = worker.close(0)
+            self.assertEqual(result['error'], 'sample_consumer_timeout')
+            self.assertEqual(result['undelivered'], 1)
+        finally:
+            release.set(); worker.thread.join(1)
 
     def test_overflow_is_explicit_and_aborts_backlog(self):
         entered, release = threading.Event(), threading.Event()

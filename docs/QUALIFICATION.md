@@ -73,3 +73,13 @@ a Mac Python capture nor a Swift simulator build validates iOS/visionOS hardware
 Storage, consumer delivery and installer code can be built and fault-tested in parallel.
 Physical actions and participant experiments need actual hardware conditions and must never
 be replaced by replay tests while reporting live success.
+
+### Consumer shutdown deadline regression
+
+A hosted CI run exposed a scheduler-dependent error classification: `close()` could
+resume after the callback deadline and report generic shutdown timeout before checking
+the elapsed callback deadline. The final shutdown path now checks callback/queue
+expiry first. A deterministic test skips the wait loop with an expired callback and
+asserts explicit `sample_consumer_timeout`, undelivered count and bounded shutdown.
+The full local suite passed 120 tests with ResourceWarning treated as an error. This
+is software fault-injection evidence; no new hardware qualification is claimed.
