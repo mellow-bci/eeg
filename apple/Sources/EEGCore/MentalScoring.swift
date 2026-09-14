@@ -28,7 +28,7 @@ public struct EEGMentalScore: Sendable {
     // This is deliberately a numerical result, not a command proposal.
 }
 
-public enum EEGMentalScoringError: Error { case invalidParameters, invalidFeatures, numericalFailure }
+public enum EEGMentalScoringError: Error, Equatable { case invalidParameters, invalidFeatures, numericalFailure }
 
 public enum EEGMentalScoring {
     public static func score(values: [Double], parameters p: EEGMentalScoringParameters) throws -> EEGMentalScore {

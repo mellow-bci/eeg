@@ -161,3 +161,20 @@ Profile integrity/provenance, configuration matching, valid-window delivery,
 persistence/rejection policy and session-separated evaluation must be integrated
 before exposing native inference previews. It emits no command or system action.
 The current local Swift suite passes 30 tests; physiological validity is untested.
+
+### Native experimental detector state
+
+`EEGExperimentalDetector` wraps the scoring kernel with feature configuration,
+participant/session/window identity, continuity, timing, artifact and numerical
+rejection. It applies configured score/margin thresholds and consecutive-window
+persistence, retaining the first evidence timestamp. Rejection or a session,
+continuity or timing gap resets pending evidence. Counts saturate at the configured
+persistence threshold. Every result remains `no_reliable_command`, with a nil command
+and disabled system control, including when an experimental candidate is present.
+
+Four state-test groups cover persistent candidates, gap/session/segment boundaries,
+invalid windows, neutral/outliers and overflow. The local suite passes 34 tests.
+These use the manufactured scoring fixture, not physiological acceptance data.
+Native profile integrity/provenance loading and the full training/evaluation UI are
+still pending. The detector is a sequential value type: its caller must serialize
+inference and must supply windows produced by the validated canonical adapter.
