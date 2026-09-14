@@ -220,3 +220,27 @@ Foundation directory URLs with or without a trailing slash while rejecting paths
 outside the store. Native tests cover completed/unfinished files, missing metadata,
 recovery and cross-window gaps. No live hardware qualification was performed for
 this change. Standalone local EEG parity remains the priority; Cast is unchanged.
+
+### Offline profile replay diagnostics
+
+Calibration's loaded-profile panel now offers an offline inference check over a
+completed local recording. It uses `analysisWindows` → `EEGMentalFeatures` →
+`EEGExperimentalDetector`, retaining all window rejection reasons. Analysis runs
+away from the main thread. A configurable positive window limit (initially 10,000)
+causes explicit failure on exhaustion; no partial report is published. The UI shows
+the first 100 rows and complete report counts. It does not alter acquisition.
+
+The report includes the SHA-256 of the exact bytes consumed by the recording reader,
+profile identity and user-asserted participant/session identity. Training session IDs
+and identical training recording hashes are rejected, even after renaming. This
+prevents exact-content reuse, not reuse transformed into a different serialization
+or recording format. Source identity assertions remain unverified. The reader works
+from a file-length snapshot; the digest identifies consumed bytes, not an authenticated
+immutable file. Do not edit recordings during analysis.
+
+This is an unlabeled diagnostic, not a physiological accuracy evaluation. It emits
+no actionable command, and does not calculate precision/recall from predictions.
+Native labeled training, cross-format provenance matching, report export, cancellation,
+and interactive accessibility/performance qualification remain outstanding. Tests use
+synthetic recordings and synthetic profiles; they establish rejection paths and
+plumbing, not successful intent decoding.

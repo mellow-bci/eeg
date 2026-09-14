@@ -8,10 +8,11 @@ public struct EEGMentalProfile: Sendable {
     public let settings: ProcessingSettings
     public let parameters: EEGMentalScoringParameters
     public let trainingSessions: [String]
+    public let trainingRecordingHashes: [String: String]
     private init(id: String, participantID: String, settings: ProcessingSettings,
-                 parameters: EEGMentalScoringParameters, trainingSessions: [String]) {
+                 parameters: EEGMentalScoringParameters, trainingSessions: [String], trainingRecordingHashes: [String: String]) {
         self.id = id; self.participantID = participantID; self.settings = settings
-        self.parameters = parameters; self.trainingSessions = trainingSessions
+        self.parameters = parameters; self.trainingSessions = trainingSessions; self.trainingRecordingHashes = trainingRecordingHashes
     }
     public enum Failure: Error { case unsupported, integrity, provenance, design }
     public static func load(data: Data) throws -> EEGMentalProfile {
@@ -47,7 +48,7 @@ public struct EEGMentalProfile: Sendable {
                 "parameters_physiologically_validated":false]) else { throw Failure.design }
         _ = try EEGMentalScoring.score(values: parameters.center, parameters: parameters)
         return EEGMentalProfile(id: id, participantID: decoded.participant_id, settings: settings,
-                                parameters: parameters, trainingSessions: sessions)
+                                parameters: parameters, trainingSessions: sessions, trainingRecordingHashes: decoded.training_recording_hashes)
     }
     public func makeDetector() throws -> EEGExperimentalDetector {
         try EEGExperimentalDetector(parameters: parameters, settings: settings, participantID: participantID, profileID: id)

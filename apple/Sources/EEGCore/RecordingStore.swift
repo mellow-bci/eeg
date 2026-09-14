@@ -1,6 +1,7 @@
 import Foundation
 import Darwin
 import CoreFoundation
+import CryptoKit
 
 public struct EEGRecordingInfo: Identifiable, Sendable {
     public let url: URL
@@ -99,11 +100,11 @@ public final class EEGRecordingStore {
     /// Stream analysis windows from a finalized recording using the same schema
     /// validator and bounded line reader as replay. Callback output is provisional
     /// until this method succeeds; callers must discard it if any read fails.
-    public func analysisWindows(recording: URL, consume: (EEGAnalysisWindow) throws -> Void) throws {
+    @discardableResult public func analysisWindows(recording: URL, consume: (EEGAnalysisWindow) throws -> Void) throws -> String {
         try validate(recording)
         var validation = StreamValidation()
         var assembler = EEGAnalysisWindowAssembler()
-        try Self.lines(recording) { data in
+        let digest = try Self.lines(recording) { data in
             let sample = try validation.consume(data)
             try assembler.event(data)
             if let sample, let window = assembler.append(sample) { try consume(window) }
@@ -111,6 +112,7 @@ public final class EEGRecordingStore {
         try validation.finish()
         guard validation.summarized else { throw EEGRecordingError.invalidData }
         if let tail = assembler.finish() { try consume(tail) }
+        return digest
     }
 
     public func finish() throws {
@@ -228,14 +230,15 @@ public final class EEGRecordingStore {
         return FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
     }
 
-    private static func lines(_ url: URL, body: (Data) throws -> Void) throws {
+    @discardableResult private static func lines(_ url: URL, body: (Data) throws -> Void) throws -> String {
         let handle = try open(url, writing: false); defer { try? handle.close() }
         var remaining = try handle.seekToEnd(); try handle.seek(toOffset: 0)
         var buffer = Data()
+        var digest = SHA256()
         while remaining > 0 {
             let chunk = try handle.read(upToCount: Int(min(remaining, 65536))) ?? Data()
             guard !chunk.isEmpty else { throw EEGRecordingError.invalidData }
-            remaining -= UInt64(chunk.count); buffer.append(chunk)
+            remaining -= UInt64(chunk.count); buffer.append(chunk); digest.update(data: chunk)
             while let end = buffer.firstIndex(of: 0x0a) {
                 let line = Data(buffer[..<end]); buffer.removeSubrange(...end)
                 guard line.count <= maximumLine else { throw EEGRecordingError.lineTooLarge }
@@ -244,5 +247,6 @@ public final class EEGRecordingStore {
             guard buffer.count <= maximumLine else { throw EEGRecordingError.lineTooLarge }
         }
         guard buffer.isEmpty else { throw EEGRecordingError.invalidData }
+        return digest.finalize().map { String(format: "%02x", $0) }.joined()
     }
 }

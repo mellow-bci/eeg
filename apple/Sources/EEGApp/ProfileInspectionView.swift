@@ -23,7 +23,8 @@ struct ProfileInspectionView: View {
                 LabeledContent("Persistent windows", value: String(profile.settings.persistenceWindows))
                 Text(profile.id).font(.caption.monospaced()).textSelection(.enabled)
                 Label("Experimental · command output disabled", systemImage: "hand.raised")
-                Text("Integrity does not verify task labels or physiological accuracy. Opening this file inspects its configuration; it does not run inference or change acquisition settings.").font(.callout).foregroundStyle(.secondary)
+                Text("Integrity does not verify task labels or physiological accuracy. Opening this file does not change acquisition settings. An offline check can be started below.").font(.callout).foregroundStyle(.secondary)
+                ReplayInferenceView(profile: profile).id(profile.id)
             } else {
                 Text("Open an eeg.mental-profile.v2 JSON file from the independent offline trainer. Native training and session evaluation are still being implemented.").foregroundStyle(.secondary)
             }
