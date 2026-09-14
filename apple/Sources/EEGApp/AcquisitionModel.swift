@@ -8,6 +8,8 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     @Published var phase = "Disconnected"
     @Published var message: String?
     @Published var samples: [EEGSample] = []
+    @Published private(set) var trial: EEGTrialEvidence?
+    private var trialSession: EEGTrialSession?
     @Published var recording = false
     @Published var sampleCount = 0
     @Published var decodeErrors = 0
@@ -169,6 +171,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     private func setTransport(_ stable:Bool,reason:String,receivedAt:Double?=nil) {
         let changed=transportStable != stable
         transportStable=stable
+        if !stable { interruptTrial(reason: reason) }
         guard changed,recording else {return}
         do {try recordTransport(reason:reason,receivedAt:receivedAt)} catch {storageFailed(error)}
     }
@@ -182,6 +185,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     private func storageFailed(_ error:Error) {
         event("Recording storage failed: "+error.localizedDescription)
+        interruptTrial(reason: "recording_storage_failed")
         store?.abort();recording=false;refreshRecordings()
         message="Recording aborted after a storage failure: "+error.localizedDescription
     }
@@ -191,6 +195,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         guard ready,!recording,!playback,fileOperation==nil,let store=store else { return }
         do {
             let url=try store.start();recording=true
+            trial=nil;trialSession=EEGTrialSession { try store.appendTrialEvidence($0) }
             try store.appendEvent(kind:"device_metadata",fields:metadata.mapValues{$0.map{String(format:"%02x",$0)}.joined()})
             try recordTransport(reason:"recording_start")
             event("Recording started: "+url.lastPathComponent)
@@ -198,9 +203,34 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     func stopRecording() {
         guard recording else { return }
+        interruptTrial(reason: "recording_stopped")
+        guard recording else { return }
         do { try store?.appendEvent(kind:"transport_checkpoint",fields:["stable":String(transportStable),"decode_errors":String(decodeErrors),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]) } catch { storageFailed(error);return }
         do { try store?.finish() } catch { message=error.localizedDescription }
         recording=false;refreshRecordings();event("Recording stopped")
+    }
+    /// Uses exactly the receipt clock used by the decoder, not wall-clock time.
+    var recordingClock: Double { ProcessInfo.processInfo.systemUptime-origin }
+    func beginTrial(_ planned: EEGTrialEvidence) throws {
+        guard recording,ready,transportStable,!playback,let trialSession else { throw EEGTrialEvidence.Failure.readinessMissing }
+        do { try trialSession.begin(planned);trial=trialSession.trial }
+        catch { if trialSession.persistenceFailure != nil { storageFailed(error) };throw error }
+    }
+    func transitionTrial(_ change: (inout EEGTrialEvidence, Double) throws -> Void) throws {
+        guard recording,let trialSession else { throw EEGRecordingError.notRecording }
+        do { try trialSession.transition(at: recordingClock,change);trial=trialSession.trial }
+        catch { trial=trialSession.trial;if trialSession.persistenceFailure != nil { storageFailed(error) };throw error }
+    }
+    private func interruptTrial(reason: String) {
+        guard let trialSession,trialSession.active else { return }
+        do { try trialSession.interrupt(reason: reason,at: recordingClock) }
+        catch {
+            // Do not recurse through storageFailed: a failed interruption has
+            // already invalidated the in-memory trial and may not be durable.
+            store?.abort();recording=false;refreshRecordings()
+            message="Trial evidence could not be saved: "+error.localizedDescription
+        }
+        trial=trialSession.trial
     }
     func refreshRecordings() {
         libraryRequest+=1;let request=libraryRequest;let directory=self.directory

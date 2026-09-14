@@ -158,3 +158,22 @@ are not disk-full, forced-kill or power-loss qualification. The completion-summa
 write/synchronize boundary still needs failure-injection qualification. Native
 trial cue/controller integration remains pending; this fixes its recording
 failure prerequisite without creating another acquisition path.
+
+## Trial lifecycle bridge
+
+`EEGTrialSession` now commits transitions through the existing recording sink
+before publishing them. Acquisition owns one instance per recording and passes
+`systemUptime - origin`, the same clock used for sample receipt timestamps.
+Transport loss and normal stop interrupt unfinished trials. A failed evidence
+write invalidates the in-memory trial, exposes a persistence error and prevents
+retry on that session; the interruption itself may be unpersisted, so it is not
+claimed as durable evidence. The recording abort path preserves the original file.
+Invalid operator transitions do not write events or poison an otherwise healthy
+recording. These are independently designed lifecycle rules, not recovered vendor
+algorithms. The host currently serializes acquisition and evidence calls on the
+main queue; moving recording I/O off that queue remains a responsiveness task.
+
+Unit tests cover ordered publication, interruption idempotence, sink failure,
+retry rejection and invalid transitions. Native audible cue scheduling, fresh
+readiness controls, trial review UI and manifest generation remain pending.
+No physiological trial was performed by this change.
