@@ -26,6 +26,17 @@ public struct EEGTrialPlan: Encodable, Sendable {
                 participantID: participantID, condition: condition, startingNumber: 100+rng.bounded(900))
         }
     }
+    public static func recover(_ data: Data) throws -> EEGTrialPlan {
+        guard data.count <= 4 * 1024 * 1024,
+              let value=try JSONSerialization.jsonObject(with:data) as? [String:Any],
+              let seed=value["seed"] as? String,let number=UInt64(seed),
+              let trials=value["trials"] as? [[String:Any]],let first=trials.first,
+              let session=first["sessionID"] as? String,let participant=first["participantID"] as? String else { throw EEGTrialEvidence.Failure.invalidTransition }
+        let plan=try EEGTrialPlan(sessionID:session,participantID:participant,seed:number)
+        let expected=try JSONSerialization.jsonObject(with:JSONEncoder().encode(plan))
+        guard try JSONSerialization.data(withJSONObject:expected,options:[.sortedKeys]) == JSONSerialization.data(withJSONObject:value,options:[.sortedKeys]) else { throw EEGTrialEvidence.Failure.invalidTransition }
+        return plan
+    }
     /// Enforces a conservative minimum after review, which follows the report.
     /// Every eighth trial gets a full minute; an interruption consumes its slot.
     public func next(after completed: EEGTrialEvidence?, started: Int, at: Double) throws -> EEGTrialEvidence {

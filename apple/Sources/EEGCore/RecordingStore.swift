@@ -113,21 +113,42 @@ public final class EEGRecordingStore {
         var validation = StreamValidation()
         var history: [String:EEGTrialEvidence] = [:], order: [String] = []
         var samples = 0
+        var plan: EEGTrialPlan?
         try Self.lines(recording) { data in
             if try validation.consume(data) != nil { samples += 1 }
-            guard let object=try JSONSerialization.jsonObject(with:data) as? [String:Any],
-                  object["kind"] as? String == "trial_evidence" else { return }
+            guard let object=try JSONSerialization.jsonObject(with:data) as? [String:Any] else { throw EEGRecordingError.invalidData }
+            if object["kind"] as? String == "trial_plan" {
+                guard plan == nil,order.isEmpty,let json=object["json"] as? String else { throw EEGRecordingError.invalidData }
+                plan=try EEGTrialPlan.recover(Data(json.utf8));return
+            }
+            guard object["kind"] as? String == "trial_evidence" else { return }
+            guard let plan else { throw EEGRecordingError.invalidData }
             guard object["recording_id"] as? String == recording.lastPathComponent,
                   object["sample_count_at_write"] as? Int == samples,
                   let raw=object["evidence"] else { throw EEGRecordingError.invalidData }
             let trial=try EEGTrialEvidence.recover(JSONSerialization.data(withJSONObject:raw))
             guard object["revision"] as? Int == trial.events.count else { throw EEGRecordingError.invalidData }
             try trial.validateRevision(after:history[trial.id])
-            if history[trial.id] == nil { order.append(trial.id) }
+            if history[trial.id] == nil {
+                guard order.count < plan.trials.count else { throw EEGRecordingError.invalidData }
+                let expected=plan.trials[order.count]
+                guard trial.id == expected.id,trial.sessionID == expected.sessionID,
+                      trial.participantID == expected.participantID,trial.requestedCondition == expected.requestedCondition,
+                      trial.startingNumber == expected.startingNumber else { throw EEGRecordingError.invalidData }
+                if let last=order.last,let previous=history[last] {
+                    guard previous.phase == .reviewed || previous.phase == .interrupted else { throw EEGRecordingError.invalidData }
+                }
+                order.append(trial.id)
+            }
+            guard order.last == trial.id else { throw EEGRecordingError.invalidData }
+            if trial.phase == .cueRequested,let at=trial.events.last?.at {
+                let previous=order.count > 1 ? history[order[order.count-2]] : nil
+                _ = try plan.next(after:previous,started:order.count-1,at:at)
+            }
             history[trial.id]=trial
         }
         try validation.finish()
-        guard validation.summarized else { throw EEGRecordingError.invalidData }
+        guard validation.summarized,plan != nil else { throw EEGRecordingError.invalidData }
         return order.compactMap { history[$0] }
     }
 

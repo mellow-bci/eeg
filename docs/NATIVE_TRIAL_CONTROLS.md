@@ -93,6 +93,14 @@ A completed recording can contain excluded or unfinished trials.
 Regression tests exercise accepted-state round trips, edited cue time, forged
 acceptance, numeric Boolean substitution, unfinished recordings and missing
 journal revisions. This validates consistency, not cryptographic authenticity:
-a complete rewritten history can still be fabricated. Recovery does not yet
-verify the saved balanced plan against trial order or build a dataset manifest;
-those are required before the automatic export flow is complete.
+a complete rewritten history can still be fabricated. Recovery now requires a saved balanced plan, reconstructs it from its seed, and
+checks trial identities, order and rest before cue requests. Dataset manifest
+generation remains required before the automatic export flow is complete.
+
+Plan recovery rejects missing, duplicate or late plans, seed/content mismatches,
+trials out of order, concurrent unfinished trials and insufficient rest before a
+cue request. It allows a partial session and retains excluded/unfinished slots;
+it does not pad a stopped acquisition to 24 trials. A finalized stream with no
+plan is still readable as EEG but cannot pass planned-trial recovery. Tests cover
+missing plan, swapped order, seed alteration and both sides of a rest boundary.
+These consistency checks do not prove physical independence or participant labels.
