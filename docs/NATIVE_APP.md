@@ -178,3 +178,24 @@ These use the manufactured scoring fixture, not physiological acceptance data.
 Native profile integrity/provenance loading and the full training/evaluation UI are
 still pending. The detector is a sequential value type: its caller must serialize
 inference and must supply windows produced by the validated canonical adapter.
+
+### Native profile loading and inspection
+
+Calibration now includes an Open profile action for the existing
+`eeg.mental-profile.v2` format. Loading reads a bounded local file off the main
+thread, verifies integrity and supported design/provenance, and displays participant,
+classes, training-session count, profile identity and persistence. It keeps the
+opened profile in memory only and does not change acquisition or start inference.
+
+`ProfileCanonicalJSON` retains Python-generated numeric/string token spellings while
+sorting object keys and removing formatting whitespace, so hashing does not round
+floating-point values through Foundation. It rejects duplicate keys and bounds file
+size (8 MiB) and nesting (64). It is intentionally not a universal JSON canonicalizer:
+re-encoding equivalent values with different number/escape spellings can fail integrity.
+Checksums are not signatures and do not verify labels or recording provenance truth.
+
+Tests load the Python synthetic fixture, vary whitespace, detect tampering/duplicate
+keys and reject recomputed-checksum files with unsupported design, missing settings,
+invalid provenance or zero scales. Local Swift suite: 37 tests passed. macOS, iOS and
+visionOS builds passed after adding the inspection UI. Interactive profile-import
+accessibility, native training, replay inference and physiological validation remain.

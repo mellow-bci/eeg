@@ -22,6 +22,7 @@ def main():
             'scores': [result['uncalibrated_class_scores'][label] for label in profile['classes']],
             'label': result['candidate_label'], 'outside': result['reason'] == 'out_of_training_distribution'})
     (root / 'apple/Fixtures/spectrum/mental-scoring.json').write_text(json.dumps(output, indent=2) + '\n')
+    (root / 'apple/Fixtures/spectrum/mental-profile.json').write_text(json.dumps(profile, indent=2) + '\n')
 
 
 if __name__ == '__main__':

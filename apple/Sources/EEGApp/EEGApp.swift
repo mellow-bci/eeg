@@ -290,6 +290,7 @@ struct CalibrationView: View {
             Label("Command output disabled", systemImage: "hand.raised").font(.headline)
             Text("This native workspace captures and inspects EEG. It does not yet train or run a validated intent classifier. Offline processing settings define the research recipe; they do not establish accuracy.").foregroundStyle(.secondary)
         }
+        ProfileInspectionView()
         Panel(title: "Research sequence") {
             ForEach(Array(["Prepare sensors and verify transport", "Record neutral and intentional task trials", "Evaluate held-out sessions and artifact challenges", "Qualify a confirmation and cancel mechanism"].enumerated()), id: \.offset) { index, label in
                 HStack(alignment: .top, spacing: 14) { Text(String(index + 1)).font(.callout.monospacedDigit()).foregroundStyle(.secondary); Text(label) }
