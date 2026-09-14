@@ -101,4 +101,52 @@ final class RecordingStoreTests: XCTestCase {
         try store.finish()
     }
 
+    func testTrialJournalPreservesEveryTransitionAndSamples() throws {
+        let store = try EEGRecordingStore(directory: root)
+        var trial = try EEGTrialEvidence(id: "t1", sessionID: "s1", participantID: "synthetic", condition: .neutral, startingNumber: 613)
+        XCTAssertThrowsError(try store.appendTrialEvidence(trial))
+        let url = try store.start()
+        try store.append(sample: sample(0))
+        try store.appendTrialEvidence(trial)
+        XCTAssertThrowsError(try store.appendTrialEvidence(trial))
+        try trial.requestCue(at: 1, participantReady: true, audioCheckHeard: true, transportStable: true, recordingActive: true)
+        try store.appendTrialEvidence(trial)
+        try trial.cueStarted(at: 2); try store.appendTrialEvidence(trial)
+        try trial.interrupt(reason: "cue failed", at: 3); try store.appendTrialEvidence(trial)
+        XCTAssertThrowsError(try store.appendTrialEvidence(trial))
+        XCTAssertThrowsError(try store.appendEvent(kind: "trial_evidence", fields: [:]))
+        try store.append(sample: sample(1)); try store.finish()
+        XCTAssertEqual(try store.replay(recording: url).map(\.index), [0, 1])
+        let rows = try Data(contentsOf: url).split(separator: 10).map { try JSONSerialization.jsonObject(with: Data($0)) as! [String: Any] }
+        let evidence = rows.filter { $0["kind"] as? String == "trial_evidence" }
+        XCTAssertEqual(evidence.map { $0["revision"] as! Int }, [0, 1, 2, 3])
+        XCTAssertTrue(evidence.allSatisfy { $0["recording_id"] as? String == url.lastPathComponent })
+        XCTAssertEqual((evidence.last!["evidence"] as! [String: Any])["accepted"] as? Bool, false)
+        XCTAssertTrue(try store.inventory().first!.complete)
+    }
+    func testTrialJournalRejectsSkippedAndChangedHistory() throws {
+        let store = try EEGRecordingStore(directory: root); _ = try store.start()
+        var trial = try EEGTrialEvidence(id: "t", sessionID: "s", participantID: "p", condition: .neutral, startingNumber: 123)
+        try store.appendTrialEvidence(trial)
+        try trial.requestCue(at: 1, participantReady: true, audioCheckHeard: true, transportStable: true, recordingActive: true)
+        try trial.cueStarted(at: 2)
+        XCTAssertThrowsError(try store.appendTrialEvidence(trial))
+        var other = try EEGTrialEvidence(id: "t", sessionID: "s", participantID: "other", condition: .neutral, startingNumber: 123)
+        try other.requestCue(at: 1, participantReady: true, audioCheckHeard: true, transportStable: true, recordingActive: true)
+        XCTAssertThrowsError(try store.appendTrialEvidence(other))
+        XCTAssertFalse(try store.inventory().first!.complete)
+        try store.finish()
+    }
+
+    func testTrialPersistenceFailureCannotBecomeCompletedRecording() throws {
+        let store = try EEGRecordingStore(directory: root); _ = try store.start()
+        var trial = try EEGTrialEvidence(id: "t", sessionID: "s", participantID: "p", condition: .neutral, startingNumber: 123)
+        try store.appendTrialEvidence(trial)
+        try trial.interrupt(reason: String(repeating: "x", count: 4 * 1024 * 1024), at: 1)
+        XCTAssertThrowsError(try store.appendTrialEvidence(trial))
+        XCTAssertThrowsError(try store.finish())
+        XCTAssertThrowsError(try store.append(sample: sample(0)))
+        XCTAssertFalse(try store.inventory().first!.complete)
+    }
+
 }

@@ -35,6 +35,8 @@ public final class EEGRecordingStore {
     public let directory: URL
     private let lock = NSLock()
     private var writer: FileHandle?
+    private var recordingID: String?
+    private var trialEvidence: [String: EEGTrialEvidence] = [:]
     private var count = 0
     private let encoder = JSONEncoder()
     private static let maximumLine = 4 * 1024 * 1024
@@ -56,7 +58,7 @@ public final class EEGRecordingStore {
         guard writer == nil else { throw EEGRecordingError.alreadyRecording }
         let url = directory.appendingPathComponent(UUID().uuidString.lowercased() + ".jsonl")
         let handle = try Self.open(url, writing: true)
-        writer = handle; count = 0
+        writer = handle; count = 0; recordingID = url.lastPathComponent; trialEvidence = [:]
         do {
             try writeEvent(["kind": "stream_start", "schema": "eeg-native-v1", "time": ISO8601DateFormatter().string(from: Date())])
         } catch { try? handle.close(); writer = nil; throw error }
@@ -76,10 +78,42 @@ public final class EEGRecordingStore {
 
     public func appendEvent(kind: String, fields: [String: String]) throws {
         lock.lock(); defer { lock.unlock() }
-        guard !kind.isEmpty, kind != "summary", kind != "stream_start", kind != "eeg_sample", fields["kind"] == nil else { throw EEGRecordingError.invalidData }
+        guard !kind.isEmpty, kind != "summary", kind != "stream_start", kind != "eeg_sample", kind != "trial_evidence", fields["kind"] == nil else { throw EEGRecordingError.invalidData }
         var event: [String: Any] = fields
         event["kind"] = kind
         try writeEvent(event)
+    }
+
+    /// Persist each trial transition alongside original samples. Call from a file-I/O
+    /// executor, not an audio callback. Success means write + filesystem synchronize
+    /// returned; it is not a hardware power-loss guarantee.
+    public func appendTrialEvidence(_ trial: EEGTrialEvidence) throws {
+        lock.lock(); defer { lock.unlock() }
+        guard let handle = writer, let recordingID else { throw EEGRecordingError.notRecording }
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+        if let previous = trialEvidence[trial.id] {
+            guard previous.phase != .reviewed, previous.phase != .interrupted,
+                  previous.sessionID == trial.sessionID, previous.participantID == trial.participantID,
+                  previous.requestedCondition == trial.requestedCondition, previous.startingNumber == trial.startingNumber,
+                  trial.events.count == previous.events.count + 1,
+                  try encoder.encode(Array(trial.events.dropLast())) == encoder.encode(previous.events) else {
+                throw EEGRecordingError.invalidData
+            }
+        } else {
+            guard trial.phase == .planned, trial.events.isEmpty else { throw EEGRecordingError.invalidData }
+        }
+        let object = try JSONSerialization.jsonObject(with: encoder.encode(trial))
+        do {
+            try writeEvent(["kind": "trial_evidence", "recording_id": recordingID,
+                            "sample_count_at_write": count, "revision": trial.events.count, "evidence": object])
+            try handle.synchronize()
+            trialEvidence[trial.id] = trial
+        } catch {
+            // A write may have partially succeeded. Never append a completion marker
+            // to a stream whose evidence persistence is uncertain.
+            try? handle.close(); writer = nil; self.recordingID = nil
+            throw error
+        }
     }
 
     public func replay(recording: URL, offset: Int = 0, limit: Int = 1280) throws -> [EEGSample] {

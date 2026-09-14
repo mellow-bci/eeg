@@ -260,3 +260,28 @@ tolerance or evidence of precise playback timing here: the controller must treat
 its detected timing failures as interruptions. No live experiment has exercised
 this state machine yet. Unit tests verify explicit review, scored intervals,
 readiness/sequence/time rejection, interrupted trials and missed-cue exclusion.
+
+### Recording trial snapshots
+
+`EEGRecordingStore.appendTrialEvidence` stores a `trial_evidence` JSONL event in
+that recording, containing the actual recording filename, sample count at write,
+revision (trial event count) and full encoded evidence state. Persist the initial
+planned state, then each transition in order. Duplicate revisions, skipped
+transitions, changed participant/session/condition/number and changed event
+prefixes are rejected. Reviewed/interrupted histories cannot be extended.
+The generic event writer reserves this event kind for the typed API.
+
+Each successful call writes and synchronizes before acknowledging the state.
+Invoke it on the recording I/O executor; audio callbacks must not block on disk.
+If writing/synchronizing throws, the writer closes and cannot append a summary.
+The recording remains incomplete, and the controller must stop the trial and
+report the persistence failure. Synchronization is not a tested physical
+power-loss guarantee. A persisted cue request does not prove playback occurred;
+actual playback callbacks still need separate transitions.
+
+Tests verify ordered snapshots, source binding, unchanged sample replay, skipped
+history/identity rejection, terminal-state rejection, and that an oversized
+snapshot failure prevents recording completion. The latter is an injected
+persistence-path failure, not a disk-full or power-loss experiment. Raw snapshot
+recovery, crash interpretation and audio/UI controller integration remain open;
+JSONL presence or recording completion does not independently validate labels.
