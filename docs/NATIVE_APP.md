@@ -419,3 +419,22 @@ activity exposure accounting, Poisson uncertainty, cue-relative latency, control
 mode, reproducible report export and interactive accessibility checks remain incomplete.
 Window counts are correlated observations, not independent participants. Every report
 keeps hardware validation and system control false.
+
+### Native activation episode accounting
+
+Labeled evaluation now separates candidate windows from rising-edge episodes by
+condition. Same-label candidates in the same session/continuity segment, separated
+by at most 0.05 seconds, remain one episode. Rejection, disabled input or a gap ends
+that continuity. A candidate whose evidence starts before the trial, or continues
+into a new trial, is counted as carry-in rather than a fresh onset.
+
+Eligible, signal-rejected and unarmed seconds are reported separately. Empirical
+onsets/hour use eligible seconds only and are unavailable with zero eligible exposure
+or carry-in candidates. The UI shows these values for each declared condition;
+cued neutral is never relabeled ordinary activity. Candidate counts remain experimental,
+not evidence of neural origin. Rates currently have no native uncertainty interval.
+
+The Python evaluation fixture agrees on exposure, episode counts and rates. Dedicated
+synthetic tests cover repeated candidates, trial carry-in, rejection/disabled exposure,
+new episodes after rejection and invalid evidence timing. Prospective ordinary-activity
+recordings, latency, uncertainty and physiological artifact controls remain required.

@@ -29,7 +29,16 @@ struct DatasetEvaluationView: View {
                         Text("Precision: \(percent(metric.precision)) · Recall: \(percent(metric.recall))")
                     }.accessibilityElement(children: .combine)
                 }
-                Text("Experimental window-level metrics. Windows within trials are correlated. These values do not establish physiological accuracy, ordinary-activity false-activation rates or safe system control.").font(.caption).foregroundStyle(.secondary)
+                ForEach(report.conditions.keys.sorted(), id: \.self) { condition in
+                    let exposure = report.conditions[condition]!
+                    VStack(alignment: .leading) {
+                        Text(condition.replacingOccurrences(of: "_", with: " ")).font(.headline)
+                        Text("Eligible: \(exposure.eligibleSeconds.formatted(.number.precision(.fractionLength(2)))) s · Rejected: \(exposure.rejectedSeconds.formatted(.number.precision(.fractionLength(2)))) s · Unarmed: \(exposure.unarmedSeconds.formatted(.number.precision(.fractionLength(2)))) s")
+                        Text("Candidate episodes: \(exposure.episodeOnsets) · Carry-ins: \(exposure.carryInCandidates)")
+                        Text("Empirical episodes/hour: \(exposure.episodeOnsetsPerHour.map { $0.formatted(.number.precision(.fractionLength(2))) } ?? "Unavailable")")
+                    }.font(.caption).accessibilityElement(children: .combine)
+                }
+                Text("Experimental window-level metrics. Windows within trials are correlated. These values do not establish physiological accuracy, physiologically validated false-activation rates or safe system control. Episode rates have no uncertainty bound yet; carry-in activity makes the rate unavailable.").font(.caption).foregroundStyle(.secondary)
             }
         }
         .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { selection in

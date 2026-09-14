@@ -15,6 +15,7 @@ public struct EEGLabeledEvaluation: Sendable {
     public let profileID: String
     public let predictions: [Prediction]
     public let metrics: [String: Metric]
+    public let conditions: [String: EEGConditionExposure]
     public let systemControlEnabled = false
     public let hardwareValidated = false
     public var rejectionFraction: Double { Double(predictions.filter { $0.predictedLabel == nil }.count) / Double(predictions.count) }
@@ -31,6 +32,7 @@ public struct EEGLabeledEvaluation: Sendable {
             guard dataset.evaluation.filter({ $0.label == label }).count >= 10 else { throw Failure.insufficientClassWindows }
         }
         var detector = try profile.makeDetector(), predictions = [Prediction](), lastEnd = [String: Double]()
+        var episodes = EEGActivationEpisodes()
         for row in dataset.evaluation {
             let input = row.input
             guard profile.parameters.classes.contains(row.label) else { throw Failure.invalidLabels }
@@ -40,6 +42,7 @@ public struct EEGLabeledEvaluation: Sendable {
             let proposal: EEGExperimentalProposal?
             if row.shadowEnabled { proposal = detector.infer(input) }
             else { detector.reset(); proposal = nil }
+            try episodes.consume(row, proposal: proposal)
             let predicted = proposal?.experimentalCandidate ?? (proposal?.reason == "neutral" ? "neutral" : nil)
             predictions.append(Prediction(windowID: input.window_id, sessionID: input.session_id, trialID: row.trialID,
                 actual: row.label, predictedLabel: predicted, reason: proposal?.reason ?? "shadow_disabled", inputUsable: input.usable))
@@ -50,6 +53,6 @@ public struct EEGLabeledEvaluation: Sendable {
                 falsePositive: predictions.filter { $0.actual != label && $0.predictedLabel == label }.count,
                 falseNegative: predictions.filter { $0.actual == label && $0.predictedLabel != label }.count)
         }
-        return EEGLabeledEvaluation(profileID: profile.id, predictions: predictions, metrics: metrics)
+        return EEGLabeledEvaluation(profileID: profile.id, predictions: predictions, metrics: metrics, conditions: episodes.conditions)
     }
 }
