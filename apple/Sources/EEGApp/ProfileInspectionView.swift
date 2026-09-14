@@ -27,7 +27,7 @@ struct ProfileInspectionView: View {
                 DatasetEvaluationView(profile: profile).id(profile.id)
                 ReplayInferenceView(profile: profile).id(profile.id)
             } else {
-                Text("Open an eeg.mental-profile.v2 JSON file from the independent offline trainer. Native training and session evaluation are still being implemented.").foregroundStyle(.secondary)
+                Text("Open a versioned experimental profile created here or by the independent offline trainer. Inspect its provenance, then evaluate separate labeled recordings below.").foregroundStyle(.secondary)
             }
             if let failure { Label(failure, systemImage: "exclamationmark.triangle").foregroundStyle(.red).textSelection(.enabled) }
         }

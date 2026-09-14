@@ -490,3 +490,22 @@ control-disabled status apply identically in both modes.
 Tests establish that a neutral-only dataset fails full evaluation, passes controls-only,
 has unavailable task recall, and that mixed task/control data fails controls-only.
 No control condition has been prospectively validated by these synthetic tests.
+
+### Interactive calibration check (2026-09-15)
+
+The current macOS build was launched without acquisition and the Calibration
+screen was inspected through the accessibility tree. Training and profile-opening
+controls rendered. Removed stale empty-state and Processing help text that said
+native training/evaluation did not exist; those workflows are implemented but
+remain experimental and physiologically unqualified.
+
+Profile import did **not** pass this interactive check: the automated macOS file
+panel displayed the repository's synthetic `mental-profile.json` as selected while
+Open remained disabled. Explicit single-selection, a broader data-type filter,
+and an explicit AppKit panel did not resolve the observed behavior. Those
+experimental picker changes were reverted. This does not establish the cause
+(application, OS, or automation); an ordinary manual import and an automated UI
+regression check remain necessary. No profile was loaded in this UI run and no
+training/evaluation success is claimed from it. Core tests and prior Python
+interop checks do not replace this missing UI qualification. No headset recording,
+Cast changes, or vendor-runtime dependency was introduced.

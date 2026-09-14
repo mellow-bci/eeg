@@ -77,7 +77,7 @@ struct ProcessingSettingsView: View {
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Import and reset update the draft. Save writes one local configuration file; export writes the current validated draft. Existing profiles are unchanged and require explicit retraining to use different settings.")
-                    Text("Native trained inference is not available yet. Export this configuration for the independent offline processing workflow; saving here does not run or modify a model.")
+                    Text("Calibration uses these saved settings when training a new experimental profile. Existing profiles retain their own settings; saving here does not run or modify a model.")
                     if let store { Text(store.file.path).font(.caption.monospaced()).textSelection(.enabled) }
                 }
             }
