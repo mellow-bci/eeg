@@ -9,6 +9,7 @@ public struct EEGRecordingInfo: Identifiable, Sendable {
     public let sampleCount: Int
     public let complete: Bool
     public let corrupt: Bool
+    public init(url:URL,sampleCount:Int,complete:Bool,corrupt:Bool) {self.url=url;self.sampleCount=sampleCount;self.complete=complete;self.corrupt=corrupt}
 }
 
 public enum EEGRecordingError: Error, LocalizedError {

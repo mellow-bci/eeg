@@ -265,7 +265,7 @@
       "id": "capability-08",
       "capability": "Filters, FFT and band power \u00b7 Analyze",
       "status": "tested",
-      "status_scope": "Independent Python spectral feature extraction tested synthetically; native analysis pending",
+      "status_scope": "Python and native numerical feature tests; no physiological interpretation or native hardware qualification",
       "symbol_evidence": {
         "readable_names_and_links": "[NotchFilter::filter](../archive/current-state/local-app-analysis/all-symbols.txt#L1993), [RealTimeFilter](../archive/current-state/local-app-analysis/all-symbols.txt#L2372), [FFT_Txf::apply](../archive/current-state/local-app-analysis/all-symbols.txt#L8735), [onBandPower](../archive/current-state/local-app-analysis/all-symbols.txt#L5091)",
         "references": [
@@ -289,7 +289,7 @@
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
       "missing_parameters_assets_dependencies": "Native feature port, prospective artifact-threshold validation, end-to-end timing and physical signal interpretation. Independent numeric settings are explicit; vendor spectral settings remain unresolved.",
-      "current_implementation": "processing/features.py defines 256-sample Hann/Welch spectra and 70 log-band-power features with explicit unvalidated amplitude/flat/rail rejection. Known-sine energy and unchanged-input tests exist; historical descriptive analysis remains separate.",
+      "current_implementation": "processing/features.py defines 256-sample Hann/Welch spectra and 70 log-band-power features with explicit unvalidated amplitude/flat/rail rejection. Known-sine energy and unchanged-input tests exist; historical descriptive analysis remains separate. Native EEGSpectrum and EEGMentalFeatures share one spectral implementation; real-recording and synthetic oracles cover PSD and all 70 features. EEGIntervalAnalysis computes selected-window means and spectrograms with explicit structural rejection and artifact flags.",
       "target_component": "Analysis service with versioned filter/window/PSD recipes and explicit display-only versus causal processing.",
       "acceptance_gate": "Fixed signal reference tests, frequency/amplitude response, unit consistency, gaps/short-window rejection and online latency.",
       "delivery_notes": "Implemented/tested offline Python spectral subset; not a native or physiological-equivalence claim.",
@@ -324,7 +324,7 @@
       },
       "body_evidence": "Selected bounded body evidence now exists: docs/MENTAL_REFERENCE_TRACE.md and evidence/mental-command-reference/manifest.json establish named feature-selection/PCA/canonical/Gaussian-density/posterior call sites and neutral-training state. Complete raw-to-feature path, numeric settings and vendor-trained state remain unresolved.",
       "missing_parameters_assets_dependencies": "Independently acquired verified mental-task/neutral sessions, prospective artifact controls and ordinary-activity false-activation exposure, held-out physiological performance, native inference/workspace integration. Vendor weights/settings are not required or imported; our experimental parameters are explicit.",
-      "current_implementation": "processing/contract.py + windows.py + workflow.py adapt native/Python recordings into shared valid windows. mental.py implements train-only scaling/feature ranking, PCA, diagonal Gaussian classes including neutral, score/distance rejection, persistence, validated versioned profiles and read-only proposals. workflow.py provides extract/train/evaluate/replay; synthetic tests cover numerical/state/profile/provenance invariants. Older calibration LDA/eyes/blinks is separate research, not this implementation or proof of mental intent.",
+      "current_implementation": "processing/contract.py + windows.py + workflow.py adapt native/Python recordings into shared valid windows. mental.py implements train-only scaling/feature ranking, PCA, diagonal Gaussian classes including neutral, score/distance rejection, persistence, validated versioned profiles and read-only proposals. workflow.py provides extract/train/evaluate/replay; synthetic tests cover numerical/state/profile/provenance invariants. Older calibration LDA/eyes/blinks is separate research, not this implementation or proof of mental intent. Inference now rejects numerical overflow and absent recording identities; profile validation rejects malformed training-window IDs and record digests. Native feature extraction exists; native trained profile inference remains pending.",
       "target_component": "One mental-processing service and versioned profile contract, consumed by the native Calibration workspace. Offline Python processing.workflow is the first research implementation, not a second user-facing application.",
       "acceptance_gate": "Synthetic numerical/state/profile tests plus real prospective whole-session evaluation with independently verified task labels, no content reuse, artifact controls, neutral exposure and uncertainty. Native port must match fixed reference vectors before physical integration; outputs stay disabled.",
       "delivery_notes": "Highest-priority independent mental-command workflow; software implemented and tested in scoped components, physiological/native/output validation pending.",

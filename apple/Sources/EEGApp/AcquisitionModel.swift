@@ -20,6 +20,9 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     @Published var replayOffset = 0
     @Published var ready = false
     @Published var scanning = false
+    @Published var fileOperation:String?
+    private let fileQueue=DispatchQueue(label:"cloud.autonomy.eeg.files",qos:.userInitiated)
+    private var libraryRequest=0
     let directory: URL
     private var central: CBCentralManager!
     private var peripheral: CBPeripheral?
@@ -68,7 +71,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         }
     }
     func scan() {
-        guard peripheral == nil else { return }
+        guard peripheral == nil,fileOperation==nil else { return }
         if central == nil { scanning=true;central=CBCentralManager(delegate:self,queue:.main);return }
         beginScan()
     }
@@ -86,7 +89,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     func centralManager(_ central:CBCentralManager,didDiscover peripheral:CBPeripheral,advertisementData:[String:Any],rssi RSSI:NSNumber) { add(peripheral) }
     func connect(_ device:Device) {
-        guard peripheral == nil,central != nil else { return }
+        guard peripheral == nil,central != nil,fileOperation==nil else { return }
         central.stopScan();scanTimer?.invalidate();scanning=false;playback=false;samples=[];sampleCount=0;decodeErrors=0;contactRaw=[:];metadata=[:];pendingMetadata=[];dataCharacteristic=nil;decoder=nil;configuring=false;ready=false;previewBuffer=[];transportStable=false;lastArrival=nil;stableSince=nil;contiguous=0;origin=ProcessInfo.processInfo.systemUptime
         peripheral=device.peripheral;device.peripheral.delegate=self;phase="Connecting to \(device.name)";central.connect(device.peripheral);startDeadline(seconds:15,message:"Headset connection timed out.")
     }
@@ -185,7 +188,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     private func fail(_ error:Error) { message=error.localizedDescription;event(error.localizedDescription);disconnect() }
     func disconnect() { connectionTimer?.invalidate();scanTimer?.invalidate();central?.stopScan();scanning=false;configuring=false;setTransport(false,reason:"disconnect_requested");if recording { stopRecording() };if let p=peripheral { central?.cancelPeripheralConnection(p) };ready=false;transportStable=false }
     func startRecording() {
-        guard ready,!recording,!playback,let store=store else { return }
+        guard ready,!recording,!playback,fileOperation==nil,let store=store else { return }
         do {
             let url=try store.start();recording=true
             try store.appendEvent(kind:"device_metadata",fields:metadata.mapValues{$0.map{String(format:"%02x",$0)}.joined()})
@@ -199,84 +202,70 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         do { try store?.finish() } catch { message=error.localizedDescription }
         recording=false;refreshRecordings();event("Recording stopped")
     }
-    func refreshRecordings() { do { recordings=try store?.inventory() ?? [] } catch { message=error.localizedDescription } }
-    func replay(_ info:EEGRecordingInfo,offset:Int=0) {
-        guard !recording,!ready else { message="Disconnect the headset before opening a recording.";return }
-        do { samples=try store?.replay(recording:info.url,offset:offset,limit:1280) ?? [];selectedRecording=info.url;playback=true;sampleCount=info.sampleCount;replayOffset=offset;phase="Recorded data · replay" } catch { message=error.localizedDescription }
+    func refreshRecordings() {
+        libraryRequest+=1;let request=libraryRequest;let directory=self.directory
+        fileQueue.async { [weak self] in
+            let result=Result {try EEGRecordingStore(directory:directory).inventory()}
+            DispatchQueue.main.async {
+                guard let self=self,self.libraryRequest==request else {return}
+                switch result {case .success(let items):self.recordings=items;case .failure(let error):self.message=error.localizedDescription}
+            }
+        }
     }
-    @discardableResult func export(_ info:EEGRecordingInfo,to destination:URL) -> Bool {
-        guard !recording,peripheral==nil else {message="Disconnect the headset before exporting a recording.";return false}
-        do { guard let store=store else {return false};try store.exportCSV(recording:info.url,to:destination);event("Exported "+destination.lastPathComponent);return true } catch { message=error.localizedDescription;return false } }
+    func replay(_ info:EEGRecordingInfo,offset:Int=0) {
+        guard !recording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before replay.";return}
+        fileOperation="Loading waveform";let directory=self.directory
+        fileQueue.async { [weak self] in
+            let result=Result {try EEGRecordingStore(directory:directory).replay(recording:info.url,offset:offset,limit:1280)}
+            DispatchQueue.main.async {
+                guard let self=self else {return};self.fileOperation=nil
+                switch result {
+                case .success(let values):self.samples=values;self.selectedRecording=info.url;self.playback=true;self.sampleCount=info.sampleCount;self.replayOffset=offset;self.phase="Recorded data · replay"
+                case .failure(let error):self.message=error.localizedDescription
+                }
+            }
+        }
+    }
+    func export(_ info:EEGRecordingInfo,to destination:URL,completion:@escaping(Bool)->Void = {_ in}) {
+        guard !recording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before exporting.";completion(false);return}
+        fileOperation="Exporting CSV";let directory=self.directory
+        fileQueue.async { [weak self] in
+            let result=Result {try EEGRecordingStore(directory:directory).exportCSV(recording:info.url,to:destination)}
+            DispatchQueue.main.async {
+                guard let self=self else {return};self.fileOperation=nil
+                switch result {
+                case .success:self.event("Exported \(destination.lastPathComponent)");completion(true)
+                case .failure(let error):self.message=error.localizedDescription;completion(false)
+                }
+            }
+        }
+    }
     func annotate(_ text:String) {
         guard recording,!text.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty else { return }
         do { try store?.appendEvent(kind:"annotation",fields:["text":String(text.prefix(1000)),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]);event("Marker: "+text) } catch { message=error.localizedDescription;stopRecording() }
     }
-    /// Import an actual raw BLE capture through the same decoder used by Bluetooth.
-    /// Bounded input size prevents accidentally loading an arbitrarily large JSON object.
+    /// Import work is isolated from main-thread interaction and Bluetooth callbacks.
     func importRawCapture(_ url:URL) {
-        guard !recording,peripheral==nil,let store=store else {message="Disconnect before importing a capture.";return}
+        guard !recording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before importing.";return}
         guard url.isFileURL else {message="Import requires a local capture file.";return}
-        let scoped=url.startAccessingSecurityScopedResource();defer {if scoped {url.stopAccessingSecurityScopedResource()}}
-        var started=false
-        do {
-            let size=try url.resourceValues(forKeys:[.fileSizeKey]).fileSize ?? 0
-            guard size>0,size<=64*1024*1024 else {throw ImportError.invalid("Choose a raw capture JSON up to 64 MiB.")}
-            let raw=try Data(contentsOf:url)
-            guard let object=try JSONSerialization.jsonObject(with:raw) as? [String:Any],
-                  let info=object["info"] as? [String:Any],let packets=object["packets"] as? [[String:Any]] else {throw ImportError.invalid("Expected a raw BLE capture with info and packets fields.")}
-            func value(_ key:String) throws -> Data {
-                let entry=info[key]
-                guard let hex=(entry as? String) ?? ((entry as? [String:Any])?["hex"] as? String) else {throw ImportError.invalid("Missing device metadata: "+key)}
-                return try hexData(hex)
+        fileOperation="Importing raw recording"
+        let scoped=url.startAccessingSecurityScopedResource()
+        let directory=self.directory
+        fileQueue.async { [weak self] in
+            let result=Result {try EEGRawCaptureImporter.importCapture(url,directory:directory)}
+            if scoped {url.stopAccessingSecurityScopedResource()}
+            DispatchQueue.main.async {
+                guard let self=self else {return}
+                self.fileOperation=nil
+                switch result {
+                case .success(let imported):
+                    self.event("Imported \(imported.sampleCount) real samples; \(imported.rejectedPackets) rejected packets.")
+                    self.refreshRecordings()
+                    self.replay(EEGRecordingInfo(url:imported.url,sampleCount:imported.sampleCount,complete:true,corrupt:false))
+                case .failure(let error):self.message=error.localizedDescription;self.refreshRecordings()
+                }
             }
-            let config=info[EPOCProtocol.configurationCharacteristic] == nil ? nil : try value(EPOCProtocol.configurationCharacteristic)
-            var imported=try EEGDecoder(serial:value(EPOCProtocol.serialCharacteristic),revision:value(EPOCProtocol.revisionCharacteristic),configuration:config)
-            let output=try store.start();started=true
-            try store.appendEvent(kind:"import_source",fields:["format":"raw_ble_capture","name":url.lastPathComponent])
-            try store.appendEvent(kind:"device_metadata",fields:["metadata_json":String(decoding:try JSONSerialization.data(withJSONObject:info),as:UTF8.self)])
-            var rejected=0
-            var importStable=false
-            var importSince:Double?
-            var importLast:Double?
-            var importContiguous=0
-            func importStatus(_ stable:Bool,reason:String,at:Double,force:Bool=false) throws {
-                guard importStable != stable || force else {return}
-                importStable=stable
-                try store.appendEvent(kind:"transport_status",fields:["status":stable ? "stable":"recovering","reason":reason,"receivedAt":String(at),"calibrated":String(imported.voltageDivisor != nil),"physiology_validated":"false"])
-            }
-            try importStatus(false,reason:"import_start",at:0,force:true)
-            for packet in packets {
-                guard let uuid=packet["uuid"] as? String,uuid.lowercased()==EPOCProtocol.dataCharacteristic else {continue}
-                guard let hex=packet["hex"] as? String,let time=packet["t"] as? Double,time.isFinite else {throw ImportError.invalid("Malformed raw packet.")}
-                try store.appendEvent(kind:"ble_notification",fields:["hex":hex,"receivedAt":String(time)])
-                let decoded:[EEGSample]
-                do {decoded=try imported.decode(packet:hexData(hex),receivedAt:time)}
-                catch {rejected+=1;try store.appendEvent(kind:"decode_error",fields:["message":error.localizedDescription,"receivedAt":String(time)]);try importStatus(false,reason:"rejected_packet",at:time);importSince=nil;importContiguous=0;importLast=time;continue}
-                let gap=importLast.map{time-$0>0.5 || time<$0} ?? false
-                if gap || decoded.contains(where:{!$0.continuous}) {importSince=nil;importContiguous=0;try importStatus(false,reason:"sample_gap",at:time)}
-                else if importSince==nil {importSince=time}
-                else {importContiguous+=decoded.count;try importStatus(importContiguous>=256 && time-(importSince ?? time)>=2,reason:"contiguous_sample_counters",at:time)}
-                importLast=time
-                for sample in decoded {try store.append(sample:sample)}
-            }
-            try store.appendEvent(kind:"import_complete",fields:["decode_errors":String(rejected)])
-            try store.finish();started=false;refreshRecordings()
-            if let item=recordings.first(where:{$0.url==output}) {replay(item)}
-            event("Imported \(imported.sampleCount) real samples; \(rejected) rejected packets.")
-        } catch {
-            if started {try? store.appendEvent(kind:"import_failed",fields:["message":error.localizedDescription]);try? store.finish()}
-            refreshRecordings();message=error.localizedDescription
         }
-    }
-    private enum ImportError:Error,LocalizedError {
-        case invalid(String)
-        var errorDescription:String? {if case .invalid(let message)=self {return message};return nil}
-    }
-    private func hexData(_ hex:String) throws -> Data {
-        guard hex.count%2==0 else {throw ImportError.invalid("Malformed hexadecimal packet.")}
-        var bytes:[UInt8]=[];var i=hex.startIndex
-        while i<hex.endIndex {let next=hex.index(i,offsetBy:2);guard let value=UInt8(hex[i..<next],radix:16) else {throw ImportError.invalid("Malformed hexadecimal packet.")};bytes.append(value);i=next}
-        return Data(bytes)
     }
     private func event(_ text:String) { events.append(text);if events.count>50 { events.removeFirst(events.count-50) } }
 }

@@ -29,7 +29,9 @@ It must not become a second user-facing setup flow or a competing configuration 
    256-sample Hann/Welch window, linear detrend and explicit flat/rail/amplitude rejection.
    Tests cover known-sine energy and unchanged raw input. These parameters are our own
    experimental design, not recovered vendor defaults. Remaining: artifact-threshold
-   validation, prospective signal interpretation, native port and measured end-to-end timing.
+   validation, prospective signal interpretation and measured end-to-end timing.
+   Native `EEGMentalFeatures` now matches all 70 values on a real-recording Python
+   oracle within 1e-7 log-power units; native readiness/profile integration remains pending.
 3. **Profile training — implemented and tested at software level.**
    `processing/mental.py` fits mean/std scaling and between/within-class feature ranking
    on supplied training data only, selects 20 features, projects through up to eight

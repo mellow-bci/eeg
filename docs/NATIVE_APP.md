@@ -16,8 +16,8 @@ Live notifications and imported raw BLE captures both pass through `EEGDecoder`.
 | Workspace | Working behavior | Explicit remaining scope |
 |---|---|---|
 | Live signals | User-initiated discovery; select/connect headset; raw ADC waveforms; count/rejection metrics; transport stability; private recording; text event markers; raw per-channel contact observations | Physical native-app acquisition qualification; validated good/poor-contact classes; motion decoding |
-| Recordings | Local inventory with finalized/incomplete/corrupt distinction; bounded 1,280-sample pages; ADC CSV export; real raw capture JSON import through the native decoder | Search/tags, EDF/BDF export, automatic recording segmentation, very large library performance |
-| Analysis | Real recorded waveforms and CSV for reproducible analysis | Native spectrum, artifact and band-power tools are visibly marked as future work |
+| Recordings | Local inventory with finalized/incomplete/corrupt distinction; bounded 1,280-sample pages; ADC CSV export; real raw capture JSON import through the native decoder | Tags, EDF/BDF export, automatic recording segmentation, very large library performance |
+| Analysis | Real recorded waveforms, spectral density and band powers for reproducible analysis | Native spectrum and band powers are implemented; physiological interpretation remains unvalidated |
 | Calibration | Clear explanation of independent command-calibration requirements | Native intent training and command outputs are not enabled |
 | System | Storage path, local-only processing, release status and last 50 events | Signed distribution, physical iOS/visionOS qualification and stress qualification |
 
@@ -75,10 +75,74 @@ All recording files are stored under the platform application-support `EEG/Recor
 
 This is an integrated native foundation, not feature parity with every Emotiv application. Physical-device discovery/start/stop/reconnect, sleep/wake, battery loss, independent acquisition without Cortex, sustained throughput and full-session durability have not been requalified in the native app.
 
-CoreBluetooth callbacks and recording writes currently serialize on the main queue. Raw/sample memory is bounded, but a slow disk or expensive library/import operation can delay UI/notification processing. Move I/O behind a bounded serial delivery mechanism with explicit overflow and loss accounting before a production claim. Long-run rotation, storage-budget management, recoverable interruption, signed distribution, accessibility QA and physical mobile-platform background behavior remain release gates. App inventory/review can scan long files and is not yet indexed.
+CoreBluetooth callbacks and recording writes currently serialize on the main queue. Raw/sample memory is bounded, but a slow disk during live recording can delay UI/notification processing. Move live recording I/O behind a bounded serial delivery mechanism with explicit overflow and loss accounting before a production claim. Long-run rotation, storage-budget management, recoverable interruption, signed distribution, accessibility QA and physical mobile-platform background behavior remain release gates. App inventory/review can scan long files and is not yet indexed.
 
 Raw decoding does not establish valid scalp contact, classify cognitive state or implement Apple's BCI HID input report path. Those capabilities require separate implementation and validation.
 
 ## Final reader consistency review
 
-Inventory, paged replay and CSV export now share the same native-v1 schema, sample-shape, summary-count and failed-import validation. Replay validates the entire file snapshot even after filling its bounded page, so corruption after that page cannot be concealed. A structurally valid unfinished recording remains reviewable but is explicitly incomplete. Failed CSV exports are removed. Export is blocked while a headset connection exists, to avoid a synchronous full-file export competing with acquisition. Full-file reading is still main-queue work and requires background I/O/indexing qualification before large-library production use. No native live hardware capture was performed in this review.
+Inventory, paged replay and CSV export now share the same native-v1 schema, sample-shape, summary-count and failed-import validation. Replay validates the entire file snapshot even after filling its bounded page, so corruption after that page cannot be concealed. A structurally valid unfinished recording remains reviewable but is explicitly incomplete. Failed CSV exports are removed. Export is blocked while a headset connection exists, to avoid a synchronous full-file export competing with acquisition. Inventory, replay, import and export now run on a serial background file queue with main-thread result publication. Large-library indexing and stress qualification remain outstanding. No native live hardware capture was performed in this review.
+
+
+## Interactive analysis and native chart references
+
+The current UI implementation uses Swift Charts for spectral density and band powers, including frequency selection and explicit scientific units. On newer supported systems it uses vectorized line plots; earlier deployment targets use the same data and standard line marks. Scientific waveform rendering must preserve gaps and distinguish ADC values from calibrated voltage. A visually plausible trace is not evidence of valid contact or mental-command decoding.
+
+Official design/implementation references reviewed:
+
+- [Swift Charts](https://developer.apple.com/documentation/charts)
+- [Creating a data visualization dashboard](https://developer.apple.com/documentation/charts/creating-a-data-visualization-dashboard-with-swift-charts)
+- [Visualizing your app’s data](https://developer.apple.com/documentation/charts/visualizing-your-app-s-data)
+- [WWDC23: selection and scrolling](https://developer.apple.com/videos/play/wwdc2023/10037/): selection bindings, rule marks, annotation overflow handling, visible domains and scroll position.
+
+`Spectrum.swift` analyzes exactly 256 continuous calibrated samples at 128 Hz, using linear detrending, a periodic Hann window, one-sided density normalization and half-open frequency bands. Native fixtures compare every PSD bin and integrated band against the Python reference for a real recording window and a labeled synthetic 10 Hz test vector. The synthetic vector is a numerical test fixture, never a live source or product measurement. Live analysis requires stabilized transport; replay currently exposes its transport provenance as unverified. No artifact threshold result establishes physiological readiness.
+
+`ProcessingSettingsView` edits the canonical `eeg.processing-settings.v1` contract and persists it atomically. It supports import/export for the existing offline training workflow; native training is not implied by the presence of settings.
+
+
+### Native chart checkpoint, 2026-09-15
+
+All 21 Swift tests passed and macOS, iOS Simulator and visionOS Simulator builds succeeded. Actual macOS UI review imported the configured archived paired capture (1,929 raw notifications, 3,858 decoded samples, zero rejections), selected its recording and opened Spectrum. The real O1 window ending at sample 1,279 rendered a labeled PSD chart and reported 7.96 µV detrended RMS and 45.22 µV peak-to-peak. These rounded UI measurements describe that archived window only. No live capture, cognitive score or hardware qualification was performed in this checkpoint. Complete interactive, accessibility and mobile visual QA remain outstanding.
+
+### Interval review and waveform readability (2026-09-15)
+
+Recording review connects `WaveformWorkbench`'s exact original sample selection to
+`IntervalAnalysisView`. Selecting or navigating a recording page resets frozen
+inspection through source identity. Display centering, amplitude limits and channel
+height never modify stored measurements or the samples sent to analysis.
+
+Channel lanes default to 56 points, with 29-point compact and 88-point expanded
+choices. The optional selected-channel inspector is 240 points tall. Common
+amplitude controls retain explicit ADC/µV units; µV requires calibration metadata.
+Fixed-scale clipping is disclosed. These changes improve inspection space; visual
+patterns alone do not establish a mental-command trigger.
+
+Interval analysis uses the canonical spectrum implementation: complete 256-sample
+windows with a 128-sample hop. Structurally invalid windows are rejected and remain
+blank in the spectrogram. The average uses only structurally accepted windows;
+artifact flags and uncovered trailing sample counts remain visible. Spectrogram
+horizontal coordinates are window ordinals, explicitly distinct from measured
+receipt timestamps. No gaps are interpolated and no physiological interpretation
+is inferred. Five interval tests cover the single-window reference, overlapping
+window count/tail, structural gaps, flagged flat signals and all-rejected input.
+
+Verification: integrated `swift test --package-path apple` passed 26 tests with
+zero failures. Interactive accessibility and hardware qualification remain separate
+from these automated results.
+
+### Native mental-feature bridge
+
+`EEGMentalFeatures.extract` computes all 70 channel-major log-band powers using
+`EEGSpectrum`; no second spectral implementation was introduced. Channel order,
+half-open bands, log floor and feature configuration identity match
+`processing/features.py`. Missing calibration on any electrode rejects the entire
+vector. Artifact flags use the reference's stable aggregate ordering.
+
+Reproduce the real-recording numerical oracle with
+`python -m tools.generate_native_mental_fixture` in the research environment, then
+run `swift test --package-path apple`. All 70 values match the Python/SciPy oracle
+within 1e-7 log-power units. The integrated suite now passes 28 tests. This is one
+recorded numerical fixture, not cross-session mental-command validation. The
+native profile trainer/classifier, transport/epoch readiness integration and
+prospective command/neutral evaluation remain unfinished. A usable feature vector
+alone never authorizes a command or system action.

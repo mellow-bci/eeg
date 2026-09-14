@@ -77,3 +77,13 @@ now traps numerical failure, clears candidate persistence, returns
 an arbitrary winning class. The next acceptable window must begin persistence again.
 These software regression tests use manufactured vectors and do not validate neural
 intent. Run `python -m unittest discover -s tests` in the research environment.
+
+### Canonical construction boundary
+
+Direct `CanonicalSample` construction now enforces the same unsigned integral ADC
+counts and observed-configuration voltage conversion as the recording adapter.
+Epoch/segment identifiers must be nonnegative integers or unknown; transport flags
+must be actual booleans. Missing source identity is rejected before event adaptation
+rather than converted into strings such as `None`. Unknown metadata remains allowed
+as unknown and is rejected by the valid-window gate, never promoted to readiness.
+The full Python suite passed 119 tests after this change.

@@ -31,11 +31,21 @@ class CanonicalSample:
         _integer(self.index,'index');_integer(self.counter,'counter')
         if self.counter >= 128:raise ValueError('Counter exceeds observed range')
         _number(self.received_at)
+        if self.received_at < 0:raise ValueError('Arrival timestamp must be nonnegative')
+        _integer(self.epoch,'epoch',True);_integer(self.stable_segment,'stable_segment',True)
+        if type(self.transport_stable) is not bool or type(self.continuous) is not bool:
+            raise ValueError('Transport and continuity flags must be booleans')
+        if self.config_id is not None and (not isinstance(self.config_id,str) or not self.config_id):
+            raise ValueError('Configuration identity must be nonempty text or unknown')
         if not isinstance(self.source_id,str) or not self.source_id:raise ValueError('Source identity is required')
         for vector in (self.adc,self.microvolts):
             if vector is not None:
                 if not isinstance(vector,tuple) or len(vector)!=14:raise ValueError('Immutable fourteen-channel tuple required')
                 for value in vector:_number(value)
+        if not isinstance(self.adc,tuple) or any(a<0 or a>65535 or a!=int(a) for a in self.adc):
+            raise ValueError('ADC counts must be unsigned integers')
+        if self.microvolts is not None and self.config_id==SUPPORTED_CONFIG and any(abs(v-a/7.8)>1e-6 for a,v in zip(self.adc,self.microvolts)):
+            raise ValueError('Voltage does not match observed ADC conversion')
 
 
 def _integer(value, name, nullable=False):
@@ -71,6 +81,7 @@ def iter_event_samples(events, source_id, require_complete=False):
     Native status is reconstructed only from explicit chronological transport events;
     absence of status is never treated as stable. A native start defines one epoch.
     """
+    if not isinstance(source_id,str) or not source_id:raise ValueError('Source identity is required')
     mode=None;config=None;stable=False;segment=0;epoch=None;started=False;final=False;sample_count=0
     for event in events:
         if not isinstance(event,dict):raise ValueError('Event must be an object')
@@ -136,7 +147,7 @@ def iter_event_samples(events, source_id, require_complete=False):
             raise ValueError('Voltage does not match observed ADC conversion')
         sample_count+=1
         yield CanonicalSample(index,counter,_number(at),sample_epoch,sample_segment,
-                              sample_stable,sample.get('continuous') is True,adc,calibrated,config,str(source_id))
+                              sample_stable,sample.get('continuous') is True,adc,calibrated,config,source_id)
     if require_complete and not final:raise ValueError('Recording has no final summary')
 
 

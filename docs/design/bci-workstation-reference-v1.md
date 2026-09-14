@@ -1,0 +1,17 @@
+# BCI workstation visual reference
+
+Generated with the built-in image tool on 2026-09-15. This is an illustrative design concept, not a screenshot of working features or physiological evidence.
+
+Use its integrated workspace, chart-first proportions, compact controls and contextual inspector as visual direction. Implement all charts from actual recordings. Correct the concept's duplicated scalp labels and inconsistent example time ranges; do not use the raster scalp drawing as an anatomical authority. Spectrogram, event navigation and full-recording overview require implemented data support before appearing as functional controls.
+
+Keep native SwiftUI interaction and accessibility. Carbon may inform density and hierarchy, but do not introduce a second web/component system into the native app.
+
+## Generation prompt
+
+Use case: ui-mockup
+Asset type: high fidelity visual reference for a native SwiftUI scientific brain-computer-interface desktop application named EEG.
+Primary request: Design a sophisticated, powerful, meticulously composed BCI research workstation. Apple-native craft and typography with the information density and disciplined alignment of an enterprise scientific instrument. This must feel like a cohesive professional application, not a dashboard of oversized cards.
+Composition: one straight-on full application window, wide landscape 16:10, crisp legible interface, no laptop frame or perspective. Native macOS window controls. Compact slim sidebar with EEG identity and navigation Acquisition, Recordings, Analysis, Calibration, Devices. Main work area is a synchronized recording review workstation, 70% width; contextual inspector 25% at right. Compact toolbars, hairline separators, restrained rounded corners, efficient whitespace. Cool near-black/navy graphite surfaces with clear warm-white text and restrained cyan/indigo accents.
+Main content: title "Recording review", subtitle "Session 024 · EPOC X · 14 channels · 128 Hz". A dominant multichannel EEG signal canvas with 14 clearly separated teal and blue traces labeled AF3 F7 F3 FC5 T7 P7 O1 O2 P8 T8 FC6 F4 F8 AF4. Fine scientific grid, seconds axis, µV scale, a shaded selected 2-second interval with vertical crosshair. A compact full-recording overview scrubber beneath with labeled event markers and selected interval. Bottom aligned analysis region contains a frequency spectrum with Hz and µV²/Hz axes and a time-frequency spectrogram with color legend, all synchronized to selection. Right inspector contains a beautifully rendered subtle dimensional scalp/electrode map showing the 14 positions, concise channel list and selection details, provenance "Recorded data", source "Raw ADC → calibrated µV", validation status "Research use". Header includes channel montage, time window and amplitude controls, an understated Export action.
+Critical content integrity: include a clearly legible small label "DESIGN CONCEPT · ILLUSTRATIVE DATA" in the bottom status bar. All rendered traces and example values are illustrative concept content. No claims of diagnosis, clinical approval, perfect signal quality, cognitive scores, or current live hardware connection. Show "Transport review" rather than invented percent quality.
+Style: elegant expert workstation, precise readable SF-style typography, polished native hierarchy, subtle depth only in scalp illustration, flat functional charts, excellent contrast, no marketing slogans, no neon cyberpunk, no giant KPI cards, no stock photographs, no decorative floating brains, no web landing page.

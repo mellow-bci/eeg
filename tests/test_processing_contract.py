@@ -100,4 +100,22 @@ class ContractTests(unittest.TestCase):
             self.assertEqual(len(samples[0].source_id),64)
             self.assertTrue(next(iter_windows(samples)).valid)
 
+class DirectCanonicalBoundaryTests(unittest.TestCase):
+    def test_constructor_cannot_bypass_adapter_validation(self):
+        sample=next(iter_event_samples(events(False,1),'source'))
+        variants=[dict(transport_stable='false'),dict(continuous=1),dict(epoch=True),
+            dict(stable_segment=-1),dict(received_at=-1),dict(config_id=42),
+            dict(adc=None),dict(adc=(1.5,)*14),dict(adc=(65536.,)*14),
+            dict(microvolts=(1.,)*14)]
+        for fields in variants:
+            with self.subTest(fields=fields),self.assertRaises(ValueError):replace(sample,**fields)
+        unknown=replace(sample,epoch=None,stable_segment=None,config_id=None,microvolts=None)
+        self.assertIsNone(unknown.microvolts)
+        self.assertFalse(next(iter_windows([unknown])).valid)
+
+    def test_missing_source_is_not_stringified_into_identity(self):
+        for source in (None,42,False,''):
+            with self.subTest(source=source),self.assertRaises(ValueError):
+                list(iter_event_samples(events(False,1),source))
+
 if __name__=='__main__':unittest.main()

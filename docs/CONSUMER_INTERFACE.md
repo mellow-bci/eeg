@@ -1,5 +1,9 @@
 # EEG consumer interface and ownership
 
+Product direction: standalone and local-first. Cast is an optional future consumer,
+not the application host or a requirement for capture, replay, analysis or training.
+Core operation must not depend on internet access, accounts or subscription services.
+
 Status: proposed integration boundary, grounded in current source; not a released
 network API. This document does not assert that Cast schemas or permissions have
 been mapped. No Cast source was changed for this checkpoint.
