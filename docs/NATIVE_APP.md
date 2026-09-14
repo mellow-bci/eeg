@@ -291,3 +291,32 @@ match within 1e-10 in the current test run. It contains no physiological data. T
 core API does not yet perform SVD, fit Gaussians, save a profile, or expose native
 training controls. Recording-based label collection must establish input provenance;
 decoding a feature JSON alone does not do so.
+
+### Native PCA and Gaussian fitting
+
+`EEGMentalTraining.fit` calls the training eligibility/preparation path, then uses
+Accelerate LAPACK `dgesvd_` for thin right singular vectors. Column-major storage,
+workspace query, dimensions and decomposition status are checked. The selected
+component count is `min(configured components, records - classes, selected features)`.
+Each component's largest absolute coefficient is made positive, matching the Python
+sign convention. It then projects training records, fits per-class population means
+and diagonal variances with the configured floor, and sets the distance limit to
+`max(4 * dimensions, 1.5 * linear 99th percentile of training distances)`.
+
+Apple's [SVD sample](https://developer.apple.com/documentation/accelerate/compressing-an-image-using-linear-algebra)
+documents the LAPACK storage/workspace pattern; the implementation also follows the
+installed SDK's double-precision function declaration. It does not use vendor assets.
+The fit returns scoring parameters, not a published profile or action authorization.
+
+The extended manufactured Python fixture contains expected fitted parameters. Native
+components, Gaussian parameters and resulting scores match within 1e-8 locally.
+Tests cover wide and degenerate matrices through orthonormality and reject malformed
+or nonfinite matrices. Degenerate singular subspaces can have different equally valid
+bases across numerical backends; exact serialized parameter identity is not promised.
+SVD failure is explicit. Profile serialization/provenance, native trial collection,
+held-out evaluation UI and physiological qualification remain required.
+
+The Swift package enables `ACCELERATE_NEW_LAPACK` through the Clang importer and
+uses `__LAPACK_int`, avoiding the deprecated CLAPACK interface. This is a compiler
+header selection, not an alternate processing path. The local numerical tests pass
+with that interface enabled.
