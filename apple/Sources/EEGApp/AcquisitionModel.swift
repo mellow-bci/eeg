@@ -8,6 +8,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     @Published var phase = "Disconnected"
     @Published var message: String?
     @Published var samples: [EEGSample] = []
+    lazy var trialCues = TrialCueController(acquisition: self)
     @Published private(set) var trial: EEGTrialEvidence?
     private var trialSession: EEGTrialSession?
     @Published var recording = false
