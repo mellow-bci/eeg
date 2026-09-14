@@ -45,3 +45,7 @@ the acquisition pipeline has newer safeguards.
 full reports and historical notes. Older notes are not current truth when they
 contradict the current documentation. `docs/` and maintained root code take
 precedence. The archive exists to retain every experiment and support audit.
+
+## Native application and new research tools
+
+`apple/` contains the Swift decoder, private recording store, shared SwiftUI workspace, platform projects and native tests. `recordings.py` provides offline Python recording inventory/replay/export. `calibration/` contains unexecuted plan generation, explicit audio experiment execution, descriptive trial analysis and session-held-out evaluation. These never enable system-control output. `tools/qualify_recording.py` applies scoped transport checks.

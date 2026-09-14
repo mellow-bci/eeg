@@ -1,0 +1,666 @@
+(lldb) disassemble --start-address 0x100b1de80 --end-address 0x100b1e8e0
+CortexService`Cortex::MentalCommands::Classification::run:
+CortexService[0x100b1de80] <+0>:    stp    d9, d8, [sp, #-0x70]!
+CortexService[0x100b1de84] <+4>:    stp    x28, x27, [sp, #0x10]
+CortexService[0x100b1de88] <+8>:    stp    x26, x25, [sp, #0x20]
+CortexService[0x100b1de8c] <+12>:   stp    x24, x23, [sp, #0x30]
+CortexService[0x100b1de90] <+16>:   stp    x22, x21, [sp, #0x40]
+CortexService[0x100b1de94] <+20>:   stp    x20, x19, [sp, #0x50]
+CortexService[0x100b1de98] <+24>:   stp    x29, x30, [sp, #0x60]
+CortexService[0x100b1de9c] <+28>:   add    x29, sp, #0x60
+CortexService[0x100b1dea0] <+32>:   sub    sp, sp, #0x3e0
+CortexService[0x100b1dea4] <+36>:   mov    x19, x3
+CortexService[0x100b1dea8] <+40>:   mov    x23, x2
+CortexService[0x100b1deac] <+44>:   mov    x21, x1
+CortexService[0x100b1deb0] <+48>:   mov    x24, x0
+CortexService[0x100b1deb4] <+52>:   adrp   x8, 9729
+CortexService[0x100b1deb8] <+56>:   ldr    x8, [x8, #0xcf0]
+CortexService[0x100b1debc] <+60>:   ldr    x8, [x8]
+CortexService[0x100b1dec0] <+64>:   stur   x8, [x29, #-0x70]
+CortexService[0x100b1dec4] <+68>:   mov    x0, x2
+CortexService[0x100b1dec8] <+72>:   bl     0x1021350b0               ; Cortex::Math::Matrix::isEmpty() const
+CortexService[0x100b1decc] <+76>:   cbz    w0, 0x100b1df50           ; <+208>
+CortexService[0x100b1ded0] <+80>:   add    x0, sp, #0x320
+CortexService[0x100b1ded4] <+84>:   bl     0x102134d5c               ; Cortex::Math::Matrix::Matrix()
+CortexService[0x100b1ded8] <+88>:   ldr    x8, [sp, #0x330]
+CortexService[0x100b1dedc] <+92>:   str    xzr, [sp, #0x330]
+CortexService[0x100b1dee0] <+96>:   ldr    x0, [x19]
+CortexService[0x100b1dee4] <+100>:  ldr    q0, [sp, #0x320]
+CortexService[0x100b1dee8] <+104>:  str    xzr, [sp, #0x320]
+CortexService[0x100b1deec] <+108>:  str    xzr, [sp, #0x328]
+CortexService[0x100b1def0] <+112>:  str    q0, [x19]
+CortexService[0x100b1def4] <+116>:  str    x8, [x19, #0x10]
+CortexService[0x100b1def8] <+120>:  cbz    x0, 0x100b1df18           ; <+152>
+CortexService[0x100b1defc] <+124>:  mov    w8, #-0x1                 ; =-1 
+CortexService[0x100b1df00] <+128>:  ldaddal w8, w8, [x0]
+CortexService[0x100b1df04] <+132>:  cmp    w8, #0x1
+CortexService[0x100b1df08] <+136>:  b.ne   0x100b1df18               ; <+152>
+CortexService[0x100b1df0c] <+140>:  ldr    w8, [x0]
+CortexService[0x100b1df10] <+144>:  cbnz   w8, 0x100b1e720           ; <+2208>
+CortexService[0x100b1df14] <+148>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1df18] <+152>:  ldr    x9, [sp, #0x338]
+CortexService[0x100b1df1c] <+156>:  ldr    x8, [sp, #0x320]
+CortexService[0x100b1df20] <+160>:  str    x9, [x19, #0x18]
+CortexService[0x100b1df24] <+164>:  cbz    x8, 0x100b1e6bc           ; <+2108>
+CortexService[0x100b1df28] <+168>:  mov    w9, #-0x1                 ; =-1 
+CortexService[0x100b1df2c] <+172>:  ldaddal w9, w8, [x8]
+CortexService[0x100b1df30] <+176>:  cmp    w8, #0x1
+CortexService[0x100b1df34] <+180>:  b.ne   0x100b1e6bc               ; <+2108>
+CortexService[0x100b1df38] <+184>:  ldr    x0, [sp, #0x320]
+CortexService[0x100b1df3c] <+188>:  cbz    x0, 0x100b1e728           ; <+2216>
+CortexService[0x100b1df40] <+192>:  ldr    w8, [x0]
+CortexService[0x100b1df44] <+196>:  cbz    w8, 0x100b1e6b8           ; <+2104>
+CortexService[0x100b1df48] <+200>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100b1df4c] <+204>:  b      0x100b1e798               ; <+2328>
+CortexService[0x100b1df50] <+208>:  ldr    x8, [x21, #0x398]
+CortexService[0x100b1df54] <+212>:  ldr    x9, [x21, #0x390]
+CortexService[0x100b1df58] <+216>:  sub    x8, x8, x9
+CortexService[0x100b1df5c] <+220>:  asr    x8, x8, #7
+CortexService[0x100b1df60] <+224>:  mov    x9, #-0x5555555555555556  ; =-6148914691236517206 
+CortexService[0x100b1df64] <+228>:  movk   x9, #0xaaab
+CortexService[0x100b1df68] <+232>:  mul    x22, x8, x9
+CortexService[0x100b1df6c] <+236>:  cmp    x22, #0x1
+CortexService[0x100b1df70] <+240>:  b.hi   0x100b1dff4               ; <+372>
+CortexService[0x100b1df74] <+244>:  add    x0, sp, #0x320
+CortexService[0x100b1df78] <+248>:  bl     0x102134d5c               ; Cortex::Math::Matrix::Matrix()
+CortexService[0x100b1df7c] <+252>:  ldr    x8, [sp, #0x330]
+CortexService[0x100b1df80] <+256>:  str    xzr, [sp, #0x330]
+CortexService[0x100b1df84] <+260>:  ldr    x0, [x19]
+CortexService[0x100b1df88] <+264>:  ldr    q0, [sp, #0x320]
+CortexService[0x100b1df8c] <+268>:  str    xzr, [sp, #0x320]
+CortexService[0x100b1df90] <+272>:  str    xzr, [sp, #0x328]
+CortexService[0x100b1df94] <+276>:  str    q0, [x19]
+CortexService[0x100b1df98] <+280>:  str    x8, [x19, #0x10]
+CortexService[0x100b1df9c] <+284>:  cbz    x0, 0x100b1dfbc           ; <+316>
+CortexService[0x100b1dfa0] <+288>:  mov    w8, #-0x1                 ; =-1 
+CortexService[0x100b1dfa4] <+292>:  ldaddal w8, w8, [x0]
+CortexService[0x100b1dfa8] <+296>:  cmp    w8, #0x1
+CortexService[0x100b1dfac] <+300>:  b.ne   0x100b1dfbc               ; <+316>
+CortexService[0x100b1dfb0] <+304>:  ldr    w8, [x0]
+CortexService[0x100b1dfb4] <+308>:  cbnz   w8, 0x100b1e730           ; <+2224>
+CortexService[0x100b1dfb8] <+312>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1dfbc] <+316>:  ldr    x9, [sp, #0x338]
+CortexService[0x100b1dfc0] <+320>:  ldr    x8, [sp, #0x320]
+CortexService[0x100b1dfc4] <+324>:  str    x9, [x19, #0x18]
+CortexService[0x100b1dfc8] <+328>:  cbz    x8, 0x100b1e6bc           ; <+2108>
+CortexService[0x100b1dfcc] <+332>:  mov    w9, #-0x1                 ; =-1 
+CortexService[0x100b1dfd0] <+336>:  ldaddal w9, w8, [x8]
+CortexService[0x100b1dfd4] <+340>:  cmp    w8, #0x1
+CortexService[0x100b1dfd8] <+344>:  b.ne   0x100b1e6bc               ; <+2108>
+CortexService[0x100b1dfdc] <+348>:  ldr    x0, [sp, #0x320]
+CortexService[0x100b1dfe0] <+352>:  cbz    x0, 0x100b1e738           ; <+2232>
+CortexService[0x100b1dfe4] <+356>:  ldr    w8, [x0]
+CortexService[0x100b1dfe8] <+360>:  cbz    w8, 0x100b1e6b8           ; <+2104>
+CortexService[0x100b1dfec] <+364>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100b1dff0] <+368>:  b      0x100b1e798               ; <+2328>
+CortexService[0x100b1dff4] <+372>:  str    xzr, [sp, #0x340]
+CortexService[0x100b1dff8] <+376>:  movi.2d v0, #0000000000000000
+CortexService[0x100b1dffc] <+380>:  stp    q0, q0, [sp, #0x320]
+CortexService[0x100b1e000] <+384>:  add    x8, sp, #0x270
+CortexService[0x100b1e004] <+388>:  mov    x0, x23
+CortexService[0x100b1e008] <+392>:  bl     0x10212cfc4               ; Cortex::Math::toArmadilloMatrix(Cortex::Math::Matrix const&)
+CortexService[0x100b1e00c] <+396>:  add    x2, x21, #0x20
+CortexService[0x100b1e010] <+400>:  add    x0, sp, #0x270
+CortexService[0x100b1e014] <+404>:  add    x1, sp, #0x320
+CortexService[0x100b1e018] <+408>:  bl     0x100b1e8e0               ; Cortex::MentalCommands::Classification::featureSelection(arma::Mat<double> const&, arma::Mat<double>&, arma::Col<unsigned long long> const&)
+CortexService[0x100b1e01c] <+412>:  str    xzr, [sp, #0x1e0]
+CortexService[0x100b1e020] <+416>:  movi.2d v0, #0000000000000000
+CortexService[0x100b1e024] <+420>:  stp    q0, q0, [sp, #0x1c0]
+CortexService[0x100b1e028] <+424>:  add    x0, sp, #0x1c0
+CortexService[0x100b1e02c] <+428>:  add    x1, sp, #0x320
+CortexService[0x100b1e030] <+432>:  bl     0x100b2110c               ; ___lldb_unnamed_symbol_100b2110c
+CortexService[0x100b1e034] <+436>:  add    x1, x21, #0xd0
+CortexService[0x100b1e038] <+440>:  add    x2, x21, #0x180
+CortexService[0x100b1e03c] <+444>:  add    x20, sp, #0x1c0
+CortexService[0x100b1e040] <+448>:  add    x0, sp, #0x1c0
+CortexService[0x100b1e044] <+452>:  bl     0x100b1e9cc               ; Cortex::MentalCommands::Classification::pcaTransform(arma::Mat<double>&, arma::Mat<double> const&, arma::Mat<double> const&)
+CortexService[0x100b1e048] <+456>:  add    x0, x24, #0xc0
+CortexService[0x100b1e04c] <+460>:  cmp    x0, x20
+CortexService[0x100b1e050] <+464>:  b.eq   0x100b1e0e8               ; <+616>
+CortexService[0x100b1e054] <+468>:  ldp    x1, x2, [sp, #0x1c0]
+CortexService[0x100b1e058] <+472>:  bl     0x100b1a98c               ; ___lldb_unnamed_symbol_100b1a98c
+CortexService[0x100b1e05c] <+476>:  ldr    x0, [x24, #0xe0]
+CortexService[0x100b1e060] <+480>:  ldr    x1, [sp, #0x1e0]
+CortexService[0x100b1e064] <+484>:  ldr    x8, [sp, #0x1d0]
+CortexService[0x100b1e068] <+488>:  cmp    x8, #0x9
+CortexService[0x100b1e06c] <+492>:  b.hi   0x100b1e0e0               ; <+608>
+CortexService[0x100b1e070] <+496>:  sub    x8, x8, #0x1
+CortexService[0x100b1e074] <+500>:  cmp    x8, #0x8
+CortexService[0x100b1e078] <+504>:  b.hi   0x100b1e0e8               ; <+616>
+CortexService[0x100b1e07c] <+508>:  adrp   x9, 6953
+CortexService[0x100b1e080] <+512>:  add    x9, x9, #0xb00            ; typeinfo name for Cortex::Detections::BandPowerDetection + 2464
+CortexService[0x100b1e084] <+516>:  adr    x10, 0x100b1e094          ; <+532>
+CortexService[0x100b1e088] <+520>:  ldrb   w11, [x9, x8]
+CortexService[0x100b1e08c] <+524>:  add    x10, x10, x11, lsl #2
+CortexService[0x100b1e090] <+528>:  br     x10
+CortexService[0x100b1e094] <+532>:  ldr    d0, [x1, #0x40]
+CortexService[0x100b1e098] <+536>:  str    d0, [x0, #0x40]
+CortexService[0x100b1e09c] <+540>:  ldr    d0, [x1, #0x38]
+CortexService[0x100b1e0a0] <+544>:  str    d0, [x0, #0x38]
+CortexService[0x100b1e0a4] <+548>:  ldr    d0, [x1, #0x30]
+CortexService[0x100b1e0a8] <+552>:  str    d0, [x0, #0x30]
+CortexService[0x100b1e0ac] <+556>:  ldr    d0, [x1, #0x28]
+CortexService[0x100b1e0b0] <+560>:  str    d0, [x0, #0x28]
+CortexService[0x100b1e0b4] <+564>:  ldr    d0, [x1, #0x20]
+CortexService[0x100b1e0b8] <+568>:  str    d0, [x0, #0x20]
+CortexService[0x100b1e0bc] <+572>:  ldr    d0, [x1, #0x18]
+CortexService[0x100b1e0c0] <+576>:  str    d0, [x0, #0x18]
+CortexService[0x100b1e0c4] <+580>:  ldr    d0, [x1, #0x10]
+CortexService[0x100b1e0c8] <+584>:  str    d0, [x0, #0x10]
+CortexService[0x100b1e0cc] <+588>:  ldr    d0, [x1, #0x8]
+CortexService[0x100b1e0d0] <+592>:  str    d0, [x0, #0x8]
+CortexService[0x100b1e0d4] <+596>:  ldr    d0, [x1]
+CortexService[0x100b1e0d8] <+600>:  str    d0, [x0]
+CortexService[0x100b1e0dc] <+604>:  b      0x100b1e0e8               ; <+616>
+CortexService[0x100b1e0e0] <+608>:  lsl    x2, x8, #3
+CortexService[0x100b1e0e4] <+612>:  bl     0x1024b8260               ; symbol stub for: memcpy
+CortexService[0x100b1e0e8] <+616>:  ldr    x8, [x21, #0x3a8]
+CortexService[0x100b1e0ec] <+620>:  sub    x9, x8, #0x1
+CortexService[0x100b1e0f0] <+624>:  ldr    x10, [sp, #0x1c8]
+CortexService[0x100b1e0f4] <+628>:  cmp    x9, x10
+CortexService[0x100b1e0f8] <+632>:  b.hs   0x100b1e1d0               ; <+848>
+CortexService[0x100b1e0fc] <+636>:  ldr    x9, [sp, #0x1c0]
+CortexService[0x100b1e100] <+640>:  add    x10, sp, #0x1c0
+CortexService[0x100b1e104] <+644>:  stp    x10, xzr, [sp, #0x110]
+CortexService[0x100b1e108] <+648>:  stp    xzr, x9, [sp, #0x120]
+CortexService[0x100b1e10c] <+652>:  mul    x9, x9, x8
+CortexService[0x100b1e110] <+656>:  stp    x8, x9, [sp, #0x130]
+CortexService[0x100b1e114] <+660>:  add    x0, sp, #0x1c0
+CortexService[0x100b1e118] <+664>:  add    x1, sp, #0x110
+CortexService[0x100b1e11c] <+668>:  bl     0x100b1eae0               ; ___lldb_unnamed_symbol_100b1eae0
+CortexService[0x100b1e120] <+672>:  add    x1, x21, #0x230
+CortexService[0x100b1e124] <+676>:  add    x2, x21, #0x2e0
+CortexService[0x100b1e128] <+680>:  add    x20, sp, #0x1c0
+CortexService[0x100b1e12c] <+684>:  add    x0, sp, #0x1c0
+CortexService[0x100b1e130] <+688>:  mov    x3, x22
+CortexService[0x100b1e134] <+692>:  bl     0x100b1ec80               ; Cortex::MentalCommands::Classification::canonicalTransform(arma::Mat<double>&, arma::Mat<double> const&, arma::Mat<double> const&, unsigned long)
+CortexService[0x100b1e138] <+696>:  add    x0, x24, #0x170
+CortexService[0x100b1e13c] <+700>:  cmp    x0, x20
+CortexService[0x100b1e140] <+704>:  b.eq   0x100b1e2a4               ; <+1060>
+CortexService[0x100b1e144] <+708>:  ldp    x1, x2, [sp, #0x1c0]
+CortexService[0x100b1e148] <+712>:  bl     0x100b1a98c               ; ___lldb_unnamed_symbol_100b1a98c
+CortexService[0x100b1e14c] <+716>:  ldr    x0, [x24, #0x190]
+CortexService[0x100b1e150] <+720>:  ldr    x1, [sp, #0x1e0]
+CortexService[0x100b1e154] <+724>:  ldr    x8, [sp, #0x1d0]
+CortexService[0x100b1e158] <+728>:  cmp    x8, #0x9
+CortexService[0x100b1e15c] <+732>:  b.hi   0x100b1e29c               ; <+1052>
+CortexService[0x100b1e160] <+736>:  sub    x8, x8, #0x1
+CortexService[0x100b1e164] <+740>:  cmp    x8, #0x8
+CortexService[0x100b1e168] <+744>:  b.hi   0x100b1e2a4               ; <+1060>
+CortexService[0x100b1e16c] <+748>:  adrp   x9, 6953
+CortexService[0x100b1e170] <+752>:  add    x9, x9, #0xb09            ; typeinfo name for Cortex::Detections::BandPowerDetection + 2473
+CortexService[0x100b1e174] <+756>:  adr    x10, 0x100b1e184          ; <+772>
+CortexService[0x100b1e178] <+760>:  ldrb   w11, [x9, x8]
+CortexService[0x100b1e17c] <+764>:  add    x10, x10, x11, lsl #2
+CortexService[0x100b1e180] <+768>:  br     x10
+CortexService[0x100b1e184] <+772>:  ldr    d0, [x1, #0x40]
+CortexService[0x100b1e188] <+776>:  str    d0, [x0, #0x40]
+CortexService[0x100b1e18c] <+780>:  ldr    d0, [x1, #0x38]
+CortexService[0x100b1e190] <+784>:  str    d0, [x0, #0x38]
+CortexService[0x100b1e194] <+788>:  ldr    d0, [x1, #0x30]
+CortexService[0x100b1e198] <+792>:  str    d0, [x0, #0x30]
+CortexService[0x100b1e19c] <+796>:  ldr    d0, [x1, #0x28]
+CortexService[0x100b1e1a0] <+800>:  str    d0, [x0, #0x28]
+CortexService[0x100b1e1a4] <+804>:  ldr    d0, [x1, #0x20]
+CortexService[0x100b1e1a8] <+808>:  str    d0, [x0, #0x20]
+CortexService[0x100b1e1ac] <+812>:  ldr    d0, [x1, #0x18]
+CortexService[0x100b1e1b0] <+816>:  str    d0, [x0, #0x18]
+CortexService[0x100b1e1b4] <+820>:  ldr    d0, [x1, #0x10]
+CortexService[0x100b1e1b8] <+824>:  str    d0, [x0, #0x10]
+CortexService[0x100b1e1bc] <+828>:  ldr    d0, [x1, #0x8]
+CortexService[0x100b1e1c0] <+832>:  str    d0, [x0, #0x8]
+CortexService[0x100b1e1c4] <+836>:  ldr    d0, [x1]
+CortexService[0x100b1e1c8] <+840>:  str    d0, [x0]
+CortexService[0x100b1e1cc] <+844>:  b      0x100b1e2a4               ; <+1060>
+CortexService[0x100b1e1d0] <+848>:  adrp   x8, 6877
+CortexService[0x100b1e1d4] <+852>:  ldr    d0, [x8, #0x648]
+CortexService[0x100b1e1d8] <+856>:  adrp   x8, 9519
+CortexService[0x100b1e1dc] <+860>:  add    x8, x8, #0x45d            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/MentalCommands/Classification.cpp"
+CortexService[0x100b1e1e0] <+864>:  adrp   x9, 9519
+CortexService[0x100b1e1e4] <+868>:  add    x9, x9, #0x4ba            ; "void Cortex::MentalCommands::Classification::run(const Classifier &, const Matrix &, Matrix &)"
+CortexService[0x100b1e1e8] <+872>:  str    d0, [sp, #0x110]
+CortexService[0x100b1e1ec] <+876>:  stp    x8, x9, [sp, #0x118]
+CortexService[0x100b1e1f0] <+880>:  adrp   x8, 9457
+CortexService[0x100b1e1f4] <+884>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x100b1e1f8] <+888>:  str    x8, [sp, #0x128]
+CortexService[0x100b1e1fc] <+892>:  add    x8, sp, #0x60
+CortexService[0x100b1e200] <+896>:  add    x0, sp, #0x110
+CortexService[0x100b1e204] <+900>:  bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x100b1e208] <+904>:  adrp   x1, 9519
+CortexService[0x100b1e20c] <+908>:  add    x1, x1, #0x519            ; "Classification::run Cannot run the mental command classification"
+CortexService[0x100b1e210] <+912>:  add    x0, sp, #0x60
+CortexService[0x100b1e214] <+916>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100b1e218] <+920>:  add    x0, sp, #0x60
+CortexService[0x100b1e21c] <+924>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x100b1e220] <+928>:  add    x0, sp, #0x110
+CortexService[0x100b1e224] <+932>:  bl     0x102134d5c               ; Cortex::Math::Matrix::Matrix()
+CortexService[0x100b1e228] <+936>:  ldr    x8, [sp, #0x120]
+CortexService[0x100b1e22c] <+940>:  ldr    x0, [x19]
+CortexService[0x100b1e230] <+944>:  ldr    q0, [sp, #0x110]
+CortexService[0x100b1e234] <+948>:  str    xzr, [sp, #0x110]
+CortexService[0x100b1e238] <+952>:  stp    xzr, xzr, [sp, #0x118]
+CortexService[0x100b1e23c] <+956>:  str    q0, [x19]
+CortexService[0x100b1e240] <+960>:  str    x8, [x19, #0x10]
+CortexService[0x100b1e244] <+964>:  cbz    x0, 0x100b1e264           ; <+996>
+CortexService[0x100b1e248] <+968>:  mov    w8, #-0x1                 ; =-1 
+CortexService[0x100b1e24c] <+972>:  ldaddal w8, w8, [x0]
+CortexService[0x100b1e250] <+976>:  cmp    w8, #0x1
+CortexService[0x100b1e254] <+980>:  b.ne   0x100b1e264               ; <+996>
+CortexService[0x100b1e258] <+984>:  ldr    w8, [x0]
+CortexService[0x100b1e25c] <+988>:  cbnz   w8, 0x100b1e774           ; <+2292>
+CortexService[0x100b1e260] <+992>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e264] <+996>:  ldr    x9, [sp, #0x128]
+CortexService[0x100b1e268] <+1000>: ldr    x8, [sp, #0x110]
+CortexService[0x100b1e26c] <+1004>: str    x9, [x19, #0x18]
+CortexService[0x100b1e270] <+1008>: cbz    x8, 0x100b1e65c           ; <+2012>
+CortexService[0x100b1e274] <+1012>: mov    w9, #-0x1                 ; =-1 
+CortexService[0x100b1e278] <+1016>: ldaddal w9, w8, [x8]
+CortexService[0x100b1e27c] <+1020>: cmp    w8, #0x1
+CortexService[0x100b1e280] <+1024>: b.ne   0x100b1e65c               ; <+2012>
+CortexService[0x100b1e284] <+1028>: ldr    x0, [sp, #0x110]
+CortexService[0x100b1e288] <+1032>: cbz    x0, 0x100b1e77c           ; <+2300>
+CortexService[0x100b1e28c] <+1036>: ldr    w8, [x0]
+CortexService[0x100b1e290] <+1040>: cbz    w8, 0x100b1e658           ; <+2008>
+CortexService[0x100b1e294] <+1044>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100b1e298] <+1048>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e29c] <+1052>: lsl    x2, x8, #3
+CortexService[0x100b1e2a0] <+1056>: bl     0x1024b8260               ; symbol stub for: memcpy
+CortexService[0x100b1e2a4] <+1060>: add    x0, sp, #0x110
+CortexService[0x100b1e2a8] <+1064>: add    x1, sp, #0x1c0
+CortexService[0x100b1e2ac] <+1068>: bl     0x100b1a3b4               ; ___lldb_unnamed_symbol_100b1a3b4
+CortexService[0x100b1e2b0] <+1072>: mov    w8, #0x2                  ; =2 
+CortexService[0x100b1e2b4] <+1076>: stp    x22, x8, [sp, #0x60]
+CortexService[0x100b1e2b8] <+1080>: lsl    x8, x22, #1
+CortexService[0x100b1e2bc] <+1084>: stp    xzr, xzr, [sp, #0x78]
+CortexService[0x100b1e2c0] <+1088>: lsr    x9, x22, #32
+CortexService[0x100b1e2c4] <+1092>: str    x8, [sp, #0x70]
+CortexService[0x100b1e2c8] <+1096>: cbz    x9, 0x100b1e2e4           ; <+1124>
+CortexService[0x100b1e2cc] <+1100>: ucvtf  d0, x22
+CortexService[0x100b1e2d0] <+1104>: fadd   d0, d0, d0
+CortexService[0x100b1e2d4] <+1108>: mov    x9, #0x43f0000000000000   ; =4895412794951729152 
+CortexService[0x100b1e2d8] <+1112>: fmov   d1, x9
+CortexService[0x100b1e2dc] <+1116>: fcmp   d0, d1
+CortexService[0x100b1e2e0] <+1120>: b.gt   0x100b1e740               ; <+2240>
+CortexService[0x100b1e2e4] <+1124>: cmp    x8, #0x10
+CortexService[0x100b1e2e8] <+1128>: b.hi   0x100b1e2f8               ; <+1144>
+CortexService[0x100b1e2ec] <+1132>: add    x8, sp, #0x60
+CortexService[0x100b1e2f0] <+1136>: add    x0, x8, #0x30
+CortexService[0x100b1e2f4] <+1140>: b      0x100b1e30c               ; <+1164>
+CortexService[0x100b1e2f8] <+1144>: lsr    x8, x8, #61
+CortexService[0x100b1e2fc] <+1148>: cbnz   x8, 0x100b1e74c           ; <+2252>
+CortexService[0x100b1e300] <+1152>: lsl    x0, x22, #4
+CortexService[0x100b1e304] <+1156>: bl     0x1024b81e8               ; symbol stub for: malloc
+CortexService[0x100b1e308] <+1160>: cbz    x0, 0x100b1e764           ; <+2276>
+CortexService[0x100b1e30c] <+1164>: str    x0, [sp, #0x80]
+CortexService[0x100b1e310] <+1168>: add    x0, sp, #0x1c0
+CortexService[0x100b1e314] <+1172>: add    x1, sp, #0x60
+CortexService[0x100b1e318] <+1176>: bl     0x100b1a7fc               ; ___lldb_unnamed_symbol_100b1a7fc
+CortexService[0x100b1e31c] <+1180>: add    x8, x21, #0x390
+CortexService[0x100b1e320] <+1184>: stp    x8, x24, [sp]
+CortexService[0x100b1e324] <+1188>: ldr    w8, [sp, #0x7c]
+CortexService[0x100b1e328] <+1192>: cbnz   w8, 0x100b1e344           ; <+1220>
+CortexService[0x100b1e32c] <+1196>: ldr    x8, [sp, #0x70]
+CortexService[0x100b1e330] <+1200>: cmp    x8, #0x11
+CortexService[0x100b1e334] <+1204>: b.lo   0x100b1e344               ; <+1220>
+CortexService[0x100b1e338] <+1208>: ldr    x0, [sp, #0x80]
+CortexService[0x100b1e33c] <+1212>: cbz    x0, 0x100b1e344           ; <+1220>
+CortexService[0x100b1e340] <+1216>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e344] <+1220>: mov    x24, #0x0                 ; =0 
+CortexService[0x100b1e348] <+1224>: mov    x25, #0x0                 ; =0 
+CortexService[0x100b1e34c] <+1228>: add    x8, sp, #0x60
+CortexService[0x100b1e350] <+1232>: orr    x26, x8, #0x8
+CortexService[0x100b1e354] <+1236>: cmp    x22, #0x1
+CortexService[0x100b1e358] <+1240>: csinc  x27, x22, xzr, hi
+CortexService[0x100b1e35c] <+1244>: mov    x28, #-0x5555555555555556 ; =-6148914691236517206 
+CortexService[0x100b1e360] <+1248>: movk   x28, #0xaaab
+CortexService[0x100b1e364] <+1252>: mov    w23, #0x1                 ; =1 
+CortexService[0x100b1e368] <+1256>: adrp   x8, 6862
+CortexService[0x100b1e36c] <+1260>: ldr    d8, [x8, #0x40]
+CortexService[0x100b1e370] <+1264>: add    x20, sp, #0x1c0
+CortexService[0x100b1e374] <+1268>: adrp   x8, 6855
+CortexService[0x100b1e378] <+1272>: ldr    q0, [x8, #0x680]
+CortexService[0x100b1e37c] <+1276>: str    q0, [sp, #0x10]
+CortexService[0x100b1e380] <+1280>: adrp   x22, 9519
+CortexService[0x100b1e384] <+1284>: add    x22, x22, #0x5b1          ; "copy into submatrix"
+CortexService[0x100b1e388] <+1288>: b      0x100b1e39c               ; <+1308>
+CortexService[0x100b1e38c] <+1292>: add    x25, x25, #0x1
+CortexService[0x100b1e390] <+1296>: add    x24, x24, #0x180
+CortexService[0x100b1e394] <+1300>: cmp    x27, x25
+CortexService[0x100b1e398] <+1304>: b.eq   0x100b1e434               ; <+1460>
+CortexService[0x100b1e39c] <+1308>: ldr    x9, [x21, #0x398]
+CortexService[0x100b1e3a0] <+1312>: ldr    x8, [x21, #0x390]
+CortexService[0x100b1e3a4] <+1316>: sub    x9, x9, x8
+CortexService[0x100b1e3a8] <+1320>: asr    x9, x9, #7
+CortexService[0x100b1e3ac] <+1324>: mul    x9, x9, x28
+CortexService[0x100b1e3b0] <+1328>: cmp    x9, x25
+CortexService[0x100b1e3b4] <+1332>: b.ls   0x100b1e710               ; <+2192>
+CortexService[0x100b1e3b8] <+1336>: add    x2, x8, x24
+CortexService[0x100b1e3bc] <+1340>: str    x23, [sp, #0x60]
+CortexService[0x100b1e3c0] <+1344>: stp    xzr, xzr, [x26]
+CortexService[0x100b1e3c4] <+1348>: str    d8, [sp, #0x78]
+CortexService[0x100b1e3c8] <+1352>: add    x3, x2, #0xb0
+CortexService[0x100b1e3cc] <+1356>: add    x4, x2, #0x160
+CortexService[0x100b1e3d0] <+1360>: str    xzr, [sp, #0x80]
+CortexService[0x100b1e3d4] <+1364>: add    x0, sp, #0x110
+CortexService[0x100b1e3d8] <+1368>: add    x1, sp, #0x60
+CortexService[0x100b1e3dc] <+1372>: bl     0x100b1ef58               ; Cortex::MentalCommands::Classification::probabilityCalculation(arma::Mat<double> const&, arma::Row<double>&, arma::Mat<double> const&, arma::Mat<double> const&, std::__1::vector<arma::Mat<double>, std::__1::allocator<arma::Mat<double>>> const&)
+CortexService[0x100b1e3e0] <+1376>: ldr    x8, [sp, #0x1c0]
+CortexService[0x100b1e3e4] <+1380>: cmp    x8, x25
+CortexService[0x100b1e3e8] <+1384>: b.ls   0x100b1e6f8               ; <+2168>
+CortexService[0x100b1e3ec] <+1388>: ldr    x8, [sp, #0x1c8]
+CortexService[0x100b1e3f0] <+1392>: stp    x20, x25, [sp, #0x20]
+CortexService[0x100b1e3f4] <+1396>: ldr    q0, [sp, #0x10]
+CortexService[0x100b1e3f8] <+1400>: str    q0, [sp, #0x30]
+CortexService[0x100b1e3fc] <+1404>: stp    x8, x8, [sp, #0x40]
+CortexService[0x100b1e400] <+1408>: add    x0, sp, #0x20
+CortexService[0x100b1e404] <+1412>: add    x1, sp, #0x60
+CortexService[0x100b1e408] <+1416>: mov    x2, x22
+CortexService[0x100b1e40c] <+1420>: bl     0x100b21e34               ; ___lldb_unnamed_symbol_100b21e34
+CortexService[0x100b1e410] <+1424>: ldr    w8, [sp, #0x7c]
+CortexService[0x100b1e414] <+1428>: cbnz   w8, 0x100b1e38c           ; <+1292>
+CortexService[0x100b1e418] <+1432>: ldr    x8, [sp, #0x70]
+CortexService[0x100b1e41c] <+1436>: cmp    x8, #0x11
+CortexService[0x100b1e420] <+1440>: b.lo   0x100b1e38c               ; <+1292>
+CortexService[0x100b1e424] <+1444>: ldr    x0, [sp, #0x80]
+CortexService[0x100b1e428] <+1448>: cbz    x0, 0x100b1e38c           ; <+1292>
+CortexService[0x100b1e42c] <+1452>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e430] <+1456>: b      0x100b1e38c               ; <+1292>
+CortexService[0x100b1e434] <+1460>: ldr    x20, [sp, #0x8]
+CortexService[0x100b1e438] <+1464>: add    x0, x20, #0x220
+CortexService[0x100b1e43c] <+1468>: add    x8, sp, #0x1c0
+CortexService[0x100b1e440] <+1472>: cmp    x0, x8
+CortexService[0x100b1e444] <+1476>: b.eq   0x100b1e4dc               ; <+1628>
+CortexService[0x100b1e448] <+1480>: ldp    x1, x2, [sp, #0x1c0]
+CortexService[0x100b1e44c] <+1484>: bl     0x100b1a98c               ; ___lldb_unnamed_symbol_100b1a98c
+CortexService[0x100b1e450] <+1488>: ldr    x0, [x20, #0x240]
+CortexService[0x100b1e454] <+1492>: ldr    x1, [sp, #0x1e0]
+CortexService[0x100b1e458] <+1496>: ldr    x8, [sp, #0x1d0]
+CortexService[0x100b1e45c] <+1500>: cmp    x8, #0x9
+CortexService[0x100b1e460] <+1504>: b.hi   0x100b1e4d4               ; <+1620>
+CortexService[0x100b1e464] <+1508>: sub    x8, x8, #0x1
+CortexService[0x100b1e468] <+1512>: cmp    x8, #0x8
+CortexService[0x100b1e46c] <+1516>: b.hi   0x100b1e4dc               ; <+1628>
+CortexService[0x100b1e470] <+1520>: adrp   x9, 6953
+CortexService[0x100b1e474] <+1524>: add    x9, x9, #0xb12            ; typeinfo name for Cortex::Detections::BandPowerDetection + 2482
+CortexService[0x100b1e478] <+1528>: adr    x10, 0x100b1e488          ; <+1544>
+CortexService[0x100b1e47c] <+1532>: ldrb   w11, [x9, x8]
+CortexService[0x100b1e480] <+1536>: add    x10, x10, x11, lsl #2
+CortexService[0x100b1e484] <+1540>: br     x10
+CortexService[0x100b1e488] <+1544>: ldr    d0, [x1, #0x40]
+CortexService[0x100b1e48c] <+1548>: str    d0, [x0, #0x40]
+CortexService[0x100b1e490] <+1552>: ldr    d0, [x1, #0x38]
+CortexService[0x100b1e494] <+1556>: str    d0, [x0, #0x38]
+CortexService[0x100b1e498] <+1560>: ldr    d0, [x1, #0x30]
+CortexService[0x100b1e49c] <+1564>: str    d0, [x0, #0x30]
+CortexService[0x100b1e4a0] <+1568>: ldr    d0, [x1, #0x28]
+CortexService[0x100b1e4a4] <+1572>: str    d0, [x0, #0x28]
+CortexService[0x100b1e4a8] <+1576>: ldr    d0, [x1, #0x20]
+CortexService[0x100b1e4ac] <+1580>: str    d0, [x0, #0x20]
+CortexService[0x100b1e4b0] <+1584>: ldr    d0, [x1, #0x18]
+CortexService[0x100b1e4b4] <+1588>: str    d0, [x0, #0x18]
+CortexService[0x100b1e4b8] <+1592>: ldr    d0, [x1, #0x10]
+CortexService[0x100b1e4bc] <+1596>: str    d0, [x0, #0x10]
+CortexService[0x100b1e4c0] <+1600>: ldr    d0, [x1, #0x8]
+CortexService[0x100b1e4c4] <+1604>: str    d0, [x0, #0x8]
+CortexService[0x100b1e4c8] <+1608>: ldr    d0, [x1]
+CortexService[0x100b1e4cc] <+1612>: str    d0, [x0]
+CortexService[0x100b1e4d0] <+1616>: b      0x100b1e4dc               ; <+1628>
+CortexService[0x100b1e4d4] <+1620>: lsl    x2, x8, #3
+CortexService[0x100b1e4d8] <+1624>: bl     0x1024b8260               ; symbol stub for: memcpy
+CortexService[0x100b1e4dc] <+1628>: str    xzr, [sp, #0x80]
+CortexService[0x100b1e4e0] <+1632>: movi.2d v0, #0000000000000000
+CortexService[0x100b1e4e4] <+1636>: stp    q0, q0, [sp, #0x60]
+CortexService[0x100b1e4e8] <+1640>: ldr    d0, [x20, #0xb0]
+CortexService[0x100b1e4ec] <+1644>: add    x0, sp, #0x1c0
+CortexService[0x100b1e4f0] <+1648>: add    x1, sp, #0x60
+CortexService[0x100b1e4f4] <+1652>: mov    x2, x20
+CortexService[0x100b1e4f8] <+1656>: bl     0x100b1f48c               ; Cortex::MentalCommands::Classification::posteriorCalculation(arma::Mat<double> const&, arma::Mat<double>&, arma::Mat<double> const&, double)
+CortexService[0x100b1e4fc] <+1660>: add    x8, sp, #0x20
+CortexService[0x100b1e500] <+1664>: add    x0, sp, #0x60
+CortexService[0x100b1e504] <+1668>: bl     0x10212d080               ; Cortex::Math::fromArmadilloMatrix(arma::Mat<double> const&)
+CortexService[0x100b1e508] <+1672>: ldr    x8, [sp, #0x30]
+CortexService[0x100b1e50c] <+1676>: ldr    x0, [x19]
+CortexService[0x100b1e510] <+1680>: ldr    q0, [sp, #0x20]
+CortexService[0x100b1e514] <+1684>: str    xzr, [sp, #0x20]
+CortexService[0x100b1e518] <+1688>: stp    xzr, xzr, [sp, #0x28]
+CortexService[0x100b1e51c] <+1692>: str    q0, [x19]
+CortexService[0x100b1e520] <+1696>: str    x8, [x19, #0x10]
+CortexService[0x100b1e524] <+1700>: cbz    x0, 0x100b1e544           ; <+1732>
+CortexService[0x100b1e528] <+1704>: mov    w8, #-0x1                 ; =-1 
+CortexService[0x100b1e52c] <+1708>: ldaddal w8, w8, [x0]
+CortexService[0x100b1e530] <+1712>: cmp    w8, #0x1
+CortexService[0x100b1e534] <+1716>: b.ne   0x100b1e544               ; <+1732>
+CortexService[0x100b1e538] <+1720>: ldr    w8, [x0]
+CortexService[0x100b1e53c] <+1724>: cbnz   w8, 0x100b1e784           ; <+2308>
+CortexService[0x100b1e540] <+1728>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e544] <+1732>: ldr    x9, [sp, #0x38]
+CortexService[0x100b1e548] <+1736>: ldr    x8, [sp, #0x20]
+CortexService[0x100b1e54c] <+1740>: str    x9, [x19, #0x18]
+CortexService[0x100b1e550] <+1744>: cbz    x8, 0x100b1e578           ; <+1784>
+CortexService[0x100b1e554] <+1748>: mov    w9, #-0x1                 ; =-1 
+CortexService[0x100b1e558] <+1752>: ldaddal w9, w8, [x8]
+CortexService[0x100b1e55c] <+1756>: cmp    w8, #0x1
+CortexService[0x100b1e560] <+1760>: b.ne   0x100b1e578               ; <+1784>
+CortexService[0x100b1e564] <+1764>: ldr    x0, [sp, #0x20]
+CortexService[0x100b1e568] <+1768>: cbz    x0, 0x100b1e78c           ; <+2316>
+CortexService[0x100b1e56c] <+1772>: ldr    w8, [x0]
+CortexService[0x100b1e570] <+1776>: cbnz   w8, 0x100b1e794           ; <+2324>
+CortexService[0x100b1e574] <+1780>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e578] <+1784>: add    x0, x20, #0x2d0
+CortexService[0x100b1e57c] <+1788>: add    x8, sp, #0x60
+CortexService[0x100b1e580] <+1792>: cmp    x0, x8
+CortexService[0x100b1e584] <+1796>: b.eq   0x100b1e61c               ; <+1948>
+CortexService[0x100b1e588] <+1800>: ldp    x1, x2, [sp, #0x60]
+CortexService[0x100b1e58c] <+1804>: bl     0x100b1a98c               ; ___lldb_unnamed_symbol_100b1a98c
+CortexService[0x100b1e590] <+1808>: ldr    x0, [x20, #0x2f0]
+CortexService[0x100b1e594] <+1812>: ldr    x1, [sp, #0x80]
+CortexService[0x100b1e598] <+1816>: ldr    x8, [sp, #0x70]
+CortexService[0x100b1e59c] <+1820>: cmp    x8, #0x9
+CortexService[0x100b1e5a0] <+1824>: b.hi   0x100b1e614               ; <+1940>
+CortexService[0x100b1e5a4] <+1828>: sub    x8, x8, #0x1
+CortexService[0x100b1e5a8] <+1832>: cmp    x8, #0x8
+CortexService[0x100b1e5ac] <+1836>: b.hi   0x100b1e61c               ; <+1948>
+CortexService[0x100b1e5b0] <+1840>: adrp   x9, 6953
+CortexService[0x100b1e5b4] <+1844>: add    x9, x9, #0xb1b            ; typeinfo name for Cortex::Detections::BandPowerDetection + 2491
+CortexService[0x100b1e5b8] <+1848>: adr    x10, 0x100b1e5c8          ; <+1864>
+CortexService[0x100b1e5bc] <+1852>: ldrb   w11, [x9, x8]
+CortexService[0x100b1e5c0] <+1856>: add    x10, x10, x11, lsl #2
+CortexService[0x100b1e5c4] <+1860>: br     x10
+CortexService[0x100b1e5c8] <+1864>: ldr    d0, [x1, #0x40]
+CortexService[0x100b1e5cc] <+1868>: str    d0, [x0, #0x40]
+CortexService[0x100b1e5d0] <+1872>: ldr    d0, [x1, #0x38]
+CortexService[0x100b1e5d4] <+1876>: str    d0, [x0, #0x38]
+CortexService[0x100b1e5d8] <+1880>: ldr    d0, [x1, #0x30]
+CortexService[0x100b1e5dc] <+1884>: str    d0, [x0, #0x30]
+CortexService[0x100b1e5e0] <+1888>: ldr    d0, [x1, #0x28]
+CortexService[0x100b1e5e4] <+1892>: str    d0, [x0, #0x28]
+CortexService[0x100b1e5e8] <+1896>: ldr    d0, [x1, #0x20]
+CortexService[0x100b1e5ec] <+1900>: str    d0, [x0, #0x20]
+CortexService[0x100b1e5f0] <+1904>: ldr    d0, [x1, #0x18]
+CortexService[0x100b1e5f4] <+1908>: str    d0, [x0, #0x18]
+CortexService[0x100b1e5f8] <+1912>: ldr    d0, [x1, #0x10]
+CortexService[0x100b1e5fc] <+1916>: str    d0, [x0, #0x10]
+CortexService[0x100b1e600] <+1920>: ldr    d0, [x1, #0x8]
+CortexService[0x100b1e604] <+1924>: str    d0, [x0, #0x8]
+CortexService[0x100b1e608] <+1928>: ldr    d0, [x1]
+CortexService[0x100b1e60c] <+1932>: str    d0, [x0]
+CortexService[0x100b1e610] <+1936>: b      0x100b1e61c               ; <+1948>
+CortexService[0x100b1e614] <+1940>: lsl    x2, x8, #3
+CortexService[0x100b1e618] <+1944>: bl     0x1024b8260               ; symbol stub for: memcpy
+CortexService[0x100b1e61c] <+1948>: ldr    w8, [sp, #0x7c]
+CortexService[0x100b1e620] <+1952>: cbnz   w8, 0x100b1e63c           ; <+1980>
+CortexService[0x100b1e624] <+1956>: ldr    x8, [sp, #0x70]
+CortexService[0x100b1e628] <+1960>: cmp    x8, #0x11
+CortexService[0x100b1e62c] <+1964>: b.lo   0x100b1e63c               ; <+1980>
+CortexService[0x100b1e630] <+1968>: ldr    x0, [sp, #0x80]
+CortexService[0x100b1e634] <+1972>: cbz    x0, 0x100b1e63c           ; <+1980>
+CortexService[0x100b1e638] <+1976>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e63c] <+1980>: ldr    w8, [sp, #0x12c]
+CortexService[0x100b1e640] <+1984>: cbnz   w8, 0x100b1e65c           ; <+2012>
+CortexService[0x100b1e644] <+1988>: ldr    x8, [sp, #0x120]
+CortexService[0x100b1e648] <+1992>: cmp    x8, #0x11
+CortexService[0x100b1e64c] <+1996>: b.lo   0x100b1e65c               ; <+2012>
+CortexService[0x100b1e650] <+2000>: ldr    x0, [sp, #0x130]
+CortexService[0x100b1e654] <+2004>: cbz    x0, 0x100b1e65c           ; <+2012>
+CortexService[0x100b1e658] <+2008>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e65c] <+2012>: ldr    w8, [sp, #0x1dc]
+CortexService[0x100b1e660] <+2016>: cbnz   w8, 0x100b1e67c           ; <+2044>
+CortexService[0x100b1e664] <+2020>: ldr    x8, [sp, #0x1d0]
+CortexService[0x100b1e668] <+2024>: cmp    x8, #0x11
+CortexService[0x100b1e66c] <+2028>: b.lo   0x100b1e67c               ; <+2044>
+CortexService[0x100b1e670] <+2032>: ldr    x0, [sp, #0x1e0]
+CortexService[0x100b1e674] <+2036>: cbz    x0, 0x100b1e67c           ; <+2044>
+CortexService[0x100b1e678] <+2040>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e67c] <+2044>: ldr    w8, [sp, #0x28c]
+CortexService[0x100b1e680] <+2048>: cbnz   w8, 0x100b1e69c           ; <+2076>
+CortexService[0x100b1e684] <+2052>: ldr    x8, [sp, #0x280]
+CortexService[0x100b1e688] <+2056>: cmp    x8, #0x11
+CortexService[0x100b1e68c] <+2060>: b.lo   0x100b1e69c               ; <+2076>
+CortexService[0x100b1e690] <+2064>: ldr    x0, [sp, #0x290]
+CortexService[0x100b1e694] <+2068>: cbz    x0, 0x100b1e69c           ; <+2076>
+CortexService[0x100b1e698] <+2072>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e69c] <+2076>: ldr    w8, [sp, #0x33c]
+CortexService[0x100b1e6a0] <+2080>: cbnz   w8, 0x100b1e6bc           ; <+2108>
+CortexService[0x100b1e6a4] <+2084>: ldr    x8, [sp, #0x330]
+CortexService[0x100b1e6a8] <+2088>: cmp    x8, #0x11
+CortexService[0x100b1e6ac] <+2092>: b.lo   0x100b1e6bc               ; <+2108>
+CortexService[0x100b1e6b0] <+2096>: ldr    x0, [sp, #0x340]
+CortexService[0x100b1e6b4] <+2100>: cbz    x0, 0x100b1e6bc           ; <+2108>
+CortexService[0x100b1e6b8] <+2104>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e6bc] <+2108>: ldur   x8, [x29, #-0x70]
+CortexService[0x100b1e6c0] <+2112>: adrp   x9, 9728
+CortexService[0x100b1e6c4] <+2116>: ldr    x9, [x9, #0xcf0]
+CortexService[0x100b1e6c8] <+2120>: ldr    x9, [x9]
+CortexService[0x100b1e6cc] <+2124>: cmp    x9, x8
+CortexService[0x100b1e6d0] <+2128>: b.ne   0x100b1e71c               ; <+2204>
+CortexService[0x100b1e6d4] <+2132>: add    sp, sp, #0x3e0
+CortexService[0x100b1e6d8] <+2136>: ldp    x29, x30, [sp, #0x60]
+CortexService[0x100b1e6dc] <+2140>: ldp    x20, x19, [sp, #0x50]
+CortexService[0x100b1e6e0] <+2144>: ldp    x22, x21, [sp, #0x40]
+CortexService[0x100b1e6e4] <+2148>: ldp    x24, x23, [sp, #0x30]
+CortexService[0x100b1e6e8] <+2152>: ldp    x26, x25, [sp, #0x20]
+CortexService[0x100b1e6ec] <+2156>: ldp    x28, x27, [sp, #0x10]
+CortexService[0x100b1e6f0] <+2160>: ldp    d9, d8, [sp], #0x70
+CortexService[0x100b1e6f4] <+2164>: ret    
+CortexService[0x100b1e6f8] <+2168>: adrp   x8, 9519
+CortexService[0x100b1e6fc] <+2172>: add    x8, x8, #0x591            ; "Mat::row(): index out of bounds"
+CortexService[0x100b1e700] <+2176>: str    x8, [sp, #0x58]
+CortexService[0x100b1e704] <+2180>: add    x0, sp, #0x58
+CortexService[0x100b1e708] <+2184>: bl     0x100b21080               ; ___lldb_unnamed_symbol_100b21080
+CortexService[0x100b1e70c] <+2188>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e710] <+2192>: ldr    x0, [sp]
+CortexService[0x100b1e714] <+2196>: bl     0x100b21dac               ; ___lldb_unnamed_symbol_100b21dac
+CortexService[0x100b1e718] <+2200>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e71c] <+2204>: bl     0x1024b77f8               ; symbol stub for: __stack_chk_fail
+CortexService[0x100b1e720] <+2208>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100b1e724] <+2212>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e728] <+2216>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x100b1e72c] <+2220>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e730] <+2224>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100b1e734] <+2228>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e738] <+2232>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x100b1e73c] <+2236>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e740] <+2240>: adrp   x8, 9519
+CortexService[0x100b1e744] <+2244>: add    x8, x8, #0x190            ; "Mat::init(): requested size is too large"
+CortexService[0x100b1e748] <+2248>: b      0x100b1e754               ; <+2260>
+CortexService[0x100b1e74c] <+2252>: adrp   x8, 9519
+CortexService[0x100b1e750] <+2256>: add    x8, x8, #0x1c2            ; "arma::memory::acquire(): requested size is too large"
+CortexService[0x100b1e754] <+2260>: str    x8, [sp, #0x20]
+CortexService[0x100b1e758] <+2264>: add    x0, sp, #0x20
+CortexService[0x100b1e75c] <+2268>: bl     0x100b21080               ; ___lldb_unnamed_symbol_100b21080
+CortexService[0x100b1e760] <+2272>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e764] <+2276>: adrp   x0, 9519
+CortexService[0x100b1e768] <+2280>: add    x0, x0, #0x1f7            ; "arma::memory::acquire(): out of memory"
+CortexService[0x100b1e76c] <+2284>: bl     0x100b1a730               ; ___lldb_unnamed_symbol_100b1a730
+CortexService[0x100b1e770] <+2288>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e774] <+2292>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100b1e778] <+2296>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e77c] <+2300>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x100b1e780] <+2304>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e784] <+2308>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100b1e788] <+2312>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e78c] <+2316>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x100b1e790] <+2320>: b      0x100b1e798               ; <+2328>
+CortexService[0x100b1e794] <+2324>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100b1e798] <+2328>: brk    #0x1
+CortexService[0x100b1e79c] <+2332>: mov    x19, x0
+CortexService[0x100b1e7a0] <+2336>: b      0x100b1e850               ; <+2512>
+CortexService[0x100b1e7a4] <+2340>: b      0x100b1e82c               ; <+2476>
+CortexService[0x100b1e7a8] <+2344>: b      0x100b1e82c               ; <+2476>
+CortexService[0x100b1e7ac] <+2348>: mov    x19, x0
+CortexService[0x100b1e7b0] <+2352>: b      0x100b1e870               ; <+2544>
+CortexService[0x100b1e7b4] <+2356>: mov    x19, x0
+CortexService[0x100b1e7b8] <+2360>: b      0x100b1e870               ; <+2544>
+CortexService[0x100b1e7bc] <+2364>: mov    x19, x0
+CortexService[0x100b1e7c0] <+2368>: add    x0, sp, #0x60
+CortexService[0x100b1e7c4] <+2372>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x100b1e7c8] <+2376>: b      0x100b1e870               ; <+2544>
+CortexService[0x100b1e7cc] <+2380>: mov    x19, x0
+CortexService[0x100b1e7d0] <+2384>: b      0x100b1e870               ; <+2544>
+CortexService[0x100b1e7d4] <+2388>: mov    x19, x0
+CortexService[0x100b1e7d8] <+2392>: b      0x100b1e870               ; <+2544>
+CortexService[0x100b1e7dc] <+2396>: mov    x19, x0
+CortexService[0x100b1e7e0] <+2400>: b      0x100b1e850               ; <+2512>
+CortexService[0x100b1e7e4] <+2404>: b      0x100b1e82c               ; <+2476>
+CortexService[0x100b1e7e8] <+2408>: mov    x19, x0
+CortexService[0x100b1e7ec] <+2412>: b      0x100b1e870               ; <+2544>
+CortexService[0x100b1e7f0] <+2416>: mov    x19, x0
+CortexService[0x100b1e7f4] <+2420>: b      0x100b1e890               ; <+2576>
+CortexService[0x100b1e7f8] <+2424>: mov    x19, x0
+CortexService[0x100b1e7fc] <+2428>: b      0x100b1e890               ; <+2576>
+CortexService[0x100b1e800] <+2432>: mov    x19, x0
+CortexService[0x100b1e804] <+2436>: b      0x100b1e8b0               ; <+2608>
+CortexService[0x100b1e808] <+2440>: mov    x19, x0
+CortexService[0x100b1e80c] <+2444>: b      0x100b1e870               ; <+2544>
+CortexService[0x100b1e810] <+2448>: mov    x19, x0
+CortexService[0x100b1e814] <+2452>: mov    x0, x19
+CortexService[0x100b1e818] <+2456>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+CortexService[0x100b1e81c] <+2460>: mov    x19, x0
+CortexService[0x100b1e820] <+2464>: b      0x100b1e850               ; <+2512>
+CortexService[0x100b1e824] <+2468>: b      0x100b1e82c               ; <+2476>
+CortexService[0x100b1e828] <+2472>: b      0x100b1e82c               ; <+2476>
+CortexService[0x100b1e82c] <+2476>: mov    x19, x0
+CortexService[0x100b1e830] <+2480>: ldr    w8, [sp, #0x7c]
+CortexService[0x100b1e834] <+2484>: cbnz   w8, 0x100b1e850           ; <+2512>
+CortexService[0x100b1e838] <+2488>: ldr    x8, [sp, #0x70]
+CortexService[0x100b1e83c] <+2492>: cmp    x8, #0x11
+CortexService[0x100b1e840] <+2496>: b.lo   0x100b1e850               ; <+2512>
+CortexService[0x100b1e844] <+2500>: ldr    x0, [sp, #0x80]
+CortexService[0x100b1e848] <+2504>: cbz    x0, 0x100b1e850           ; <+2512>
+CortexService[0x100b1e84c] <+2508>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e850] <+2512>: ldr    w8, [sp, #0x12c]
+CortexService[0x100b1e854] <+2516>: cbnz   w8, 0x100b1e870           ; <+2544>
+CortexService[0x100b1e858] <+2520>: ldr    x8, [sp, #0x120]
+CortexService[0x100b1e85c] <+2524>: cmp    x8, #0x11
+CortexService[0x100b1e860] <+2528>: b.lo   0x100b1e870               ; <+2544>
+CortexService[0x100b1e864] <+2532>: ldr    x0, [sp, #0x130]
+CortexService[0x100b1e868] <+2536>: cbz    x0, 0x100b1e870           ; <+2544>
+CortexService[0x100b1e86c] <+2540>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e870] <+2544>: ldr    w8, [sp, #0x1dc]
+CortexService[0x100b1e874] <+2548>: cbnz   w8, 0x100b1e890           ; <+2576>
+CortexService[0x100b1e878] <+2552>: ldr    x8, [sp, #0x1d0]
+CortexService[0x100b1e87c] <+2556>: cmp    x8, #0x11
+CortexService[0x100b1e880] <+2560>: b.lo   0x100b1e890               ; <+2576>
+CortexService[0x100b1e884] <+2564>: ldr    x0, [sp, #0x1e0]
+CortexService[0x100b1e888] <+2568>: cbz    x0, 0x100b1e890           ; <+2576>
+CortexService[0x100b1e88c] <+2572>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e890] <+2576>: ldr    w8, [sp, #0x28c]
+CortexService[0x100b1e894] <+2580>: cbnz   w8, 0x100b1e8b0           ; <+2608>
+CortexService[0x100b1e898] <+2584>: ldr    x8, [sp, #0x280]
+CortexService[0x100b1e89c] <+2588>: cmp    x8, #0x11
+CortexService[0x100b1e8a0] <+2592>: b.lo   0x100b1e8b0               ; <+2608>
+CortexService[0x100b1e8a4] <+2596>: ldr    x0, [sp, #0x290]
+CortexService[0x100b1e8a8] <+2600>: cbz    x0, 0x100b1e8b0           ; <+2608>
+CortexService[0x100b1e8ac] <+2604>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e8b0] <+2608>: ldr    w8, [sp, #0x33c]
+CortexService[0x100b1e8b4] <+2612>: cbnz   w8, 0x100b1e8cc           ; <+2636>
+CortexService[0x100b1e8b8] <+2616>: ldr    x8, [sp, #0x330]
+CortexService[0x100b1e8bc] <+2620>: cmp    x8, #0x11
+CortexService[0x100b1e8c0] <+2624>: b.lo   0x100b1e8cc               ; <+2636>
+CortexService[0x100b1e8c4] <+2628>: ldr    x0, [sp, #0x340]
+CortexService[0x100b1e8c8] <+2632>: cbnz   x0, 0x100b1e8d4           ; <+2644>
+CortexService[0x100b1e8cc] <+2636>: mov    x0, x19
+CortexService[0x100b1e8d0] <+2640>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+CortexService[0x100b1e8d4] <+2644>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b1e8d8] <+2648>: mov    x0, x19
+CortexService[0x100b1e8dc] <+2652>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume

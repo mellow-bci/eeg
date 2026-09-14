@@ -6,6 +6,16 @@ Independent EPOC X Bluetooth EEG acquisition, decoding, local-recording recovery
 
 **Release status: NOT RELEASED.** Longer standalone qualification, real hardware fault tests, quality-class calibration and release packaging remain. Working raw acquisition is established; neural intent, clinical validity and Apple BCI/HID integration are not.
 
+## Native Apple application
+
+The native SwiftUI workspace is in `apple/`, targeting macOS, iOS and visionOS. It uses Swift/CoreBluetooth directly; Python remains the independent reference and research environment. See [native app](docs/NATIVE_APP.md), [feature matrix](docs/FEATURE_MATRIX.md) and [Apple integration boundaries](docs/APPLE_PLATFORM.md).
+
+[Calibration and evaluation](docs/COGNITIVE_VALIDATION.md) separates sensory-state experiments, intentional gestures and neural intent. No cognitive score or system-control output is enabled.
+
+## Evidence-backed expansion checkpoint
+
+The [capability matrix](capability-matrix.json) and [ordered plan](docs/IMPLEMENTATION_PLAN.md) separate discovered symbols, inspected bodies, implementation, software tests and hardware validation. The [independent mental workflow](docs/MENTAL_WORKFLOW.md) now provides canonical windows, spectral features, personalized PCA/Gaussian profiles, holdout evaluation and read-only proposals. No trained mental-command model or validated cognitive score is shipped. [Reference trace](docs/MENTAL_REFERENCE_TRACE.md) records both confirmed function-body behavior and unresolved parameters.
+
 ## Contents and reading order
 
 | Document | Purpose |
@@ -14,7 +24,8 @@ Independent EPOC X Bluetooth EEG acquisition, decoding, local-recording recovery
 | [Architecture](docs/ARCHITECTURE.md) | End-to-end ownership and the single acquisition path |
 | [Protocol](docs/PROTOCOL.md) | GATT, key derivation, byte layouts, channel map, units |
 | [Runtime algorithms](docs/RUNTIME.md) | Stability, timing, consumer gate, failures, leases, shutdown |
-| [Data contract](docs/DATA_CONTRACT.md) | JSONL events, indices, flags and interpretation |
+| [Data contract](docs/DATA_CONTRACT.md) | Existing acquisition JSONL events, indices and flags |
+| [Canonical processing contract](docs/DATA_CONTRACT_V2.md) | Shared live-event/replay adapter, windows and provenance |
 | [Contact quality](docs/CONTACT_QUALITY.md) | Raw extraction, static trace and unresolved classification |
 | [Reference recovery](docs/REFERENCE_RECOVERY.md) | TEST24 recovery, authenticated Parquet, snapshot procedure |
 | [Comparison](docs/COMPARISON.md) | Exact matching algorithm and its limits |
@@ -36,7 +47,7 @@ git clone https://github.com/autonomy-cloud/eeg.git
 cd eeg
 git lfs pull
 python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m pip install -r requirements.txt -r requirements-analysis.txt
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
 ```
 

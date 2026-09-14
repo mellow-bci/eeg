@@ -3,6 +3,9 @@
 Writes append-only JSONL with source metadata, original packets, decoded ADC
 samples, auxiliary records and errors. Never emits user-intent or action events.
 """
+import copy
+import queue
+import threading
 import argparse
 import asyncio
 import json
@@ -19,10 +22,113 @@ class AcquisitionFailure(RuntimeError):
     """Fatal storage/consumer failure; retrying Bluetooth cannot repair it."""
 
 
+class ConsumerDelivery:
+    """Bounded FIFO delivery; callback failures never write capture files off-thread."""
+    def __init__(self, sink, capacity, timeout):
+        self.sink = sink
+        self.queue = queue.Queue(maxsize=capacity)
+        self.timeout = timeout
+        self.lock = threading.Lock()
+        self.abort = threading.Event()
+        self.closing = threading.Event()
+        self.error = None
+        self.active_since = None
+        self.submitted = self.delivered = 0
+        self.thread = threading.Thread(target=self._run, name='eeg-consumer', daemon=True)
+        self.thread.start()
+
+    def fail(self, reason):
+        with self.lock:
+            if self.error is None:
+                self.error = reason
+        self.abort.set()
+
+    def check(self):
+        now = time.monotonic()
+        with self.lock:
+            active = self.active_since
+        if active is not None and now-active > self.timeout:
+            self.fail('sample_consumer_timeout')
+        with self.queue.mutex:
+            oldest = self.queue.queue[0][0] if self.queue.queue else None
+        if oldest is not None and now-oldest > self.timeout:
+            self.fail('sample_consumer_stale')
+        with self.lock:
+            return self.error
+
+    def submit(self, sample):
+        if self.closing.is_set():
+            self.fail('sample_consumer_closed')
+        if self.check():
+            return
+        try:
+            self.queue.put_nowait((time.monotonic(), copy.deepcopy(sample)))
+            self.submitted += 1
+        except queue.Full:
+            self.fail('sample_consumer_overflow')
+
+    def _run(self):
+        while not self.abort.is_set():
+            if self.closing.is_set() and self.queue.empty():
+                return
+            try:
+                queued_at, sample = self.queue.get(timeout=0.05)
+            except queue.Empty:
+                continue
+            try:
+                if self.abort.is_set():
+                    return
+                if time.monotonic()-queued_at > self.timeout:
+                    self.fail('sample_consumer_stale')
+                    return
+                with self.lock:
+                    self.active_since = time.monotonic()
+                try:
+                    self.sink(sample)
+                except BaseException:
+                    self.fail('sample_consumer_failed')
+                    return
+                with self.lock:
+                    elapsed = time.monotonic()-self.active_since
+                    self.delivered += 1
+                    self.active_since = None
+                if elapsed > self.timeout:
+                    self.fail('sample_consumer_timeout')
+                    return
+            finally:
+                self.queue.task_done()
+
+    def close(self, timeout):
+        self.closing.set()
+        deadline = time.monotonic()+timeout
+        while self.thread.is_alive() and time.monotonic() < deadline:
+            self.check()
+            if self.abort.is_set():
+                break
+            self.thread.join(min(0.02, max(0, deadline-time.monotonic())))
+        if self.thread.is_alive() and not self.abort.is_set():
+            self.fail('sample_consumer_shutdown_timeout')
+        self.check()
+        with self.lock:
+            return {'submitted': self.submitted, 'delivered': self.delivered,
+                    'undelivered': self.submitted-self.delivered,
+                    'worker_alive': self.thread.is_alive(), 'error': self.error}
+
+
 class Pipeline:
-    def __init__(self, output, sample_sink=None, max_bytes=512*1024*1024):
+    def __init__(self, output, sample_sink=None, max_bytes=512*1024*1024,
+                 consumer_queue_size=1024, consumer_timeout=0.5, consumer_shutdown_timeout=1.0):
         if not isinstance(max_bytes, int) or max_bytes <= 0:
             raise ValueError('max_bytes must be a positive integer')
+        if not isinstance(consumer_queue_size, int) or consumer_queue_size <= 0:
+            raise ValueError('consumer_queue_size must be a positive integer')
+        if any(not isinstance(v, (int, float)) or not math.isfinite(v) or v <= 0
+               for v in (consumer_timeout, consumer_shutdown_timeout)):
+            raise ValueError('consumer timeouts must be positive finite seconds')
+        if sample_sink is not None and not callable(sample_sink):
+            raise ValueError('sample_sink must be callable')
+        self.consumer_shutdown_timeout = consumer_shutdown_timeout
+        self.consumer = None
         self.max_bytes = max_bytes
         self.bytes_written = 0
         self.file = os.fdopen(os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'w')
@@ -43,6 +149,15 @@ class Pipeline:
         self.transport_stable = False
         self.connection_errors = 0
         self.transport_interruptions = 0
+        if sample_sink is not None:
+            self.consumer = ConsumerDelivery(sample_sink, consumer_queue_size, consumer_timeout)
+
+    def check_consumer(self):
+        error = self.consumer.check() if self.consumer is not None else None
+        if error:
+            self.fatal_error = self.fatal_error or error
+            self.transport_stable = False
+            raise AcquisitionFailure(error)
 
     def write(self, value):
         try:
@@ -61,6 +176,7 @@ class Pipeline:
             raise AcquisitionFailure('Capture storage failed') from exc
 
     def configure(self, info, source, device=None):
+        self.check_consumer()
         # Reconnect establishes a new counter epoch, preserving the boundary.
         self.decoder = Decoder(info)
         self.epoch += 1
@@ -86,12 +202,14 @@ class Pipeline:
 
     def check_freshness(self, timestamp):
         """Invalidate delivery readiness while silent, not only on the next packet."""
+        self.check_consumer()
         if (self.last_packet_at is not None and not self.stale_reported
                 and timestamp-self.last_packet_at > 0.5):
             self.stale_reported = True
             self.reset_stability(timestamp, 'stale_input')
 
     def packet(self, packet):
+        self.check_consumer()
         self.write(dict(packet, kind='ble_notification', epoch=self.epoch))
         if packet['uuid'].lower() != DATA_CHARACTERISTIC:
             return
@@ -135,16 +253,9 @@ class Pipeline:
             sample['consumer_eligible'] = self.transport_stable and self.decoder.voltage_divisor is not None
             sample['stable_segment'] = self.stable_segment if self.transport_stable else None
             self.write(sample)
-            if sample['consumer_eligible'] and self.sample_sink is not None:
-                # The consumer receives only stable samples. Segment boundaries
-                # prevent joining data across gaps or reconnects. Raw stays intact.
-                import copy
-                try:
-                    self.sample_sink(copy.deepcopy(sample))
-                except Exception as exc:
-                    self.fatal_error = 'sample_consumer_failed'
-                    self.reset_stability(packet['t'], 'consumer_failure')
-                    raise AcquisitionFailure('Sample consumer failed') from exc
+            if sample['consumer_eligible'] and self.consumer is not None:
+                self.consumer.submit(sample)
+                self.check_consumer()
             self.samples += 1
             self.epochs[-1]['stable_samples'] += bool(self.transport_stable)
             self.discontinuities += not sample['continuous']
@@ -163,6 +274,14 @@ class Pipeline:
             self.auxiliary += 1
 
     def finish(self):
+        delivery = None
+        if self.consumer is not None:
+            if self.fatal_error:
+                self.consumer.abort.set()
+            delivery = self.consumer.close(self.consumer_shutdown_timeout)
+            if delivery['error']:
+                self.fatal_error = self.fatal_error or delivery['error']
+                self.transport_stable = False
         duration = (self.last_time - self.first_time
                     if self.first_time is not None else 0)
         summary = {'kind': 'summary', 'packets': self.packets, 'samples': self.samples,
@@ -185,6 +304,7 @@ class Pipeline:
         summary['stable_samples'] = sum(epoch['stable_samples'] for epoch in self.epochs)
         summary['connection_errors'] = self.connection_errors
         summary['transport_interruptions'] = self.transport_interruptions
+        summary['consumer_delivery'] = delivery
         summary['fatal_error'] = self.fatal_error
         summary['capture_clean'] = bool(self.samples and not self.fatal_error and not self.errors and not self.discontinuities
                                        and not self.connection_errors and not self.transport_interruptions)
@@ -257,11 +377,11 @@ async def live(args, pipeline):
                             pipeline.packet({'t': time.monotonic() - start,
                                              'uuid': characteristic.uuid, 'hex': bytes(data).hex()})
                         except Exception as exc:
-                            pipeline.fatal_error = 'notification_processing_failed'
+                            pipeline.fatal_error = pipeline.fatal_error or 'notification_processing_failed'
                             pipeline.transport_stable = False
                             callback_failure = exc
                     await client.start_notify(DATA_CHARACTERISTIC, notification)
-                    deadline = time.monotonic() + args.seconds
+                    deadline = (time.monotonic() + args.seconds) if args.seconds else math.inf
                     while time.monotonic() < deadline:
                         if callback_failure is not None:
                             raise AcquisitionFailure('Notification processing failed') from callback_failure
@@ -318,14 +438,14 @@ def main():
     parser.add_argument('--replay', help='Saved capture JSON; otherwise capture live BLE')
     parser.add_argument('--output', required=True, help='New JSONL file; existing files are never overwritten')
     parser.add_argument('--device', help='Optional CoreBluetooth identifier for a previously discovered headset')
-    parser.add_argument('--seconds', type=float, default=30)
+    parser.add_argument('--seconds', type=float, default=30, help='Seconds per capture attempt; 0 runs until stopped')
     parser.add_argument('--max-bytes', type=int, default=512*1024*1024, help='Hard recording size budget; exceeding it fails capture')
     parser.add_argument('--attempts', type=int, default=3)
     parser.add_argument('--cycles', type=int, default=1,
                         help='Deliberate disconnect/reconnect capture cycles for validation')
     args = parser.parse_args()
-    if not 0 < args.seconds <= 3600 or not 1 <= args.attempts <= 10 or not 1 <= args.cycles <= 10:
-        parser.error('seconds must be 0..3600, attempts and cycles 1..10')
+    if not math.isfinite(args.seconds) or args.seconds < 0 or not 1 <= args.attempts <= 10 or not 1 <= args.cycles <= 10:
+        parser.error('seconds must be finite and nonnegative (0 means until stopped), attempts and cycles 1..10')
     import signal
     def stop_requested(signum, frame):
         raise KeyboardInterrupt

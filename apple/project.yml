@@ -1,0 +1,89 @@
+name: EEG
+options:
+  minimumXcodeGenVersion: 2.42.0
+  bundleIdPrefix: cloud.autonomy
+  createIntermediateGroups: true
+packages:
+  EEGCore:
+    path: .
+settings:
+  base:
+    SWIFT_VERSION: 5.9
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 0.1.0
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+targetTemplates:
+  EEGApplication:
+    type: application
+    sources:
+      - path: Sources/EEGApp
+    dependencies:
+      - package: EEGCore
+        product: EEGCore
+    settings:
+      base:
+        PRODUCT_NAME: EEG
+        PRODUCT_BUNDLE_IDENTIFIER: cloud.autonomy.eeg
+        SWIFT_EMIT_LOC_STRINGS: YES
+    info:
+      properties:
+        CFBundleDisplayName: EEG
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Raw EEG capture
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [public.json]
+        NSBluetoothAlwaysUsageDescription: EEG connects to your headset to record and display raw EEG locally on your device.
+        NSBluetoothPeripheralUsageDescription: EEG uses Bluetooth to receive your headset's raw signal.
+targets:
+  EEG-macOS:
+    templates: [EEGApplication]
+    platform: macOS
+    deploymentTarget: '14.0'
+    info:
+      path: Resources/macOS-Info.plist
+      properties:
+        LSApplicationCategoryType: public.app-category.utilities
+        NSHighResolutionCapable: true
+    settings:
+      base:
+        ENABLE_APP_SANDBOX: NO
+        CODE_SIGN_IDENTITY: '-'
+  EEG-iOS:
+    templates: [EEGApplication]
+    platform: iOS
+    deploymentTarget: '17.0'
+    info:
+      path: Resources/iOS-Info.plist
+      properties:
+        UILaunchScreen: {}
+        UIApplicationSupportsIndirectInputEvents: true
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: '1,2'
+  EEG-visionOS:
+    templates: [EEGApplication]
+    platform: visionOS
+    deploymentTarget: '1.0'
+    info:
+      path: Resources/visionOS-Info.plist
+      properties:
+        UIApplicationSupportsIndirectInputEvents: true
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: '7'
+schemes:
+  EEG-macOS:
+    build:
+      targets:
+        EEG-macOS: all
+  EEG-iOS:
+    build:
+      targets:
+        EEG-iOS: all
+  EEG-visionOS:
+    build:
+      targets:
+        EEG-visionOS: all

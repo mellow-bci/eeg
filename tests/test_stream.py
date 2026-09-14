@@ -88,10 +88,11 @@ class FailureBoundaryTests(unittest.TestCase):
             for i,r in enumerate(packets):
                 r=dict(r)
                 if i>=400:r['t']+=1.0
-                before=len(delivered);p.packet(r)
+                p.packet(r)
                 if i==400:
                     self.assertFalse(p.transport_stable)
-                    self.assertEqual(before,len(delivered))
+                    # A worker may finish previously queued stable samples here.
+                    # Current readiness must still be revoked synchronously.
             p.finish()
         self.assertEqual({r['stable_segment'] for r in delivered},{1,2})
 

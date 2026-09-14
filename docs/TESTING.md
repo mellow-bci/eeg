@@ -20,8 +20,18 @@ git lfs pull
 - A subprocess test sends SIGTERM to a fake-transport acquisition process and checks shutdown/summary persistence.
 - File ownership, size budget, exclusive creation and device lease behavior are exercised locally.
 
-At the documented checkpoint, **29 tests passed** on the development host. The repository has additional portable test support and must be rerun after copying. Record actual results rather than keeping a hardcoded count as a gate.
+The original acquisition checkpoint passed29 tests. The expanded suite adds native replay/storage, canonical adapters, malformed-data rejection, audio-runner failure handling and synthetic model/workflow tests. See the dated processing qualification report in `evidence/processing-qualification.json` for the current measured checkpoint. Always rerun after changes; counts alone are not a release gate.
 
 ## Hardware qualification remains separate
 
 Never equate `unittest` success with live discovery, permission onboarding, scalp contact, operating-system reliability or clinical validity. Live test records and hashes are included under the archive and evidence manifest. See VALIDATION.md for measured results and RELEASE_GATES.md for what remains.
+
+## Expanded processing and native checks
+
+```sh
+python -W error::ResourceWarning -m unittest discover -s tests -p 'test_*.py' -v
+swift test --package-path apple
+./apple/build-native.sh all
+```
+
+The end-to-end software test generates three explicitly synthetic ADC recordings, separates training from evaluation by recording, serializes/reloads a profile and checks deterministic replay proposals. It tests plumbing and failure gates; its class separation is manufactured and is not evidence of neural intent. No synthetic model is shipped as a participant profile.

@@ -18,7 +18,7 @@ mkdir -p recordings
 .venv/bin/python stream.py --device LOCAL-ID --seconds 120 --attempts 3 --max-bytes 536870912 --output recordings/capture-001.jsonl
 ```
 
-Supported duration is positive and at most 3600 seconds per attempt; retries and
+Use a positive finite duration or `--seconds 0` to capture until operator stop; retries and
 cycles can extend overall wall-clock time. Attempts/cycles are bounded at 10.
 Use `--cycles` only for deliberate lifecycle testing. No background service or
 cloud deployment is installed by this repository.

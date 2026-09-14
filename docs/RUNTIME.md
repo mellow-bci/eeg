@@ -29,13 +29,18 @@ For each EEG notification:
 
 ## Consumer and failures
 
-The synchronous sink receives a deep copy to protect the recording from mutation. Consumer exceptions are fatal. Notification callbacks catch processing failures, revoke readiness and propagate the failure to the live loop; they do not silently disappear or trigger a misleading Bluetooth retry. Storage write/flush errors are fatal.
+`Pipeline(output, sample_sink=callable, consumer_queue_size=1024, consumer_timeout=0.5, consumer_shutdown_timeout=1.0)` optionally delivers stable, calibrated sample copies to one dedicated daemon thread in FIFO order. The producer never waits for the callback. Record writes remain exclusively on the acquisition thread. Consumers must be thread-safe and use epoch/segment boundaries; a queued sample describes eligibility when captured, not current headset readiness.
 
-The callback contract requires a nonblocking consumer. Arbitrarily hanging synchronous callbacks are **not isolated**; a separate bounded delivery worker/backpressure design remains a release concern. There is no network API or authentication service in this repository.
+Queue insertion is nonblocking. Overflow is fatal (`sample_consumer_overflow`): queued backlog is aborted, never silently treated as delivered. Both queued age and callback elapsed time are bounded by `consumer_timeout` in monotonic seconds. A queued sample older than that budget is not started (`sample_consumer_stale`). Callback exceptions (`sample_consumer_failed`) or a callback exceeding its budget (`sample_consumer_timeout`) revoke readiness. `packet()`, `configure()`, `check_freshness()` and `finish()` observe worker faults; the live loop checks about every 0.1 seconds, including silence. No Bluetooth retry can repair these failures. The sink receives a deep copy and cannot mutate the recorded sample.
+
+`finish()` requests a FIFO drain, checks health, and waits at most the shutdown budget. Unfinished work produces `sample_consumer_shutdown_timeout`. An existing acquisition fault aborts backlog. The summary adds `consumer_delivery` with submitted, completed (`delivered`), undelivered counts, worker-alive status and the first worker error; it is null when no consumer is configured. These counters are a snapshot at close. A failed or timed-out callback may already have performed external side effects, so callers must not retry actions from these counters.
+
+Python cannot safely terminate an arbitrary hanging callback. A timed-out worker is a daemon and cannot hold process exit open; no subsequent callback starts after it observes abort, but an already-running callback can finish later. Hard isolation from arbitrary native code or untrusted consumers requires a separate process and remains a release gate. This implementation bounds acquisition waiting and memory, not arbitrary callback CPU/native-code execution. Storage write/flush errors remain fatal, and a storage failure may prevent final summary persistence.
 
 ## Storage, ownership, shutdown
 
 - Exclusive-create JSONL, mode 0600; an existing file is never overwritten.
+- `--seconds 0` runs until operator stop or an explicit failure; finite positive durations are supported without the former one-hour cap. Duration is per connection attempt. This does not remove storage capacity limits.
 - Default 512 MiB byte budget, configurable by `--max-bytes`; exceeding it fails explicitly rather than truncating or dropping silently. No automatic rotation is implemented.
 - Flush each event; fsync on successful final summary. Power-loss durability of every individual event is not guaranteed.
 - `DeviceLease` uses an OS advisory flock keyed by the normalized explicit device ID. It protects cooperating reader instances, not Cortex or unrelated apps. Discovery and explicit IDs are not globally reconciled.

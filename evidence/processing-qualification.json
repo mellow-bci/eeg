@@ -1,0 +1,67 @@
+{
+  "schema": "eeg.processing-qualification.v1",
+  "date": "2026-09-15",
+  "source": "evidence/experiments/20260915-eyes-session1/capture.jsonl",
+  "source_sha256": "9ba491242cfd688043b8a7511d5866fcce61ab15064b7afe889820542b5e425d",
+  "feature_config_id": "affb28d9e76b8e68e3a55fcec4e4da0c8ee57e5118073876f505d35ee0c934fc",
+  "host": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "python": "3.9.6",
+    "numpy": "2.0.2",
+    "scipy": "1.13.1"
+  },
+  "windows": 109,
+  "usable_after_artifacts": 102,
+  "invalid_reasons": {
+    "transport_unstable": 2,
+    "sample_discontinuity": 1,
+    "missing_epoch_or_segment": 2,
+    "index_or_counter_gap": 1,
+    "sample_rate_not_observed_128hz": 1,
+    "source_or_segment_boundary": 1,
+    "partial_window": 1
+  },
+  "artifact_flags": {
+    "high_amplitude_artifact_possible": 2,
+    "high_rms_artifact_possible": 4
+  },
+  "deterministic_replay_equal_ignoring_runtime_timing": true,
+  "extraction_wall_seconds": 1.225019875,
+  "feature_seconds": {
+    "median": 0.0008289165000000542,
+    "p95": 0.0009760839999999327
+  },
+  "process_peak_rss_bytes": 128581632,
+  "memory_scope": "Whole Python process high-water mark on macOS including libraries and two retained result lists; not isolated streaming memory.",
+  "python_tests": {
+    "passed": 103,
+    "command": "python -W error::ResourceWarning -m unittest discover -s tests -p 'test_*.py' -v"
+  },
+  "labels_verified": false,
+  "training_eligible": false,
+  "evaluation_eligible": false,
+  "mental_command_hardware_validated": false,
+  "limitations": [
+    "Replay input/feature qualification only, not a physiological experiment.",
+    "Artifact thresholds unvalidated; usable does not mean artifact-free.",
+    "Processing timings exclude acquisition, BLE and native UI.",
+    "No learned participant profile created."
+  ],
+  "native_software_checks": {
+    "swift_tests_passed": 11,
+    "platform_builds": [
+      "macOS Debug",
+      "iOS Simulator Debug",
+      "visionOS Simulator Debug"
+    ],
+    "commands": [
+      "swift test --package-path apple",
+      "./apple/build-native.sh all"
+    ],
+    "physical_native_capture_qualified": false,
+    "logs": {
+      "eeg-native-review-tests.log": "db682912a2e912e3c639b3eba86c0fbf8417586948e2034764fc2542c988facf",
+      "eeg-native-review-build.log": "f64794a99959e8ac682138cc71137676741d87866395a71505e798e22e6e52a5"
+    }
+  }
+}

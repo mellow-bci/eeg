@@ -1,0 +1,706 @@
+{
+  "schema_version": "eeg.capability-matrix.v1",
+  "checkpoint": "2026-09-15",
+  "source_inventory": {
+    "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+    "lines": 19935
+  },
+  "status_enum": [
+    "discovered",
+    "understood",
+    "implemented",
+    "tested",
+    "hardware-validated"
+  ],
+  "status_meanings": {
+    "discovered": "Category or proposed need identified; no working independent capability established.",
+    "understood": "Scoped contract/algorithm supported by body or specification evidence, implementation not established.",
+    "implemented": "Named independent subset exists in source; does not imply qualification.",
+    "tested": "Named subset has documented software/reference tests; does not imply whole-category coverage.",
+    "hardware-validated": "Exact stated native hardware/configuration workflow passed recorded physical acceptance; not currently claimed by any row."
+  },
+  "user_flow": [
+    "collect",
+    "review",
+    "analyze",
+    "calibrate",
+    "controlled_output"
+  ],
+  "scope": "Native app feature roadmap. Status applies only to status_scope, never whole vendor category. Historical Python hardware comparison remains separate from native lifecycle qualification.",
+  "capabilities": [
+    {
+      "id": "capability-01",
+      "capability": "Connection lifecycle \u00b7 Collect",
+      "status": "implemented",
+      "status_scope": "Native lifecycle code; not native hardware qualification",
+      "symbol_evidence": {
+        "readable_names_and_links": "[CoreBluetoothQt](../archive/current-state/local-app-analysis/all-symbols.txt#L1197), [CortexService::initConnectionManager](../archive/current-state/local-app-analysis/all-symbols.txt#L2115), [BTLEInputDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2258)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 1197
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2115
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2258
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Native Cortex-free initialization sequence and per-platform lifecycle evidence; existing BLE adapter dependency.",
+      "current_implementation": "Native `AcquisitionModel` discovery/connect/read/notify and timeout states; Python `stream.py` acquisition/reference.",
+      "target_component": "Acquisition service with explicit disconnected/connecting/ready/recovering states; a single BLE owner.",
+      "acceptance_gate": "Native physical discovery/start/stop/reconnect without Cortex initialization; Bluetooth loss and sleep/wake invalidate delivery.",
+      "delivery_notes": "Native research preview; physical qualification first.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-02",
+      "capability": "Additional transports \u00b7 Collect",
+      "status": "discovered",
+      "status_scope": "Inventory only",
+      "symbol_evidence": {
+        "readable_names_and_links": "[USBHidInputDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2260), [USBSerialInputDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2266), [XPCInputDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2257), [BTLENrfInputDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2262)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2260
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2266
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2257
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2262
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Per-transport packet contracts, permissions and actual devices; no added driver implementations.",
+      "current_implementation": "EPOC X Bluetooth path; no claimed USB/XPC/nRF acquisition parity.",
+      "target_component": "Device adapters behind the same acquisition contract, selected by actual device capabilities.",
+      "acceptance_gate": "One real device/transport at a time: packet accounting, units, timestamps, reference comparison and disconnect recovery.",
+      "delivery_notes": "Planned after EPOC X; do not infer USB raw capture from a charging cable.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-03",
+      "capability": "Multiple headset families \u00b7 Collect",
+      "status": "discovered",
+      "status_scope": "Inventory only",
+      "symbol_evidence": {
+        "readable_names_and_links": "[MN8/MND outputs](../archive/current-state/local-app-analysis/all-symbols.txt#L2270), [Epoc4/EpocX/Flex2](../archive/current-state/local-app-analysis/all-symbols.txt#L2272), [Insight](../archive/current-state/local-app-analysis/all-symbols.txt#L2278), [Xtrodes/EpocFlex/EpocPlus](../archive/current-state/local-app-analysis/all-symbols.txt#L2281)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2270
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2272
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2278
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2281
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Per-model channel maps, scaling, configuration, protocol fixtures and physical headsets.",
+      "current_implementation": "Decoder qualification targets observed EPOC X metadata/configuration only.",
+      "target_component": "Versioned hardware capability registry and isolated decoder adapters, no guessed fallback.",
+      "acceptance_gate": "Known fixtures plus physical references for every supported firmware/config; reject unknown modes visibly.",
+      "delivery_notes": "Planned; current EPOC X support does not imply other models.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-04",
+      "capability": "Raw decoding and channel/voltage processing \u00b7 Collect",
+      "status": "tested",
+      "status_scope": "Observed-mode decoder, native replay tests; Python raw comparison hardware evidence exists",
+      "symbol_evidence": {
+        "readable_names_and_links": "[EpocXDataDecryption](../archive/current-state/local-app-analysis/all-symbols.txt#L2286), [EpocXDataValueCorrection](../archive/current-state/local-app-analysis/all-symbols.txt#L2298), [EpocXDataOutput::makeCQ](../archive/current-state/local-app-analysis/all-symbols.txt#L6540)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2286
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2298
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6540
+          }
+        ]
+      },
+      "body_evidence": "Body trace established for observed raw decoding: [EVIDENCE_TRACE](EVIDENCE_TRACE.md), `v4-key.txt`, `packet-routines.txt`, `parse-scale.txt`, channel-map traces; paired sample comparisons.",
+      "missing_parameters_assets_dependencies": "Only observed EPOC X metadata/configuration qualified; additional revisions/modes need separate vectors.",
+      "current_implementation": "Native `EEGDecoder`; Python `decoder.py`; full-vector raw/voltage Cortex comparisons documented.",
+      "target_component": "Decoder service preserves raw notification bytes before interpretation and emits explicit units/config provenance.",
+      "acceptance_gate": "Native/Python fixture parity, authenticated-reference comparison, invalid framing/counter rejection, supported-mode scaling tests.",
+      "delivery_notes": "Implemented for observed EPOC X mode; not physiology certification.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-05",
+      "capability": "Timebase, buffering and interpolation \u00b7 Collect",
+      "status": "implemented",
+      "status_scope": "Current loss/timing subset; interpolation unimplemented",
+      "symbol_evidence": {
+        "readable_names_and_links": "[DataTimeStamp](../archive/current-state/local-app-analysis/all-symbols.txt#L2269), [DataInterpolation](../archive/current-state/local-app-analysis/all-symbols.txt#L2276), [DataTimeStampBuffer](../archive/current-state/local-app-analysis/all-symbols.txt#L2284), [SynchronisedSubscription](../archive/current-state/local-app-analysis/all-symbols.txt#L2330)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2269
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2276
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2284
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2330
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Native bounded I/O scheduling, clock characterization, interpolation policy and prolonged fault evidence.",
+      "current_implementation": "Arrival timestamps/counters, epoch/continuity handling, bounded previews and Python consumer handling. processing/contract.py and windows.py additionally enforce immutable canonical samples and nonoverlapping valid windows; no validated reconstructed missing EEG.",
+      "target_component": "Acquisition service owns timing and loss; derived interpolation, if added, must remain separate and flagged in recording metadata.",
+      "acceptance_gate": "Fault injection, latency/memory measurements, explicit gap counts; interpolated samples never masquerade as measured samples.",
+      "delivery_notes": "Partial; native I/O scheduling and sustained operation remain gates.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-06",
+      "capability": "Contact quality and signal quality \u00b7 Collect/Analyze",
+      "status": "tested",
+      "status_scope": "Raw CQ subset only; derived quality classes unvalidated",
+      "symbol_evidence": {
+        "readable_names_and_links": "[ContactQuality::set](../archive/current-state/local-app-analysis/all-symbols.txt#L5289), [SignalQualityState::fromMatrix](../archive/current-state/local-app-analysis/all-symbols.txt#L5293), [DataOutputContactQuality::initCQThreshold](../archive/current-state/local-app-analysis/all-symbols.txt#L6805), [calculateCQOverall](../archive/current-state/local-app-analysis/all-symbols.txt#L6806)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 5289
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 5293
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6805
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6806
+          }
+        ]
+      },
+      "body_evidence": "Partial CQ bodies/constants traced in `contact-quality-update.txt` and `cq-*.txt`; complete quality-class estimator not established.",
+      "missing_parameters_assets_dependencies": "Validated CQ thresholds/upstream features and independent good/poor-contact labels; raw equivalence is insufficient.",
+      "current_implementation": "Raw per-channel contact observations; Python CQ extraction matches reference raw values. Quality-class mapping remains unvalidated.",
+      "target_component": "Quality service distinguishes transport health, raw contact, signal artifacts and validated electrode-contact labels.",
+      "acceptance_gate": "Controlled electrode-contact changes with reference labels across sessions; missing evidence produces unavailable, not an invented green score.",
+      "delivery_notes": "Raw observations implemented; calibrated classes pending.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-07",
+      "capability": "Motion stream \u00b7 Collect/Analyze",
+      "status": "discovered",
+      "status_scope": "Inventory only",
+      "symbol_evidence": {
+        "readable_names_and_links": "[DataDecryption::processMotion](../archive/current-state/local-app-analysis/all-symbols.txt#L6502), [DataProcessing::processMotion](../archive/current-state/local-app-analysis/all-symbols.txt#L6520), [DataTimeStamp::processMotion](../archive/current-state/local-app-analysis/all-symbols.txt#L6465)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6502
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6520
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6465
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Motion packet layout, timestamps, axis units, scale and physical/reference motion recordings.",
+      "current_implementation": "Auxiliary bytes archived; no established native physical motion decoding/units qualification.",
+      "target_component": "Motion adapter inside acquisition; shared timestamps and recording channels.",
+      "acceptance_gate": "Axis/units/scale tests with known rotations and static gravity, reference comparison and EEG alignment.",
+      "delivery_notes": "Planned; raw auxiliary bytes alone are not motion support.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-08",
+      "capability": "Filters, FFT and band power \u00b7 Analyze",
+      "status": "tested",
+      "status_scope": "Independent Python spectral feature extraction tested synthetically; native analysis pending",
+      "symbol_evidence": {
+        "readable_names_and_links": "[NotchFilter::filter](../archive/current-state/local-app-analysis/all-symbols.txt#L1993), [RealTimeFilter](../archive/current-state/local-app-analysis/all-symbols.txt#L2372), [FFT_Txf::apply](../archive/current-state/local-app-analysis/all-symbols.txt#L8735), [onBandPower](../archive/current-state/local-app-analysis/all-symbols.txt#L5091)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 1993
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2372
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 8735
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 5091
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Native feature port, prospective artifact-threshold validation, end-to-end timing and physical signal interpretation. Independent numeric settings are explicit; vendor spectral settings remain unresolved.",
+      "current_implementation": "processing/features.py defines 256-sample Hann/Welch spectra and 70 log-band-power features with explicit unvalidated amplitude/flat/rail rejection. Known-sine energy and unchanged-input tests exist; historical descriptive analysis remains separate.",
+      "target_component": "Analysis service with versioned filter/window/PSD recipes and explicit display-only versus causal processing.",
+      "acceptance_gate": "Fixed signal reference tests, frequency/amplitude response, unit consistency, gaps/short-window rejection and online latency.",
+      "delivery_notes": "Implemented/tested offline Python spectral subset; not a native or physiological-equivalence claim.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-09",
+      "capability": "Mental command training, PCA and Gaussian classification \u00b7 Calibrate",
+      "status": "tested",
+      "status_scope": "Independent offline mental-command processing software with synthetic/state tests; no validated participant model or native trained inference",
+      "symbol_evidence": {
+        "readable_names_and_links": "[GaussianTraining::buildSignatureFromPCA](../archive/current-state/local-app-analysis/all-symbols.txt#L6958), [runPCA](../archive/current-state/local-app-analysis/all-symbols.txt#L6965), [GaussianData::setCovariance](../archive/current-state/local-app-analysis/all-symbols.txt#L6898), [CognitivDetectionManager::crossValidate](../archive/current-state/local-app-analysis/all-symbols.txt#L6986)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6958
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6965
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6898
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6986
+          }
+        ]
+      },
+      "body_evidence": "Selected bounded body evidence now exists: docs/MENTAL_REFERENCE_TRACE.md and evidence/mental-command-reference/manifest.json establish named feature-selection/PCA/canonical/Gaussian-density/posterior call sites and neutral-training state. Complete raw-to-feature path, numeric settings and vendor-trained state remain unresolved.",
+      "missing_parameters_assets_dependencies": "Independently acquired verified mental-task/neutral sessions, prospective artifact controls and ordinary-activity false-activation exposure, held-out physiological performance, native inference/workspace integration. Vendor weights/settings are not required or imported; our experimental parameters are explicit.",
+      "current_implementation": "processing/contract.py + windows.py + workflow.py adapt native/Python recordings into shared valid windows. mental.py implements train-only scaling/feature ranking, PCA, diagonal Gaussian classes including neutral, score/distance rejection, persistence, validated versioned profiles and read-only proposals. workflow.py provides extract/train/evaluate/replay; synthetic tests cover numerical/state/profile/provenance invariants. Older calibration LDA/eyes/blinks is separate research, not this implementation or proof of mental intent.",
+      "target_component": "One mental-processing service and versioned profile contract, consumed by the native Calibration workspace. Offline Python processing.workflow is the first research implementation, not a second user-facing application.",
+      "acceptance_gate": "Synthetic numerical/state/profile tests plus real prospective whole-session evaluation with independently verified task labels, no content reuse, artifact controls, neutral exposure and uncertainty. Native port must match fixed reference vectors before physical integration; outputs stay disabled.",
+      "delivery_notes": "Highest-priority independent mental-command workflow; software implemented and tested in scoped components, physiological/native/output validation pending.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-10",
+      "capability": "Facial/ocular gestures \u00b7 Calibrate",
+      "status": "implemented",
+      "status_scope": "Descriptive ocular response only; gesture classifier unvalidated",
+      "symbol_evidence": {
+        "readable_names_and_links": "[HEDetector::detect](../archive/current-state/local-app-analysis/all-symbols.txt#L7309), [BlinkWinkState::initBlinkGMM](../archive/current-state/local-app-analysis/all-symbols.txt#L7312), [initLWinkGMM/initRWinkGMM](../archive/current-state/local-app-analysis/all-symbols.txt#L7313), [FacialExpressionsDetection](../archive/current-state/local-app-analysis/all-symbols.txt#L16327)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 7309
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 7312
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 7313
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 16327
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Independent gesture labels and nuisance controls, native detector/profile, validated thresholds; vendor GMM assets/parameters are not established.",
+      "current_implementation": "Historical cue-associated blink RMS and calibration/evaluate.py eyes/gesture LDA scaffold remain independent ocular research. They are not the new processing/mental.py workflow or evidence of neural intent.",
+      "target_component": "Gesture module within calibration service; explicitly label ocular/muscle HCI, separate from neural intent.",
+      "acceptance_gate": "Independent observed gesture timestamps, sham speech cues, spontaneous-blink controls, event sensitivity/latency and armed neutral exposure.",
+      "delivery_notes": "Experimental; no validated facial expression parity.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-11",
+      "capability": "Cognitive/performance metrics \u00b7 Analyze/Calibrate",
+      "status": "discovered",
+      "status_scope": "Inventory only",
+      "symbol_evidence": {
+        "readable_names_and_links": "[ValenceDetection](../archive/current-state/local-app-analysis/all-symbols.txt#L2334), [EngagementDetection](../archive/current-state/local-app-analysis/all-symbols.txt#L2336), [MeditationDetection](../archive/current-state/local-app-analysis/all-symbols.txt#L2338), [FrustrationDetection](../archive/current-state/local-app-analysis/all-symbols.txt#L2340), [GenericPMDetection](../archive/current-state/local-app-analysis/all-symbols.txt#L2346)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2334
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2336
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2338
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2340
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2346
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Construct definitions, independent reference measures, training datasets, model specification and validation; no vendor weights/scores assumed.",
+      "current_implementation": "Descriptive EEG features only; no validated stress/focus/emotion equivalent.",
+      "target_component": "Independently defined metric modules with construct definitions and provenance, governed by the analysis service.",
+      "acceptance_gate": "Construct-specific independent reference measure, prospective evaluation, participant/session generalization, reliability and uncertainty.",
+      "delivery_notes": "Planned research; proprietary names are not scientific ground truth or supported app scores.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-12",
+      "capability": "On-device learned model runtime \u00b7 Analyze/Calibrate",
+      "status": "tested",
+      "status_scope": "Independent offline NumPy profile training/loading/inference tested; native learned runtime pending",
+      "symbol_evidence": {
+        "readable_names_and_links": "[Tensorflow::Model::initModelWithBuffer/run](../archive/current-state/local-app-analysis/all-symbols.txt#L5208), [TfLiteInterpreterInvoke](../archive/current-state/local-app-analysis/all-symbols.txt#L1501), [loadLocalTfliteModel](../archive/current-state/local-app-analysis/all-symbols.txt#L7595)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 5208
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 1501
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 7595
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Native runtime/port with golden-vector parity, target-device latency and independently validated participant profiles. No vendor assets are needed for the independent design.",
+      "current_implementation": "processing/mental.py executes independent train-only PCA and regularized diagonal Gaussians in NumPy; immutable detector copy, profile schema/dimension/integrity checks, private no-overwrite serialization and disabled command output are tested. No vendor TFLite weights or native trained-model loader are used.",
+      "target_component": "Model service accepts versioned independently owned models with input schema and bounded execution; runtime choice is implementation detail.",
+      "acceptance_gate": "Golden inference vectors, corrupt/incompatible model rejection, reproducible preprocessing, memory/latency and rollback tests.",
+      "delivery_notes": "Offline profile lifecycle/inference implemented and tested; native learned runtime and physiological validation pending.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-13",
+      "capability": "Sessions, recordings and markers \u00b7 Collect/Review",
+      "status": "tested",
+      "status_scope": "Local JSONL/reference subset; long-run native pending",
+      "symbol_evidence": {
+        "readable_names_and_links": "[ConnectedHeadset::addMarkerRequest](../archive/current-state/local-app-analysis/all-symbols.txt#L5059), [newDataForParquet](../archive/current-state/local-app-analysis/all-symbols.txt#L5062), [initParquetSubscription](../archive/current-state/local-app-analysis/all-symbols.txt#L5069), [RecordStorageApiHandler](../archive/current-state/local-app-analysis/all-symbols.txt#L2368)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 5059
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 5062
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 5069
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2368
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Native durability/failure-status qualification, indexed library and prolonged recording tests.",
+      "current_implementation": "Native append-only JSONL with raw/sample/event records; Python archive and `RecordingLibrary`; cue markers and reference Parquet recovery.",
+      "target_component": "One recording service owns acquisition, metadata, markers, library index and completion/failure state.",
+      "acceptance_gate": "Disk failure/crash recovery, exclusive private writes, schema/count validation, corruption reporting and complete export round trips.",
+      "delivery_notes": "Core implemented; long-session durability/indexing qualification pending.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-14",
+      "capability": "CSV/EDF exchange \u00b7 Review",
+      "status": "tested",
+      "status_scope": "CSV subset only; EDF pending",
+      "symbol_evidence": {
+        "readable_names_and_links": "[CsvExporter](../archive/current-state/local-app-analysis/all-symbols.txt#L2320), [EdfRecordExporter](../archive/current-state/local-app-analysis/all-symbols.txt#L2321), [validateSignalHeader](../archive/current-state/local-app-analysis/all-symbols.txt#L1619)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2320
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2321
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 1619
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "EDF schema/units/annotation design and independent roundtrip validation; CSV is only current native format.",
+      "current_implementation": "Native ADC/microvolt CSV exporter and Python CSV tools; no native EDF exporter.",
+      "target_component": "Import/export adapters attached to recording service; original raw recording retained.",
+      "acceptance_gate": "Independent-reader round trips for channels, units, timestamps, annotations and incomplete recordings; reject silent scale changes.",
+      "delivery_notes": "CSV implemented; EDF planned.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-15",
+      "capability": "Replay, file import and simulated sources \u00b7 Review",
+      "status": "tested",
+      "status_scope": "Native replay/raw-JSON subset only",
+      "symbol_evidence": {
+        "readable_names_and_links": "[CSVFileInputDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2263), [EDFFileInputDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2264), [EEDFileInputDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2265), [VirtualDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2255)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2263
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2264
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2265
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2255
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Additional file schemas and recovery semantics; native raw JSON import/replay is only current coverage.",
+      "current_implementation": "Native paginated actual sample replay and bounded raw BLE JSON import through the native decoder; Python replay fixtures.",
+      "target_component": "Recording service exposes replay through the same sample contract, with explicit source mode.",
+      "acceptance_gate": "Malformed/oversized input tests, native parity, interrupted import status, no replay presented as live data.",
+      "delivery_notes": "Partial; additional import formats planned. No synthetic signal in current native UI.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-16",
+      "capability": "APIs, subscriptions and integrations \u00b7 Controlled output",
+      "status": "discovered",
+      "status_scope": "Inventory only",
+      "symbol_evidence": {
+        "readable_names_and_links": "[HeadsetApiHandler](../archive/current-state/local-app-analysis/all-symbols.txt#L2350), [SessionApiHandler](../archive/current-state/local-app-analysis/all-symbols.txt#L2354), [TrainingApiHandler](../archive/current-state/local-app-analysis/all-symbols.txt#L2356), [DataStreamApiHandler](../archive/current-state/local-app-analysis/all-symbols.txt#L2362), [QWebSocketServer::listen](../archive/current-state/local-app-analysis/all-symbols.txt#L2410)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2350
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2354
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2356
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2362
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2410
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Authenticated API contracts, adapter permissions, bounded subscriptions; no supported Apple HID driver path yet.",
+      "current_implementation": "No released native external streaming API, LSL service or Apple HID action bridge. Python callback/reference interfaces exist.",
+      "target_component": "Optional integration adapters use canonical services, explicit authorization and bounded subscriptions; action policy distinct from raw data export.",
+      "acceptance_gate": "Authentication/authorization, subscriber isolation/backpressure, time synchronization, revocation and no direct sample-to-system action.",
+      "delivery_notes": "Planned; Apple/Cast outputs disabled until separate gates.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-17",
+      "capability": "Cloud records, sessions and configuration \u00b7 Review/System",
+      "status": "discovered",
+      "status_scope": "Inventory only",
+      "symbol_evidence": {
+        "readable_names_and_links": "[CloudClient::createRecord](../archive/current-state/local-app-analysis/all-symbols.txt#L8762), [createSession](../archive/current-state/local-app-analysis/all-symbols.txt#L8768), [batchUploadPhase](../archive/current-state/local-app-analysis/all-symbols.txt#L8782), [AWSSingleton](../archive/current-state/local-app-analysis/all-symbols.txt#L1745)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 8762
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 8768
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 8782
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 1745
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Opt-in sync protocol, independently owned endpoints, keys and deletion/conflict rules; no vendor cloud dependency.",
+      "current_implementation": "Local-only app; private Git archive is a research backup, not application synchronization.",
+      "target_component": "Optional sync service for user-authorized encrypted records; local acquisition/export remains available without accounts.",
+      "acceptance_gate": "Opt-in only, key ownership/recovery, conflict resolution, interruption/retry, deletion and proof that disabling sync stops egress.",
+      "delivery_notes": "Planned optional; no cloud or paid entitlement needed for raw capture.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-18",
+      "capability": "Firmware maintenance \u00b7 System",
+      "status": "discovered",
+      "status_scope": "Inventory only; explicitly deferred",
+      "symbol_evidence": {
+        "readable_names_and_links": "[DfuHid::recoverFirmware](../archive/current-state/local-app-analysis/all-symbols.txt#L6351), [upgradeHeadsetFirmware](../archive/current-state/local-app-analysis/all-symbols.txt#L6357), [CloudClient::downloadFirmware](../archive/current-state/local-app-analysis/all-symbols.txt#L8784)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6351
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 6357
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 8784
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "No firmware code/assets planned; supported recovery and update specification would be required before changing scope.",
+      "current_implementation": "Identity/configuration reads only; no firmware writer.",
+      "target_component": "Device-maintenance component separate from acquisition; compatibility/status first, update only when a verified supported mechanism exists.",
+      "acceptance_gate": "Authentic image/model compatibility, interrupted-update recovery and recoverable test hardware; explicit user action.",
+      "delivery_notes": "Deferred; symbol discovery is insufficient for safe firmware updates.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-19",
+      "capability": "Specialized experimental verticals \u00b7 Analyze/Calibrate",
+      "status": "discovered",
+      "status_scope": "Inventory only",
+      "symbol_evidence": {
+        "readable_names_and_links": "[LOrealFragranceEvent](../archive/current-state/local-app-analysis/all-symbols.txt#L5070), [LOrealFragranceDetection](../archive/current-state/local-app-analysis/all-symbols.txt#L15815), [MindFocusApiHandler](../archive/current-state/local-app-analysis/all-symbols.txt#L2358), [XtrodesDataOutput](../archive/current-state/local-app-analysis/all-symbols.txt#L2281)",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 5070
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 15815
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2358
+          },
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2281
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "Explicit user need, task definition and independent data; specialized vendor semantics/assets remain unknown.",
+      "current_implementation": "No fragrance/preference/MindFocus/specialized-hardware model.",
+      "target_component": "Optional protocol/analysis modules only for a justified user need; same session and model contracts.",
+      "acceptance_gate": "A separately specified task, device support, independent labels and prospective evaluation; no inference of meaning from class names.",
+      "delivery_notes": "Deferred research; not required for the first independent EEG release.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    },
+    {
+      "id": "capability-20",
+      "capability": "Enterprise access, audit and encrypted collaboration \u00b7 System",
+      "status": "discovered",
+      "status_scope": "Independent proposed scope; not established by symbols",
+      "symbol_evidence": {
+        "readable_names_and_links": "No verified RBAC/encrypted-sync equivalence established from this symbol inspection; [UserApiHandler](../archive/current-state/local-app-analysis/all-symbols.txt#L2348) merely shows an API class.",
+        "references": [
+          {
+            "path": "archive/current-state/local-app-analysis/all-symbols.txt",
+            "line": 2348
+          }
+        ]
+      },
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
+      "missing_parameters_assets_dependencies": "RBAC policy/schema, audit/key lifecycle, sync threat model and isolation tests; no claim from UserApiHandler names.",
+      "current_implementation": "Local app and private file permissions; no enterprise role enforcement, cryptographic audit service or encrypted application sync implemented.",
+      "target_component": "Optional access/audit services govern canonical objects and sync; recording, participant, protocol and model permissions are enforced centrally.",
+      "acceptance_gate": "Role/tenant isolation, explicit grants/revocation, sensitive export audit, key lifecycle, deletion and offline behavior tests.",
+      "delivery_notes": "Planned opt-in enterprise scope, not a present capability or raw-data subscription gate.",
+      "vendor_equivalence_claimed": false,
+      "native_hardware_validated": false
+    }
+  ],
+  "implementation_priority": "Independent mental-command contract/windows/features/profile training/neutral inference/evaluation first; ocular calibration is a separate research track, not a substitute.",
+  "status_evidence_notes": "Tested mental/spectral/profile entries refer to tests/test_mental_processing.py and tests/test_processing_contract.py software invariants, not a fitted participant or hardware-qualified neural classifier."
+}
