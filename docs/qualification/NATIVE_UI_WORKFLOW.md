@@ -237,3 +237,21 @@ source digest, all trial IDs/outcomes, exposure fractions and schedule accountin
 This is a local workflow rehearsal, not a claim that the revised remote job has
 already passed. Check the GitHub run for the corresponding workflow revision.
 No new UI, headset or physiological qualification was performed.
+
+
+### Remote CI qualification result
+
+[Run 34937415551](https://github.com/autonomy-cloud/eeg/actions/runs/34937415551)
+completed successfully for exact revision
+`6444526db996ef442d175878623f23b811b5bab8`. The job log confirms the native suite
+ran 194 tests with two explicitly skipped load qualifications and zero failures
+(257.416 seconds on the runner). Both profile export and complete-plan fixture
+export were enabled in that same test step. The independent Python profile loader,
+existing native CLI check and new complete 24-trial CLI equivalence check all passed.
+The latter explicitly confirmed canonical receipt equality, source and outcome
+accounting. Inventory consistency and the Python regression step also passed.
+
+This upgrades the earlier local-rehearsal note to verified remote software evidence
+for that revision only. It does not cover subsequent observer-entry/history changes,
+physical headset input, prospective task labels, real artifact controls, UI timing,
+load qualifications that were skipped, or production readiness.
