@@ -19,6 +19,11 @@ controls, review and canonical manifest export. Trial-controller checks include 
 complete acknowledged cycle, cancellation and delayed/missing end-cue callbacks.
 These are software tests, not physical audio timing or mental-command qualification.
 
+The macOS synthetic dataset import → train → inspect → evaluate → export route
+was exercised interactively on build `d63f9de`; see
+[the qualification record](qualification/NATIVE_UI_WORKFLOW.md). This supersedes
+the historical unresolved-picker note below, but does not qualify live collection.
+
 The next qualification priorities remain:
 
 1. Exercise the complete native workflow on independent real recording sessions,
