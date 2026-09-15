@@ -423,7 +423,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
                 "session_id":sessionID,"feature_config_id":EEGMentalFeatures.configurationID,"shadow_run_id":token.uuidString,
                 "maximum_pending_inputs":String(maximumPendingInputs),
                 "maximum_pending_event_bytes":String(maximumPendingEventBytes),
-                "system_control_enabled":"false","receivedAt":String(recordingClock)])
+                "system_control_enabled":"false","receivedAt":String(recordingClock)].merging(EEGShadowVerification.implementationFields) { _,new in new })
             shadow=consumer;shadowActive=true;shadowResult=nil;shadowStatus="Waiting for validated windows"
         } catch { consumer.stop();storageFailed(error);throw error }
     }

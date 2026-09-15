@@ -55,6 +55,14 @@ struct ReplayInferenceView: View {
                 .disabled(running || model.recording || model.ready || recordingName.isEmpty || shadowRunID.isEmpty || maximumWindows<=0)
             if let shadowReport {
                 Text(shadowReport.completeMatch ? "Recorded outputs match replay" : "Comparison incomplete or different").font(.headline)
+                switch shadowReport.implementationStatus {
+                case .matchingSource: Text("EEGCore source matches this build.").font(.caption)
+                case .differentSource: Text("Recorded with different EEGCore source. Output agreement does not establish the same implementation.").font(.caption)
+                case .unavailable: Text("Recorded implementation is unknown; source identity was not captured.").font(.caption)
+                }
+                if let source = shadowReport.recordedImplementationSHA256 {
+                    Text("Recorded source: " + source).font(.caption.monospaced()).textSelection(.enabled)
+                }
                 LabeledContent("Replay / recorded windows",value:"\(shadowReport.replayWindows) / \(shadowReport.recordedWindows)")
                 LabeledContent("Mismatched windows",value:String(shadowReport.mismatchedOrdinals.count))
                 LabeledContent("Missing outputs",value:String(shadowReport.missingOrdinals.count))

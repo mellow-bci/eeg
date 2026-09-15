@@ -7,7 +7,7 @@ final class ShadowVerificationTests: XCTestCase {
         let root=URL(fileURLWithPath:#filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         return try EEGMentalProfile.load(data:Data(contentsOf:root.appendingPathComponent("Fixtures/spectrum/mental-profile.json")))
     }
-    private func capture(_ store:EEGRecordingStore,profile:EEGMentalProfile,mutate:Bool=false,omit:Bool=false,stop:Bool=true,finalized:Bool=true) throws -> URL {
+    private func capture(_ store:EEGRecordingStore,profile:EEGMentalProfile,mutate:Bool=false,omit:Bool=false,stop:Bool=true,finalized:Bool=true,identity:[String:String]=[:]) throws -> URL {
         let writerQueue=DispatchQueue(label:"test.shadow.recording")
         let writer=try EEGQueuedRecordingStore(store:store,queue:writerQueue) {_,reason in
             XCTFail("Unexpected recording failure: \(reason)")
@@ -30,7 +30,7 @@ final class ShadowVerificationTests: XCTestCase {
         for i in 0..<13 {try writer.enqueue(sample:sample(i))}
         try writer.enqueueEvent(kind:"shadow_start",fields:["shadow_run_id":"run","profile_id":profile.id,
             "participant_id":profile.participantID,"session_id":"held-out","feature_config_id":EEGMentalFeatures.configurationID,
-            "system_control_enabled":"false"])
+            "system_control_enabled":"false"].merging(identity) {_,new in new})
         let queue=DispatchQueue(label:"test.shadow.reference")
         var results=[EEGWindowInferenceResult]()
         let live=try EEGLiveInference(profile:profile,participantID:profile.participantID,sessionID:"held-out",
@@ -52,6 +52,42 @@ final class ShadowVerificationTests: XCTestCase {
         if stop {try writer.enqueueEvent(kind:"shadow_stop",fields:["shadow_run_id":"run","reason":"operator_stopped"])}
         writerQueue.resume();suspended=false
         if finalized {try writer.finish()} else {writer.abort();writerQueue.sync {}};return url
+    }
+    func testRecordedImplementationIdentityIsSeparateFromOutputAgreement() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let store=try EEGRecordingStore(directory:directory),profile=try profile()
+        func verify(_ fields:[String:String]) throws -> EEGShadowVerification.Report {
+            let url=try capture(store,profile:profile,identity:fields)
+            return try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run")
+        }
+        let fields=EEGShadowVerification.implementationFields
+        let matching=try verify(fields)
+        XCTAssertTrue(matching.completeMatch);XCTAssertTrue(matching.sameImplementationMatch)
+        XCTAssertEqual(matching.implementationStatus,.matchingSource)
+        XCTAssertEqual(matching.recordedImplementationSHA256,EEGSourceIdentity.sha256)
+        let absent=try verify([:])
+        XCTAssertTrue(absent.completeMatch);XCTAssertFalse(absent.sameImplementationMatch)
+        XCTAssertEqual(absent.implementationStatus,.unavailable)
+        XCTAssertNil(absent.recordedImplementationSHA256)
+        var different=fields
+        different["implementation_source_sha256"]=String(repeating:EEGSourceIdentity.sha256.first == "a" ? "b" : "a",count:64)
+        let changed=try verify(different)
+        XCTAssertTrue(changed.completeMatch);XCTAssertFalse(changed.sameImplementationMatch)
+        XCTAssertEqual(changed.implementationStatus,.differentSource)
+        different=fields;different["implementation_source_input_count"]=String(EEGSourceIdentity.inputFileCount+1)
+        XCTAssertEqual(try verify(different).implementationStatus,.differentSource)
+        for key in fields.keys {
+            var partial=fields;partial.removeValue(forKey:key)
+            XCTAssertThrowsError(try verify(partial))
+        }
+        for (key,value) in [("implementation_source_sha256","invalid"),
+                            ("implementation_source_input_count","0"),
+                            ("implementation_source_input_count","01"),
+                            ("implementation_source_schema","unknown")] {
+            var invalid=fields;invalid[key]=value
+            XCTAssertThrowsError(try verify(invalid))
+        }
     }
     func testLiveRunBoundaryAlignmentAndChangedOutput() throws {
         let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

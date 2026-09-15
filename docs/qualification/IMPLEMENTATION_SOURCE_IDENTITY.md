@@ -1,4 +1,4 @@
-# Evaluation implementation source identity
+# Evaluation and live-run implementation source identity
 
 Native evaluation receipts now include `implementation_source` with schema
 `eeg.core-source.v1`, a SHA-256 digest and the input file count. The canonical
@@ -6,6 +6,42 @@ EEGCore receipt builder supplies this field for both native UI and CLI. This is
 an additive provenance field; the evaluation algorithm remains
 `native-labeled-evaluation-12`. Older receipts do not contain this evidence and
 must not be treated as identifying an implementation source snapshot.
+
+## Recorded live runs
+
+New native `shadow_start` events also record the compiled EEGCore identity using
+the shared `EEGShadowVerification.implementationFields` contract:
+`implementation_source_schema`, `implementation_source_sha256` and
+`implementation_source_input_count`. Values are strings, consistent with the
+canonical event writer. This adds provenance without changing samples, decoder,
+windowing, classifier parameters or actionable-output policy.
+
+Shadow replay reports `matching_source`, `different_source` or `unavailable`.
+All three fields absent means unavailable evidence in the original recording;
+partial fields, malformed digests, unknown schema and invalid counts reject the
+run. A valid but different digest or count reports different source, even when
+all replay outputs happen to match. The UI presents this separately from output
+agreement and exposes the recorded digest for inspection.
+
+`completeMatch` continues to mean the existing output/stop-accounting comparison.
+The additional `sameImplementationMatch` requires both complete output agreement
+and matching source identity. Neither means binary equivalence, authenticity or
+physiological accuracy: the identity excludes the app frontend, SDK and build
+flags as described below. Missing historical metadata is never backfilled.
+
+The native shadow test uses the real queued recording writer and live consumer,
+then replays those saved outputs. On 2026-09-15 all four `ShadowVerificationTests`
+passed, including matching/different/absent identity, changed input counts,
+partial fields and malformed values. Identical output fixtures under different
+or absent source identity still cannot produce `sameImplementationMatch`.
+The independent source-identity oracle passed after these changes; macOS, iOS
+simulator and visionOS simulator builds also succeeded. This is compile/offline
+evidence for the added recording and display path, not a live capture or visual
+qualification of the new UI text.
+
+```sh
+swift test --package-path apple --filter ShadowVerificationTests
+```
 
 ## Construction
 

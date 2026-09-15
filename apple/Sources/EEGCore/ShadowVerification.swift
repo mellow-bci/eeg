@@ -2,6 +2,15 @@ import Foundation
 
 /// Verifies recorded shadow outputs, not intent accuracy or source authenticity.
 public enum EEGShadowVerification {
+    /// Shared event fields used by the native live host and replay qualification.
+    public static var implementationFields: [String: String] {
+        ["implementation_source_schema": EEGSourceIdentity.schema,
+         "implementation_source_sha256": EEGSourceIdentity.sha256,
+         "implementation_source_input_count": String(EEGSourceIdentity.inputFileCount)]
+    }
+    public enum ImplementationStatus: String, Sendable {
+        case matchingSource = "matching_source", differentSource = "different_source", unavailable
+    }
     public enum Failure: Error { case invalidRun, missingRun, invalidLimit, limitExceeded, trainingContent }
     public struct Report: Sendable {
         public let recordingSHA256: String
@@ -13,6 +22,9 @@ public enum EEGShadowVerification {
         public let missingOrdinals: [Int]
         public let stopObserved: Bool
         public let stopReason: String?
+        public let recordedImplementationSHA256: String?
+        public let implementationStatus: ImplementationStatus
+        public var sameImplementationMatch: Bool { completeMatch && implementationStatus == .matchingSource }
         public var completeMatch: Bool {stopObserved && ["operator_stopped","recording_stopped","profile_view_closed"].contains(stopReason ?? "") && recordedWindows>0 && mismatchedOrdinals.isEmpty && missingOrdinals.isEmpty}
         public let systemControlEnabled=false
     }
@@ -52,6 +64,8 @@ public enum EEGShadowVerification {
         var started=false, active=false, stopped=false
         var sessionID: String?
         var stopReason: String?
+        var implementationStatus = ImplementationStatus.unavailable
+        var recordedImplementationSHA256: String?
         var assembler=EEGAnalysisWindowAssembler()
         var processor: EEGWindowInference?
         var expected=[EEGWindowInferenceResult]()
@@ -80,6 +94,16 @@ public enum EEGShadowVerification {
                       object["system_control_enabled"] as? String=="false",
                       let session=object["session_id"] as? String,
                       !profile.trainingSessions.contains(session) else {throw Failure.invalidRun}
+                let identityKeys = Array(implementationFields.keys)
+                if identityKeys.contains(where: { object[$0] != nil }) {
+                    guard object["implementation_source_schema"] as? String == EEGSourceIdentity.schema,
+                          let hash = object["implementation_source_sha256"] as? String,
+                          hash.count == 64, hash.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }),
+                          let countText = object["implementation_source_input_count"] as? String,
+                          let count = Int(countText), count > 0, String(count) == countText else { throw Failure.invalidRun }
+                    recordedImplementationSHA256 = hash
+                    implementationStatus = hash == EEGSourceIdentity.sha256 && count == EEGSourceIdentity.inputFileCount ? .matchingSource : .differentSource
+                }
                 processor=try EEGWindowInference(profile:profile,participantID:profile.participantID,sessionID:session)
                 try assembler.event(metadata)
                 try assembler.event(Data("{\"kind\":\"transport_status\",\"status\":\"stable\"}".utf8))
@@ -116,6 +140,7 @@ public enum EEGShadowVerification {
         guard !profile.trainingRecordingHashes.values.contains(try fingerprint.finalize()) else {throw Failure.trainingContent}
         return Report(recordingSHA256:digest,runID:runID,profileID:profile.id,replayWindows:expected.count,
             recordedWindows:seen.count,mismatchedOrdinals:mismatches.sorted(),
-            missingOrdinals:expected.indices.filter {!seen.contains($0)},stopObserved:stopped,stopReason:stopReason)
+            missingOrdinals:expected.indices.filter {!seen.contains($0)},stopObserved:stopped,stopReason:stopReason,
+            recordedImplementationSHA256:recordedImplementationSHA256,implementationStatus:implementationStatus)
     }
 }
