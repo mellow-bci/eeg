@@ -1,4 +1,5 @@
 import XCTest
+import CryptoKit
 @testable import EEGCore
 
 final class RecordingStoreTests: XCTestCase {
@@ -14,6 +15,77 @@ final class RecordingStoreTests: XCTestCase {
                          continuous: true, adcWords: [UInt16](repeating: 10, count: 15), electrodesADC: values,
                          electrodesMicrovolts: calibrated ? values.mapValues { $0 / 7.8 } : nil,
                          notificationSlot: 0, recordFlag: 0)
+    }
+    private func clockJSON(wall: Double = 1000) throws -> String {
+        let anchor = try EEGRecordingClockAnchor(receiptBefore: 0, receiptAfter: 0.25,
+            wallUnixSeconds: wall, localUTCOffsetSeconds: 19800)
+        return String(decoding: try JSONEncoder().encode(anchor), as: UTF8.self)
+    }
+    func testClockEvidencePreservesSourceAndConditionalMapping() throws {
+        let store = try EEGRecordingStore(directory: root)
+        let file = try store.start()
+        try store.appendEvent(kind: "recording_clock_anchor", fields: ["json": clockJSON()])
+        try store.append(sample: sample(0)); try store.append(sample: sample(1))
+        try store.finish()
+        let original = try Data(contentsOf: file)
+        let evidence = try store.clockEvidence(recording: file)
+        let anchor = try XCTUnwrap(evidence.anchor)
+        XCTAssertEqual(evidence.sampleCount, 2)
+        XCTAssertEqual(evidence.fileSHA256, SHA256.hash(data: original).map { String(format: "%02x", $0) }.joined())
+        XCTAssertEqual(anchor.localUTCOffsetSeconds, 19800)
+        XCTAssertEqual(try anchor.wallTimeBounds(forReceiptSeconds: 1), 1000.75...1001)
+        XCTAssertEqual(try Data(contentsOf: file), original)
+        XCTAssertEqual(try store.replay(recording: file).map(\.receivedAt), [0, 1.0 / 128])
+    }
+    func testCompletedRecordingWithoutAnchorDoesNotInferOne() throws {
+        let store = try EEGRecordingStore(directory: root)
+        let file = try store.start()
+        try store.append(sample: sample(0)); try store.finish()
+        let evidence = try store.clockEvidence(recording: file)
+        XCTAssertNil(evidence.anchor); XCTAssertEqual(evidence.sampleCount, 1)
+    }
+    func testClockEvidenceRejectsMalformedRepeatedAndLateAnchorsWithoutAlteringRawReplay() throws {
+        let store = try EEGRecordingStore(directory: root)
+        for mode in ["missing-json", "malformed", "bad-provenance", "duplicate", "conflict", "late"] {
+            let file = try store.start()
+            if mode == "late" { try store.append(sample: sample(0)) }
+            var fields = ["json": try clockJSON()]
+            if mode == "missing-json" { fields = [:] }
+            if mode == "malformed" { fields = ["json": "{"] }
+            if mode == "bad-provenance" {
+                fields = ["json": try clockJSON().replacingOccurrences(of: "unmeasured", with: "verified")]
+            }
+            try store.appendEvent(kind: "recording_clock_anchor", fields: fields)
+            if mode == "duplicate" || mode == "conflict" {
+                try store.appendEvent(kind: "recording_clock_anchor", fields: ["json": clockJSON(wall: mode == "conflict" ? 2000 : 1000)])
+            }
+            if mode != "late" { try store.append(sample: sample(0)) }
+            try store.finish()
+            let original = try Data(contentsOf: file)
+            XCTAssertThrowsError(try store.clockEvidence(recording: file), mode) { error in
+                guard case EEGRecordingError.invalidClockEvidence = error else {
+                    return XCTFail("Unexpected error: \(error)")
+                }
+            }
+            XCTAssertEqual(try Data(contentsOf: file), original)
+            XCTAssertEqual(try store.replay(recording: file).count, 1)
+        }
+    }
+    func testClockEvidenceRequiresCompleteAndValidStream() throws {
+        let store = try EEGRecordingStore(directory: root)
+        let file = try store.start()
+        try store.appendEvent(kind: "recording_clock_anchor", fields: ["json": clockJSON()])
+        try store.append(sample: sample(0))
+        XCTAssertThrowsError(try store.clockEvidence(recording: file))
+        store.abort()
+        XCTAssertThrowsError(try store.clockEvidence(recording: file))
+        let completed = try store.start()
+        try store.append(sample: sample(0)); try store.finish()
+        let handle = try FileHandle(forWritingTo: completed)
+        try handle.seekToEnd()
+        try handle.write(contentsOf: Data("{\"kind\":\"annotation\"}\n".utf8))
+        try handle.close()
+        XCTAssertThrowsError(try store.clockEvidence(recording: completed))
     }
     func testAbortPreservesSamplesButPreventsCompletionAndAnalysis() throws {
         let store = try EEGRecordingStore(directory: root)

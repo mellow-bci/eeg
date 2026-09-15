@@ -65,8 +65,10 @@ accuracy; no EDF writer or automatic sample retiming is enabled. Drift,
 clock-adjustment handling and independent-reader qualification remain necessary.
 
 The anchor type now also validates stored v1 JSON on decoding; see the same
-clock-anchor document. Source-recording anchor selection and the export planner
-are still pending. A decoder by itself does not establish a file's time axis.
+clock-anchor document. The canonical recording reader now validates a completed stream and returns
+one pre-sample anchor or explicit missing evidence, rejecting malformed,
+repeated and late anchors. The export planner remains pending; this provenance
+check does not establish a calibrated absolute time axis.
 
 ### Format review follow-up (2026-09-15)
 

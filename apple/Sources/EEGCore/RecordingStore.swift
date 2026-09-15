@@ -14,7 +14,7 @@ public struct EEGRecordingInfo: Identifiable, Sendable {
 }
 
 public enum EEGRecordingError: Error, LocalizedError {
-    case invalidPath, alreadyRecording, notRecording, invalidData, unavailableUnits, lineTooLarge, sourceChanged
+    case invalidPath, alreadyRecording, notRecording, invalidData, unavailableUnits, lineTooLarge, sourceChanged, invalidClockEvidence
     public var errorDescription: String? {
         switch self {
         case .invalidPath: return "Recording path is not a regular private recording file."
@@ -24,6 +24,7 @@ public enum EEGRecordingError: Error, LocalizedError {
         case .unavailableUnits: return "Calibrated microvolts are unavailable in this recording."
         case .lineTooLarge: return "Recording event exceeds the supported size."
         case .sourceChanged: return "Recording changed during reading. Retry with a completed, unchanged source."
+        case .invalidClockEvidence: return "Recording clock evidence is malformed, repeated or appears after samples. Preserve the source; an absolute timeline cannot be selected automatically."
         }
     }
 }
@@ -178,6 +179,35 @@ public final class EEGRecordingStore {
         }
         try validation.finish()
         return result
+    }
+
+    public struct ClockEvidence: Sendable {
+        public let anchor: EEGRecordingClockAnchor?
+        public let sampleCount: Int
+        public let fileSHA256: String
+    }
+    /// Read timing provenance from a completed canonical recording. Missing
+    /// evidence stays nil; repeated or late anchors never select a silent winner.
+    /// Does not retime samples or authenticate the source's claims.
+    public func clockEvidence(recording: URL) throws -> ClockEvidence {
+        try validate(recording)
+        var validation = StreamValidation()
+        var anchor: EEGRecordingClockAnchor?
+        let digest = try Self.lines(recording) { data in
+            _ = try validation.consume(data)
+            guard let event = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                throw EEGRecordingError.invalidData
+            }
+            guard event["kind"] as? String == "recording_clock_anchor" else { return }
+            guard anchor == nil, validation.samples == 0, let json = event["json"] as? String else {
+                throw EEGRecordingError.invalidClockEvidence
+            }
+            do { anchor = try JSONDecoder().decode(EEGRecordingClockAnchor.self, from: Data(json.utf8)) }
+            catch { throw EEGRecordingError.invalidClockEvidence }
+        }
+        try validation.finish()
+        guard validation.summarized else { throw EEGRecordingError.invalidData }
+        return ClockEvidence(anchor: anchor, sampleCount: validation.samples, fileSHA256: digest)
     }
 
     /// Stream analysis windows from a finalized recording using the same schema

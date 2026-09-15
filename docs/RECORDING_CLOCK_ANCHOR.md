@@ -61,3 +61,30 @@ boolean/string/null numeric substitutes and invalid/fractional UTC offsets.
 Validation on 2026-09-15: all four RecordingClockAnchorTests passed, followed by
 successful macOS, iOS and visionOS builds. No physical clock or EDF reader was
 used in this check.
+
+## Canonical recording evidence reader
+
+`EEGRecordingStore.clockEvidence(recording:)` scans a completed canonical
+recording using the same bounded reader and stream validation as analysis. It
+returns the validated anchor (or `nil` when absent), sample count and SHA-256 of
+the scanned file. It requires exactly one anchor before any samples when an
+anchor exists. Identical duplicates, conflicting duplicates, late anchors,
+missing JSON and malformed or incompatible payloads produce
+`invalidClockEvidence`; the reader never selects a silent winner. Incomplete,
+aborted or structurally invalid streams cannot yield completed clock evidence.
+
+This is a read-only provenance check. Missing evidence does not acquire a
+file-creation-time substitute. Invalid timing metadata does not prevent ordinary
+raw replay or alter source bytes. The digest identifies bytes; it does not
+authenticate their origin. Existing source-change checks detect ordinary
+concurrent modifications, without claiming an immutable file snapshot.
+
+RecordingStoreTests cover valid mapping and offset preservation, byte digest,
+unchanged source and sample timestamps, missing anchors, malformed/provenance
+errors, identical/conflicting duplicates, late anchors, unfinished/aborted files
+and trailing events after a summary. The selected recording-store and anchor
+suites passed 21 tests on 2026-09-15. This adds no EDF writer, clock-drift
+estimator or hardware qualification.
+
+The same checkpoint built successfully for macOS, iOS and visionOS. No headset
+or external time reference was used.
