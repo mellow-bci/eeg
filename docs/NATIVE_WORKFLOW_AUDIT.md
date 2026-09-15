@@ -629,3 +629,21 @@ creates a CBCentralManager or plays audio. Real radio transitions, peripheral
 callback ordering, restart and reconnection remain hardware qualification gates.
 
 Native macOS, iOS and visionOS builds passed for this change.
+
+### Bluetooth callback admission after cancellation (2026-09-15)
+
+Acquisition now closes callback admission immediately on Disconnect, before asking
+CoreBluetooth to cancel. Service discovery, characteristic discovery, metadata,
+notification-state and sample callbacks require the active peripheral identity
+and an uncancelled session. Discovery results are ignored outside scanning.
+Terminal callbacks require the owned peripheral and release the session; until
+then reconnect is refused, preventing overlapping setup during cancellation.
+This does not change decoding, sample units, or recording serialization.
+
+Four AcquisitionInterruptionTests pass, including a deterministic gate test for
+late work, unrelated terminal callbacks, repeated completion, and reconnect.
+These tests do not instantiate a Bluetooth manager or peripheral and do not
+qualify physical callback ordering. macOS, iOS simulator and visionOS simulator
+native builds pass. Actual EPOC X stop/reconnect and radio-reset qualification
+remain outstanding; a missing terminal callback can still require lifecycle
+recovery and is not represented as successful reconnection.

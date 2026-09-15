@@ -5,6 +5,29 @@ import CoreBluetooth
 
 @MainActor
 final class AcquisitionInterruptionTests:XCTestCase {
+    func testBluetoothCancellationRejectsLateWorkUntilTerminalCallback() {
+        var gate=BluetoothSessionGate()
+        let first=UUID(),other=UUID()
+        XCTAssertFalse(gate.accepts(first))
+        XCTAssertTrue(gate.begin(first))
+        XCTAssertTrue(gate.accepts(first))
+        XCTAssertFalse(gate.accepts(other))
+        gate.cancel()
+        XCTAssertFalse(gate.accepts(first))
+        XCTAssertFalse(gate.begin(first))
+        XCTAssertFalse(gate.begin(other))
+        XCTAssertFalse(gate.finish(other))
+        XCTAssertFalse(gate.accepts(first))
+        XCTAssertTrue(gate.finish(first))
+        XCTAssertFalse(gate.finish(first))
+        XCTAssertTrue(gate.begin(other))
+        XCTAssertFalse(gate.accepts(first))
+        XCTAssertFalse(gate.finish(first))
+        XCTAssertTrue(gate.accepts(other))
+        XCTAssertTrue(gate.finish(other))
+        XCTAssertTrue(gate.begin(first))
+        XCTAssertTrue(gate.accepts(first))
+    }
     private func waitUntil(_ condition:()->Bool) async throws {
         for _ in 0..<200 {
             if condition() {return}

@@ -42,6 +42,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     let directory: URL
     private var central: CBCentralManager!
     private var peripheral: CBPeripheral?
+    private var bluetoothSession = BluetoothSessionGate()
     private var decoder: EEGDecoder?
     private var metadata: [String: Data] = [:]
     private var pendingMetadata = Set<String>()
@@ -121,25 +122,29 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     private func add(_ p:CBPeripheral) {
         if !devices.contains(where:{$0.id==p.identifier}) { devices.append(Device(id:p.identifier,name:p.name ?? "EPOC X",peripheral:p)) }
     }
-    func centralManager(_ central:CBCentralManager,didDiscover peripheral:CBPeripheral,advertisementData:[String:Any],rssi RSSI:NSNumber) { add(peripheral) }
+    func centralManager(_ central:CBCentralManager,didDiscover peripheral:CBPeripheral,advertisementData:[String:Any],rssi RSSI:NSNumber) { guard scanning else {return};add(peripheral) }
     func connect(_ device:Device) {
         guard peripheral == nil,central != nil,fileOperation==nil else { return }
         central.stopScan();scanTimer?.invalidate();scanning=false;playback=false;samples=[];sampleCount=0;decodeErrors=0;contactRaw=[:];metadata=[:];pendingMetadata=[];dataCharacteristic=nil;decoder=nil;configuring=false;ready=false;previewBuffer=[];transportStable=false;lastArrival=nil;stableSince=nil;contiguous=0;origin=ProcessInfo.processInfo.systemUptime
+        guard bluetoothSession.begin(device.id) else {return}
         peripheral=device.peripheral;device.peripheral.delegate=self;phase="Connecting to \(device.name)";central.connect(device.peripheral);startDeadline(seconds:15,message:"Headset connection timed out.")
     }
-    func centralManager(_ central:CBCentralManager,didConnect peripheral:CBPeripheral) { startDeadline(seconds:10,message:"Device metadata timed out. Disconnect other readers and reconnect.");phase="Reading device configuration";peripheral.discoverServices([service,CBUUID(string:"180A")]) }
-    func centralManager(_ central:CBCentralManager,didFailToConnect peripheral:CBPeripheral,error:Error?) { connectionTimer?.invalidate();self.peripheral=nil;phase="Connection failed";message=error?.localizedDescription }
+    func centralManager(_ central:CBCentralManager,didConnect peripheral:CBPeripheral) { guard accepts(peripheral) else {return};startDeadline(seconds:10,message:"Device metadata timed out. Disconnect other readers and reconnect.");phase="Reading device configuration";peripheral.discoverServices([service,CBUUID(string:"180A")]) }
+    func centralManager(_ central:CBCentralManager,didFailToConnect peripheral:CBPeripheral,error:Error?) { guard self.peripheral === peripheral,bluetoothSession.finish(peripheral.identifier) else {return};connectionTimer?.invalidate();self.peripheral=nil;phase="Connection failed";message=error?.localizedDescription }
     func centralManager(_ central:CBCentralManager,didDisconnectPeripheral peripheral:CBPeripheral,error:Error?) {
+        guard self.peripheral === peripheral,bluetoothSession.finish(peripheral.identifier) else {return}
         connectionTimer?.invalidate();configuring=false;
         event("Disconnected"+(error.map{": "+$0.localizedDescription} ?? ""));setTransport(false,reason:"disconnected");if recording { stopRecording() };self.peripheral=nil;ready=false;transportStable=false;phase="Disconnected"
     }
     func peripheral(_ peripheral:CBPeripheral,didDiscoverServices error:Error?) {
+        guard accepts(peripheral) else {return}
         if let error=error { fail(error);return }
         guard let services=peripheral.services else { return }
         pendingMetadata=Set([serialID,revisionID,configID])
         for s in services { peripheral.discoverCharacteristics(nil,for:s) }
     }
     func peripheral(_ peripheral:CBPeripheral,didDiscoverCharacteristicsFor service:CBService,error:Error?) {
+        guard accepts(peripheral) else {return}
         if let error=error { fail(error);return }
         for c in service.characteristics ?? [] {
             let key=c.uuid.uuidString.uppercased()
@@ -148,16 +153,22 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         }
         configureIfPossible()
     }
+    private func accepts(_ peripheral:CBPeripheral)->Bool {
+        self.peripheral === peripheral && bluetoothSession.accepts(peripheral.identifier)
+    }
     private func configureIfPossible() {
+        guard let peripheral,accepts(peripheral) else {return}
         guard !ready,!configuring,let serial=metadata[serialID],let revision=metadata[revisionID],!pendingMetadata.contains(configID),let c=dataCharacteristic else { return }
         do {
-            decoder=try EEGDecoder(serial:serial,revision:revision,configuration:metadata[configID]);configuring=true;startDeadline(seconds:8,message:"Headset notifications did not start.");peripheral?.setNotifyValue(true,for:c);phase="Starting signal stream"
+            decoder=try EEGDecoder(serial:serial,revision:revision,configuration:metadata[configID]);configuring=true;startDeadline(seconds:8,message:"Headset notifications did not start.");peripheral.setNotifyValue(true,for:c);phase="Starting signal stream"
         } catch { fail(error) }
     }
     func peripheral(_ peripheral:CBPeripheral,didUpdateNotificationStateFor characteristic:CBCharacteristic,error:Error?) {
+        guard accepts(peripheral) else {return}
         if let error=error { fail(error);return };guard characteristic.uuid.uuidString.uppercased()==dataID else { return };connectionTimer?.invalidate();ready=characteristic.isNotifying;lastArrival=ProcessInfo.processInfo.systemUptime;phase=ready ? "Listening · stabilizing":"Notifications stopped"
     }
     func peripheral(_ peripheral:CBPeripheral,didUpdateValueFor characteristic:CBCharacteristic,error:Error?) {
+        guard accepts(peripheral) else {return}
         let key=characteristic.uuid.uuidString.uppercased()
         if key != dataID {
             pendingMetadata.remove(key)
@@ -229,7 +240,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         message="Recording aborted after a storage failure: "+error.localizedDescription
     }
     private func fail(_ error:Error) { message=error.localizedDescription;event(error.localizedDescription);disconnect() }
-    func disconnect(reason:String = "disconnect_requested") { connectionTimer?.invalidate();scanTimer?.invalidate();central?.stopScan();scanning=false;configuring=false;setTransport(false,reason:reason);if recording { stopRecording() };if let p=peripheral { central?.cancelPeripheralConnection(p) };ready=false;transportStable=false }
+    func disconnect(reason:String = "disconnect_requested") { bluetoothSession.cancel();connectionTimer?.invalidate();scanTimer?.invalidate();central?.stopScan();scanning=false;configuring=false;setTransport(false,reason:reason);if recording { stopRecording() };if let p=peripheral { central?.cancelPeripheralConnection(p) };ready=false;transportStable=false }
     func startRecording() {
         guard ready,!recording,!finalizingRecording,!playback,fileOperation==nil,let store=store else { return }
         do {
@@ -481,4 +492,21 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         }
     }
     private func event(_ text:String) { events.append(text);if events.count>50 { events.removeFirst(events.count-50) } }
+}
+
+/// Stop closes admission immediately; retain the identity until CoreBluetooth's
+/// terminal callback so reconnect cannot overlap a still-cancelling connection.
+struct BluetoothSessionGate {
+    private var id:UUID?
+    private var cancelled=false
+    mutating func begin(_ id:UUID)->Bool {
+        guard self.id == nil else {return false}
+        self.id=id;cancelled=false;return true
+    }
+    func accepts(_ id:UUID)->Bool {self.id==id && !cancelled}
+    mutating func cancel() {cancelled=true}
+    mutating func finish(_ id:UUID)->Bool {
+        guard self.id==id else {return false}
+        self.id=nil;cancelled=false;return true
+    }
 }
