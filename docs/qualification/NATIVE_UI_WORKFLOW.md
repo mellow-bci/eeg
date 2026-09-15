@@ -161,3 +161,58 @@ The eligible-result display, all comparison failure messages, iOS/visionOS UI,
 full accessibility and real physiological trials remain unqualified. Core tests
 cover an eligible synthetic full recording-to-receipt result separately; that
 is not an observed UI or hardware result. No Cast files were modified.
+
+
+## Follow-up: eligible complete-plan comparison (2026-09-15)
+
+Exercised the same macOS Debug production build from `962f3a3`, disconnected,
+using the complete synthetic fixture exported by
+`TrialAssociationEvidenceTests.testCanonicalRecordedEvaluationIncludesConditionalResultWithoutChangingInference`.
+The fixture has 36,864 samples, a complete 24-trial journal, and a separately
+trained synthetic profile. This is generated source data, not fabricated UI state.
+
+1. Opened the fixture profile and enabled the comparison at 80% eligible exposure.
+   Opened the fixture manifest. Settings were disabled while running and Cancel
+   evaluation remained available.
+2. The app reported 144 evaluation windows. Expanded results displayed session s,
+   `705982 / 705982`, 80.0%, and “Conditional association only; exchangeability
+   unverified.” The statement rejecting automatic significance, physiological
+   qualification and system-control decisions was present. No task candidate was
+   observed: the ratio is not a successful mental-command result.
+3. The app also exposed 0/2 original training-source coverage and missing ordinary
+   activity, blink, jaw and head-movement controls. The synthetic fixture does not
+   satisfy those independent qualification gates.
+4. Exported through the native save panel. The UI receipt was byte-identical to
+   both the canonical test output and actual CLI output. Preserved synthetic
+   receipt: `native-ui-eligible-association-20260915.json`; SHA256
+   `68a8f7d6d42d46625c25d13685b15e954575114fefe23eb9ea0f0022eec2a18f`.
+5. Unchecked the comparison checkbox. Evaluation metrics, comparison results and
+   the export button disappeared. This verifies checkbox-change invalidation in
+   addition to the preceding percentage-change check.
+6. Closed the profile, quit, hash-checked all library files, and moved only the
+   added synthetic recording to a temporary archive. Verified that the library
+   exactly matched its original two-file hash inventory.
+
+No discovery, headset connection, recording or audio cue was initiated. No Cast
+files changed. This extends focused macOS software qualification to an eligible
+complete-plan result, not hardware or physiological qualification. Cancellation,
+all failure messages, full accessibility and iOS/visionOS interaction remain
+outside this observed pass.
+
+Reproduce the generated fixture and CLI comparison (use a new destination):
+
+```sh
+EEG_TRIAL_ASSOCIATION_TEST_EXPORT=/tmp/eeg-complete-plan-fixture \
+  swift test --package-path apple --filter \
+  TrialAssociationEvidenceTests.testCanonicalRecordedEvaluationIncludesConditionalResultWithoutChangingInference
+python3 tools/check_trial_association_cli.py /tmp/eeg-complete-plan-fixture
+```
+
+The export option writes fixture files without overwriting existing files. It preserves the original
+recording basename, needed by the trial journal. For UI qualification, temporarily
+import/copy this synthetic recording into the local library without replacing any
+file; open the exported profile and manifest, then compare the exported JSON with
+`expected.json`. Preserve a library hash inventory and restore it after the pass.
+The focused test passed (one test, 56.819 seconds); the CLI comparison and Python
+syntax check passed. No production source changed in this follow-up, so the prior
+three-platform build result is not claimed as a new build.

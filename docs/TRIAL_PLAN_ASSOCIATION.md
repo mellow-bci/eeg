@@ -200,8 +200,10 @@ CLI check exercises disabled and unavailable outcomes and invalid fraction input
 These are software tests, not headset qualification. Focused macOS QA now covers the controls, disabled-while-running state,
 unavailable results, byte-identical UI/CLI export and percentage-change result
 invalidation; see [NATIVE_UI_WORKFLOW.md](qualification/NATIVE_UI_WORKFLOW.md).
-Eligible-result display, other failure cases and iOS/visionOS interaction remain
-pending.
+The follow-up complete-plan synthetic pass also covers eligible-result display,
+byte-identical canonical/UI/CLI output and checkbox-change invalidation. Other
+failure cases and iOS/visionOS interaction remain pending. Reproduction commands
+and exact scope are in the linked qualification document.
 
 Integration validation, 2026-09-15: the initial 22-test evaluation/recovery/export
 selection passed; the five-test evidence suite including the complete synthetic

@@ -66,8 +66,9 @@ final class TrialAssociationEvidenceTests: XCTestCase {
             records[index]["participant_id"] = "p"
             if records[index]["label"] as? String != "neutral" { records[index]["label"] = "silent_serial_subtraction" }
         }
-        let profile = try EEGProfileCreation.train(JSONDecoder().decode([EEGTrainingRecord].self,
-            from: JSONSerialization.data(withJSONObject: records)), participantID: "p").profile
+        let trained = try EEGProfileCreation.train(JSONDecoder().decode([EEGTrainingRecord].self,
+            from: JSONSerialization.data(withJSONObject: records)), participantID: "p")
+        let profile = trained.profile
         let manifest = try EEGTrialDatasetExport.manifest(sources: [.init(recording: file, split: .evaluation,
             independenceDeclaration: "Synthetic test only")], store: store)
         let baseline = try EEGEvaluationArtifact.run(manifest: manifest, store: store, profile: profile)
@@ -90,6 +91,15 @@ final class TrialAssociationEvidenceTests: XCTestCase {
             trialAssociationMinimumEligibleFraction: 1)
         XCTAssertEqual(tooStrict.trialAssociation?["s"]?.reason, "insufficientExposure")
         XCTAssertNil(tooStrict.trialAssociation?["s"]?.result)
+        if let path = ProcessInfo.processInfo.environment["EEG_TRIAL_ASSOCIATION_TEST_EXPORT"] {
+            let destination = URL(fileURLWithPath: path, isDirectory: true)
+            // Opt-in synthetic qualification fixture; never replace existing files.
+            try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: false)
+            try FileManager.default.copyItem(at: file, to: destination.appendingPathComponent(file.lastPathComponent))
+            try manifest.write(to: destination.appendingPathComponent("manifest.json"), options: .withoutOverwriting)
+            try trained.data.write(to: destination.appendingPathComponent("profile.json"), options: .withoutOverwriting)
+            try artifact.data.write(to: destination.appendingPathComponent("expected.json"), options: .withoutOverwriting)
+        }
     }
     func testCompletedJournalJoinsAllTrialsAndPreservesBytes() throws {
         let (store, file, hash, timings) = try recording()
