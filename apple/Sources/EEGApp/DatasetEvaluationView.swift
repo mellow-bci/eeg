@@ -77,12 +77,18 @@ struct DatasetEvaluationView: View {
                 ForEach(Array(report.trials.enumerated()), id: \.offset) { _, trial in
                     VStack(alignment: .leading) {
                         Text("\(trial.sessionID) / \(trial.trialID)").font(.headline)
+                        Text("Armed usable coverage: \(percent(trial.eligibleFraction))")
+                        if trial.condition == "cued_task" {
+                            Text("Target candidate within scored interval: \(trial.scoredTargetDetected.map { $0 ? "Observed" : "Not observed" } ?? "Unavailable — missing cue")")
+                        } else if trial.condition == "cued_neutral" {
+                            Text("Task candidate during neutral trial: \(trial.scoredNeutralFalsePositive.map { $0 ? "Observed (false positive)" : "Not observed" } ?? "Unavailable — missing cue")")
+                        }
                         Text("Unobserved interval: \(trial.unobservedSeconds.formatted(.number.precision(.fractionLength(2)))) s")
                         Text("Cue-associated candidate latency: \(trial.firstCueAssociatedCandidateLatency.map { $0.formatted(.number.precision(.fractionLength(2))) + " s" } ?? "Unavailable")")
                     }.font(.caption).accessibilityElement(children: .combine)
                 }
                 Text("Latency is measured from recorded cue completion to candidate input availability, not mental onset or live-system response.").font(.caption).foregroundStyle(.secondary)
-                Text("Experimental window-level metrics. Windows within trials are correlated. These values do not establish physiological accuracy, physiologically validated false-activation rates or safe system control. Poisson bounds assume a constant independent event rate; clustered events weaken that assumption. Carry-in activity makes rates unavailable.").font(.caption).foregroundStyle(.secondary)
+                Text("Experimental window and trial accounting. Not observed includes rejected or missing exposure; inspect coverage. Windows within trials are correlated. These values do not establish physiological accuracy, physiologically validated false-activation rates or safe system control. Poisson bounds assume a constant independent event rate; clustered events weaken that assumption. Carry-in activity makes rates unavailable.").font(.caption).foregroundStyle(.secondary)
             }
         }
         .onChange(of: preparedManifest) { _,_ in generation += 1;artifact=nil;failure=nil;exportMessage=nil }

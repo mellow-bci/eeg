@@ -285,3 +285,12 @@ snapshot failure prevents recording completion. The latter is an injected
 persistence-path failure, not a disk-full or power-loss experiment. Raw snapshot
 recovery, crash interpretation and audio/UI controller integration remain open;
 JSONL presence or recording completion does not independently validate labels.
+
+### Native scored-trial accounting checkpoint
+
+The native Swift evaluator now records target observations and neutral false-positive
+observations using full persistence evidence contained in the scored interval, plus
+armed usable coverage. See [NATIVE_TRIAL_OUTCOMES.md](NATIVE_TRIAL_OUTCOMES.md) for
+exact definitions and the distinction from episode-onset latency. This does not
+supply the outstanding trial/session uncertainty or grouped permutation analysis,
+nor does it qualify any real participant model. The Python CLI is unchanged.

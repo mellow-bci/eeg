@@ -87,4 +87,44 @@ final class ActivationEpisodesTests: XCTestCase {
         XCTAssertThrowsError(try counter.consume(task(2, cue: 1), proposal: candidate(0)))
     }
 
+    func testOtherTaskLabelDoesNotEarnTargetCredit() throws {
+        var counter = EEGActivationEpisodes()
+        let other = EEGExperimentalProposal(profileID: "test", windowID: "test",
+            reason: "profile_not_hardware_validated", experimentalCandidate: "other-task",
+            evidenceStart: 0, uncalibratedScores: nil)
+        try counter.consume(task(0, cue: 0), proposal: other)
+        XCTAssertEqual(counter.trials[0].scoredTargetDetected, false)
+        XCTAssertEqual(counter.trials[0].containedCandidateWindows, 1)
+        try counter.consume(task(2, cue: 0), proposal: candidate(2))
+        XCTAssertEqual(counter.trials[0].scoredTargetDetected, true)
+        XCTAssertEqual(counter.trials[0].containedTargetWindows, 1)
+        XCTAssertEqual(counter.trials[0].eligibleFraction, 0.2, accuracy: 1e-12)
+        XCTAssertNil(counter.trials[0].scoredNeutralFalsePositive)
+    }
+    func testNeutralTrialFalsePositiveExcludesCarryInAndUnusableEvidence() throws {
+        func neutral(_ start: Double, usable: Bool = true, armed: Bool = true) -> EEGTrainingDataset.EvaluationWindow {
+            let base = row(start, trialStart: 4, usable: usable, armed: armed)
+            return .init(input: base.input, label: "neutral", trialID: "neutral-trial", condition: "cued_neutral",
+                         shadowEnabled: armed, trialStart: 4, trialEnd: 20, cueCompletedAt: 1)
+        }
+        var counter = EEGActivationEpisodes()
+        try counter.consume(neutral(4), proposal: candidate(2))
+        XCTAssertEqual(counter.trials[0].scoredNeutralFalsePositive, false)
+        try counter.consume(neutral(6, usable: false), proposal: candidate(6))
+        try counter.consume(neutral(8, armed: false), proposal: candidate(8))
+        XCTAssertEqual(counter.trials[0].containedCandidateWindows, 0)
+        try counter.consume(neutral(10), proposal: candidate(10))
+        XCTAssertEqual(counter.trials[0].scoredNeutralFalsePositive, true)
+        XCTAssertEqual(counter.trials[0].containedTargetWindows, 0)
+        XCTAssertEqual(counter.trials[0].eligibleFraction, 0.25, accuracy: 1e-12)
+        XCTAssertEqual(counter.trials[0].unobservedSeconds, 8)
+        XCTAssertNil(counter.trials[0].scoredTargetDetected)
+    }
+    func testMissingCueNeverBecomesScoredSuccess() throws {
+        var counter = EEGActivationEpisodes()
+        try counter.consume(task(0, cue: nil), proposal: candidate(0))
+        XCTAssertEqual(counter.trials[0].containedTargetWindows, 1)
+        XCTAssertNil(counter.trials[0].scoredTargetDetected)
+    }
+
 }

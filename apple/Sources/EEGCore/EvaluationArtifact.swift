@@ -46,6 +46,11 @@ public struct EEGEvaluationArtifact: Sendable {
              "condition": trial.condition, "start_seconds": trial.start, "end_seconds": trial.end,
              "cue_completed_at_seconds": nullable(trial.cueCompletedAt), "covered_seconds": trial.coveredSeconds,
              "unobserved_seconds": trial.unobservedSeconds,
+             "eligible_seconds": trial.eligibleSeconds, "eligible_fraction": trial.eligibleFraction,
+             "contained_candidate_windows": trial.containedCandidateWindows,
+             "contained_target_windows": trial.containedTargetWindows,
+             "scored_target_detected": nullable(trial.scoredTargetDetected),
+             "scored_neutral_false_positive": nullable(trial.scoredNeutralFalsePositive),
              "first_cue_associated_candidate_latency_seconds": nullable(trial.firstCueAssociatedCandidateLatency),
              "cued_target_detected": nullable(trial.cuedTargetDetected)]
         }
@@ -55,7 +60,7 @@ public struct EEGEvaluationArtifact: Sendable {
              "rejected_windows": session.rejectedWindows]
         }
         let object: [String: Any] = [
-            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-2",
+            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-3",
             "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
             "participant_id": dataset.participantID, "controls_only": report.controlsOnly,
@@ -69,6 +74,8 @@ public struct EEGEvaluationArtifact: Sendable {
                 "time_axis": "recorded receipt-time seconds; window end is the last sample receipt",
                 "prediction": "experimental candidate or explicit neutral; null is rejection, not neutral",
                 "class_rejection": "null predictions divided by windows of the actual class; includes unarmed and unusable windows; null rate when the class is absent",
+                "scored_trial": "candidate persistence evidence must start within the scored interval and at or after the recorded cue; task success requires the target label, neutral false positive accepts any task candidate; missing cue yields null; carry-ins are not credited",
+                "trial_eligible_fraction": "armed usable window duration divided by the declared scored interval; includes gaps in denominator; not confidence or physiological validity",
                 "latency": "recorded cue completion to candidate input availability, not mental onset or live response",
                 "poisson_bound": "one-sided 95% upper bound; assumes constant independent event rate; unavailable for carry-ins or zero eligible exposure",
                 "control_coverage": "lists required artifact-control conditions with zero eligible exposure; an empty list does not establish adequate duration or qualification",

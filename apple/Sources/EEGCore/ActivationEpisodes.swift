@@ -31,6 +31,18 @@ public struct EEGTrialTiming: Sendable {
     public let sessionID: String, trialID: String, label: String, condition: String
     public let start: Double, end: Double, cueCompletedAt: Double?
     public internal(set) var coveredSeconds = 0.0
+    public internal(set) var eligibleSeconds = 0.0
+    public internal(set) var containedCandidateWindows = 0
+    public internal(set) var containedTargetWindows = 0
+    /// Candidate persistence evidence must lie wholly inside the scored interval.
+    /// This is distinct from rising-edge/onset accounting and requires a recorded cue.
+    public var scoredTargetDetected: Bool? {
+        condition == "cued_task" && cueCompletedAt != nil ? containedTargetWindows > 0 : nil
+    }
+    public var scoredNeutralFalsePositive: Bool? {
+        condition == "cued_neutral" && cueCompletedAt != nil ? containedCandidateWindows > 0 : nil
+    }
+    public var eligibleFraction: Double { eligibleSeconds / (end - start) }
     public internal(set) var firstCueAssociatedCandidateLatency: Double? = nil
     public var unobservedSeconds: Double { max(0, end - start - coveredSeconds) }
     public var cuedTargetDetected: Bool? {
@@ -67,12 +79,16 @@ struct EEGActivationEpisodes {
         var metrics = EEGConditionExposure()
         if !row.shadowEnabled { metrics.unarmedSeconds += duration }
         else if !input.usable { metrics.rejectedSeconds += duration }
-        else { metrics.eligibleSeconds += duration }
+        else { metrics.eligibleSeconds += duration; trial.eligibleSeconds += duration }
         let label = row.shadowEnabled && input.usable ? proposal?.experimentalCandidate : nil
         if let label {
             guard let start = proposal?.evidenceStart, start.isFinite, start <= input.start,
                   !input.continuity_id.isEmpty else { throw EEGLabeledEvaluation.Failure.invalidTiming }
             metrics.candidateWindows += 1
+            if start >= row.trialStart, start >= (row.cueCompletedAt ?? row.trialStart) {
+                trial.containedCandidateWindows += 1
+                if label == row.label { trial.containedTargetWindows += 1 }
+            }
             let same = previous.map { $0.label == label && $0.session == input.session_id &&
                 $0.continuity == input.continuity_id && input.start - $0.end >= 0 && input.start - $0.end <= 0.05 } ?? false
             if (!same && start < row.trialStart) || (same && previous?.trial != row.trialID) { metrics.carryInCandidates += 1 }

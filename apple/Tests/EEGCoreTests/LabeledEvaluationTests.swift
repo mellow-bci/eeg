@@ -122,7 +122,7 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertEqual(receipt.data, try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile).data)
         let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
         XCTAssertEqual(object["controls_only"] as? Bool, true)
-        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-2")
+        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-3")
         let sessions = try XCTUnwrap(object["session_conditions"] as? [String: [String: [String: Any]]])
         XCTAssertEqual(Set(sessions.keys),Set(report.sessionConditions.keys))
         for (session, conditions) in report.sessionConditions {
@@ -148,6 +148,11 @@ final class LabeledEvaluationTests: XCTestCase {
         }
         let trials = object["trials"] as! [[String: Any]]
         XCTAssertTrue(trials.allSatisfy { $0["cue_completed_at_seconds"] is NSNull })
+        XCTAssertTrue(trials.allSatisfy { $0["scored_target_detected"] is NSNull && $0["scored_neutral_false_positive"] is NSNull })
+        for (saved, trial) in zip(trials, report.trials) {
+            XCTAssertEqual(saved["eligible_fraction"] as? Double, trial.eligibleFraction)
+            XCTAssertEqual(saved["contained_candidate_windows"] as? Int, trial.containedCandidateWindows)
+        }
     }
 
 }
