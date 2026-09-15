@@ -328,3 +328,13 @@ criterion or model. The full local `swift test --package-path apple` run reporte
 paced recording and concurrent recording/inference load qualifications; they
 were not run or claimed by this audit. Software tests are not wearer readiness,
 hardware qualification or physiological evidence.
+
+
+### Manual behavioral notes in the native report step
+
+The app now accepts optional observer notes through the existing trial evidence
+field; see [NATIVE_TRIAL_CONTROLS.md](NATIVE_TRIAL_CONTROLS.md). Notes can preserve
+who observed what, how and at which approximate recording-clock times. They remain
+free-text declarations: the report timestamp is not the behavior timestamp, and
+this is not a synchronized independent artifact sensor. Missing notes stay unknown.
+Uncertain or missed participant reports cannot be accepted through these notes.

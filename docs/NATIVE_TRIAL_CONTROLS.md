@@ -15,8 +15,9 @@ Calibration. This is a planned research-trial tool, not a qualified session runn
    Completion starts a 20-second condition period. The shared trial contract retains
    the +5 to +17 second scoring interval.
 5. A spoken end cue precedes participant report and operator review. Uncertain,
-   missed or unattempted reports cannot be accepted. Behavioral observation remains
-   unknown; this UI does not acquire camera, eye tracking or motion measurements.
+   missed or unattempted reports cannot be accepted. Optional manual behavioral notes can identify an observer, method, behavior and
+   approximate recording-clock times. Blank input stays `unknown`; the UI does
+   not acquire camera, eye tracking or motion measurements.
 6. Stop, loss of transport or recording failure invalidates the unfinished trial.
    Stop attempts a spoken rest instruction; visible status remains necessary when
    audio cannot be played. A crash cannot guarantee an end instruction.
@@ -264,3 +265,34 @@ physiological validation, or permission to enable command output.
 Validation: both targeted export/evaluation tests passed, covering all four control
 conditions; macOS, iOS and visionOS builds passed. UI layout and real exposure
 qualification remain pending.
+
+
+## Manual observation entry (2026-09-15)
+
+The existing post-trial report step now exposes an optional multiline observer
+notes field. It is available only while awaiting the participant report and is
+disabled while that revision is being saved. Report submission snapshots the text
+into the existing `EEGTrialEvidence.observedBehavior` field through
+`submitTrialTransition`; there is no second evidence store or relabeling path.
+Blank/whitespace-only input maps to `unknown`; nonblank text is retained verbatim.
+The field resets when the trial ID changes. The subsequent review shows the
+persisted observation instead of always displaying a hardcoded unknown message.
+
+The report event's timestamp is when the report was submitted, not the time of
+any behavior described in the notes. Behavioral times in this free-text field are
+operator estimates; they are not machine-parsed event markers or independent
+sensor measurements. The user is prompted to identify observer/method/timing.
+No parser infers absence of movement, verified compliance or neural origin from
+these notes. Predictions and dataset labels remain separate. Interrupted trials
+keep their existing interruption path; this change adds no post-hoc editing.
+
+`TrialRecoveryTests.testManualObservationSurvivesJournalWithoutChangingReportedCondition`
+uses the actual recording writer, every journal revision, finalization and recovery.
+It preserves multiline Unicode notes and the report submission time exactly,
+checks the requested condition and uncertain participant report, and verifies that
+acceptance and dataset export remain rejected despite notes being present.
+Nine trial-evidence/recovery tests passed. This is synthetic journal validation,
+not observed behavior, a completed human trial or interactive UI qualification.
+
+The macOS, iOS and visionOS native builds succeeded for this change. The new
+post-trial field has not yet been exercised in a physical or interactive trial.

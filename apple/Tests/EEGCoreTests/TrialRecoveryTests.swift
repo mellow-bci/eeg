@@ -74,6 +74,37 @@ final class TrialRecoveryTests: XCTestCase {
             XCTAssertEqual(try recovered.datasetTrial().start,try trial.datasetTrial().start)
         }
     }
+    func testManualObservationSurvivesJournalWithoutChangingReportedCondition() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try EEGRecordingStore(directory: root), file = try store.start()
+        let plan = try EEGTrialPlan(sessionID: "session", participantID: "synthetic", seed: 42)
+        try store.appendEvent(kind: "trial_plan", fields: ["json": String(decoding: try JSONEncoder().encode(plan), as: UTF8.self)])
+        var trial = plan.trials[0]
+        try store.appendTrialEvidence(trial)
+        func step(_ change: (inout EEGTrialEvidence) throws -> Void) throws {
+            try change(&trial)
+            try store.appendTrialEvidence(trial)
+        }
+        try step { try $0.requestCue(at: 1, participantReady: true, audioCheckHeard: true, transportStable: true, recordingActive: true) }
+        try step { try $0.cueStarted(at: 2) }
+        try step { try $0.cueCompleted(at: 3) }
+        try step { try $0.requestEndCue(at: 23) }
+        try step { try $0.endCueStarted(at: 23.1) }
+        try step { try $0.endCueCompleted(at: 25) }
+        let notes = "Observer: synthetic reviewer; direct observation\nApprox. 12.5 s: blink; head movement unknown. No sensor reference — timing uncertain."
+        try step { try $0.report(.uncertain, at: 26, observedBehavior: notes) }
+        XCTAssertThrowsError(try trial.review(accept: true, reviewer: "operator", reason: "Notes cannot override uncertainty", at: 27))
+        try step { try $0.review(accept: false, reviewer: "operator", reason: "Uncertain participant report", at: 27) }
+        try store.finish()
+        let recovered = try XCTUnwrap(store.recoveredTrials(recording: file).first)
+        XCTAssertEqual(recovered.observedBehavior, notes)
+        XCTAssertEqual(recovered.requestedCondition, plan.trials[0].requestedCondition)
+        XCTAssertEqual(recovered.participantReport, .uncertain)
+        XCTAssertEqual(recovered.events.first { $0.kind == "participant_report" }?.at, 26)
+        XCTAssertFalse(recovered.accepted)
+        XCTAssertThrowsError(try recovered.datasetTrial())
+    }
     func testSavedPlanMustMatchSeedExactly() throws {
         let plan=try EEGTrialPlan(sessionID:"session",participantID:"synthetic",seed:42)
         let data=try JSONEncoder().encode(plan)

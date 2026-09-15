@@ -11,6 +11,7 @@ struct TrialCaptureView: View {
     @State private var heard = false
     @State private var reviewer = ""
     @State private var reason = ""
+    @State private var observation = ""
     @State private var error: String?
     var body: some View {
         Panel(title: "Planned research session") {
@@ -64,6 +65,12 @@ struct TrialCaptureView: View {
                 if let report = trial.participantReport { LabeledContent("Participant report", value: reportName(report)) }
                 LabeledContent("Trial state", value: trial.phase.rawValue)
                 if trial.phase == .awaitingReport {
+                    TextField("Observer notes (optional)", text: $observation, axis: .vertical)
+                        .lineLimit(3...8)
+                        .accessibilityLabel("Manual behavioral observations")
+                        .disabled(model.savingTrialRevision)
+                    Text("Identify the observer, method, behavior and approximate recording-clock times. Leave blank if unobserved. Notes are declarations, not verified task compliance or automatic artifact detection.")
+                        .font(.caption).foregroundStyle(.secondary)
                     HStack {
                         reportButton("Attempted", .attempted)
                         reportButton("Uncertain", .uncertain)
@@ -74,7 +81,8 @@ struct TrialCaptureView: View {
                 if trial.phase == .reported {
                     TextField("Reviewer identity", text: $reviewer)
                     TextField("Evidence and acceptance/exclusion reason", text: $reason)
-                    Text("Behavioral observation: unknown. No camera or movement sensor was used.").font(.caption)
+                    LabeledContent("Recorded behavioral observation", value: trial.observedBehavior)
+                    Text("Manual notes do not establish neural origin or override the participant report.").font(.caption).foregroundStyle(.secondary)
                     HStack {
                         Button("Accept reported condition") { review(true) }.disabled(trial.participantReport != .attempted || reviewMissing || model.savingTrialRevision)
                         Button("Exclude trial") { review(false) }.disabled(reviewMissing || model.savingTrialRevision)
@@ -85,7 +93,7 @@ struct TrialCaptureView: View {
             if let error { Text(error).foregroundStyle(.red).textSelection(.enabled) }
         }
         .onChange(of: model.trial?.id) { _,_ in
-            reason = ""; error = nil; ready = false; heard = false
+            reason = ""; observation = ""; error = nil; ready = false; heard = false
         }
     }
     private var effectiveControls: Bool {
@@ -112,7 +120,10 @@ struct TrialCaptureView: View {
     private var active: Bool { model.trial.map { $0.phase != .reviewed && $0.phase != .interrupted } ?? false }
     private var reviewMissing: Bool { reviewer.trimmingCharacters(in: .whitespaces).isEmpty || reason.trimmingCharacters(in: .whitespaces).isEmpty }
     private func reportButton(_ title: String, _ report: EEGTrialEvidence.ParticipantReport) -> some View {
-        Button(title) { perform { try $0.report(report, at: $1) } }.disabled(model.savingTrialRevision)
+        Button(title) {
+            let notes = observation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "unknown" : observation
+            perform { try $0.report(report, at: $1, observedBehavior: notes) }
+        }.disabled(model.savingTrialRevision)
     }
     private func review(_ accept: Bool) { perform { try $0.review(accept: accept, reviewer: reviewer, reason: reason, at: $1) } }
     private func perform(_ change: (inout EEGTrialEvidence, Double) throws -> Void) {
