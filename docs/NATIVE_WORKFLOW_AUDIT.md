@@ -53,3 +53,25 @@ on the same finalized synthetic recording, checks identity rejection and malform
 window handling. Existing numerical/detector tests remain in the suite. A bounded
 live consumer and acquisition/UI integration are still required; extracting this
 component does not mean live inference is running.
+
+## Bounded live shadow consumer implemented
+
+`EEGLiveInference` serializes metadata/sample input through the existing canonical
+window assembler, sample validator and shared window processor. The default limit
+is 512 pending inputs (including work in progress), configurable at construction.
+Event payloads over the existing 4 MiB event limit reject during processing.
+This is a count bound, not a total-byte memory budget. A false `submit` return
+means no admission; overload increments the generation and queued older work is
+discarded. Stop rejects future submissions. Reset, overload and malformed input
+clear window/detector continuity, requiring fresh configuration/stability input.
+
+Callbacks run on the worker queue. Hosts must check generation again on UI delivery
+and keep raw recording independent of inference admission. No callback authorizes
+an action. The callback can race a later reset, which is why generation accompanies
+every result. The consumer does not drain a partial window into a fabricated result.
+
+Tests compare its complete-window results with canonical replay on identical
+synthetic samples, use a suspended worker to prove bounded admission and stale
+queue rejection, and verify stop rejects further input. These are software tests,
+not live headset evidence. Acquisition/profile UI integration and total-byte queue
+budgeting remain unfinished; this component alone is not a running live workflow.

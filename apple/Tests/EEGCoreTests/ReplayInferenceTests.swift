@@ -57,6 +57,36 @@ final class ReplayInferenceTests: XCTestCase {
         XCTAssertFalse(interrupted.systemControlEnabled);XCTAssertEqual(interrupted.status,"no_reliable_command")
         XCTAssertThrowsError(try EEGWindowInference(profile:profile,participantID:"other",sessionID:"held-out"))
     }
+    func testLiveConsumerMatchesReplayAndBoundsAdmission() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at:directory) }
+        let store=try EEGRecordingStore(directory:directory),url=try recording(store)
+        let profile=try EEGMentalProfile.load(data:profileData())
+        let queue=DispatchQueue(label:"test.live.inference")
+        var outputs:[EEGLiveInference.Output]=[]
+        let live=try EEGLiveInference(profile:profile,participantID:"participant",sessionID:"held-out",maximumPendingInputs:1024,queue:queue) { outputs.append($0) }
+        XCTAssertTrue(live.submit(.event(Data("{\"kind\":\"device_metadata\",\"81072f44-9f3d-11e3-a9dc-0002a5d5c51b\":\"018000102010\"}".utf8))))
+        XCTAssertTrue(live.submit(.event(Data("{\"kind\":\"transport_status\",\"status\":\"stable\"}".utf8))))
+        for sample in try store.replay(recording:url) { XCTAssertTrue(live.submit(.sample(sample))) }
+        queue.sync {}
+        let replay=try EEGReplayInference.run(store:store,recording:url,profile:profile,participantID:"participant",sessionID:"held-out")
+        XCTAssertEqual(outputs.compactMap(\.window),replay.windows)
+        XCTAssertTrue(outputs.allSatisfy { $0.failure == nil })
+        XCTAssertEqual(live.pendingInputs,0)
+        live.stop();XCTAssertFalse(live.submit(.event(Data("{}".utf8))))
+
+        let blocked=DispatchQueue(label:"test.live.blocked")
+        blocked.suspend()
+        var delivered=0
+        let bounded=try EEGLiveInference(profile:profile,participantID:"participant",sessionID:"held-out",maximumPendingInputs:2,queue:blocked) { _ in delivered+=1 }
+        XCTAssertTrue(bounded.submit(.event(Data("{}".utf8))))
+        XCTAssertTrue(bounded.submit(.event(Data("{}".utf8))))
+        XCTAssertFalse(bounded.submit(.event(Data("{}".utf8))))
+        XCTAssertEqual(bounded.pendingInputs,2);XCTAssertEqual(bounded.generation,1)
+        blocked.resume();blocked.sync {}
+        XCTAssertEqual(delivered,0);XCTAssertEqual(bounded.pendingInputs,0)
+        bounded.stop()
+    }
     func testRenamedTrainingContentRejected() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }

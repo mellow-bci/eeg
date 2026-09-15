@@ -306,7 +306,7 @@ public final class EEGRecordingStore {
         }
     }
 
-    private static func validateSample(_ sample: EEGSample) throws {
+    static func validateSample(_ sample: EEGSample) throws {
         guard sample.adcWords.count == 15, sample.index >= 0, (0..<128).contains(sample.counter),
               sample.receivedAt.isFinite, channels.allSatisfy({ sample.electrodesADC[$0]?.isFinite == true }) else { throw EEGRecordingError.invalidData }
         if let volts = sample.electrodesMicrovolts {
