@@ -194,4 +194,35 @@ final class QueuedRecordingTests: XCTestCase {
         XCTAssertEqual(writer.generation,2)
     }
 
+    func testFinalizationCanTransferOffAdmissionExecutorAndDrain() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let raw=try EEGRecordingStore(directory:directory)
+        let entered=DispatchSemaphore(value:0),release=DispatchSemaphore(value:0)
+        raw.outputFactory={StalledOutput($0,entered:entered,release:release)}
+        let writer=try EEGQueuedRecordingStore(store:raw,queue:DispatchQueue(label:"test.finish.writer")) {_,_ in
+            XCTFail("Unexpected finalization failure")
+        }
+        let url=try writer.start()
+        try writer.enqueue(sample:sample(0))
+        XCTAssertEqual(entered.wait(timeout:.now()+2),.success)
+        let finalizer=DispatchQueue(label:"test.finish.control")
+        defer {release.signal();finalizer.sync {}}
+        let started=DispatchSemaphore(value:0),completed=DispatchSemaphore(value:0)
+        // Acquisition ceases admission before transferring this final control.
+        finalizer.async {
+            started.signal()
+            do {try writer.finish()} catch {XCTFail("Finish failed: \(error)")}
+            completed.signal()
+        }
+        XCTAssertEqual(started.wait(timeout:.now()+2),.success)
+        XCTAssertEqual(completed.wait(timeout:.now()+0.02),.timedOut)
+        XCTAssertEqual(writer.statistics.pendingInputs,1)
+        release.signal()
+        XCTAssertEqual(completed.wait(timeout:.now()+2),.success)
+        XCTAssertEqual(try raw.replay(recording:url).count,1)
+        XCTAssertTrue(try String(contentsOf:url).contains("\"summary\""))
+        XCTAssertEqual(writer.statistics.pendingInputs,0)
+    }
+
 }

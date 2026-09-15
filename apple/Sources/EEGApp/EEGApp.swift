@@ -76,11 +76,11 @@ struct WorkspaceView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button { importing = true } label: { Label("Import capture", systemImage: "square.and.arrow.down") }
-                        .disabled(model.ready || model.recording || model.fileOperation != nil).help("Import a raw BLE capture JSON")
+                        .disabled(model.ready || model.recording || model.finalizingRecording || model.fileOperation != nil).help("Import a raw BLE capture JSON")
                     if model.ready {
                         Button { model.recording ? model.stopRecording() : model.startRecording() } label: {
                             Label(model.recording ? "Stop recording" : "Record", systemImage: model.recording ? "stop.circle.fill" : "record.circle")
-                        }.tint(model.recording ? .red : .accentColor).disabled(model.playback || model.fileOperation != nil)
+                        }.tint(model.recording ? .red : .accentColor).disabled(model.playback || model.finalizingRecording || model.fileOperation != nil)
                     }
                     Button { inspector.toggle() } label: { Label("Signal inspector", systemImage: "sidebar.right") }.help("Show signal provenance and recent events")
                 }
@@ -112,6 +112,7 @@ struct WorkspaceView: View {
             }
             Spacer()
             if let operation = model.fileOperation { ProgressView().controlSize(.small); Text(operation).font(.caption) }
+            if model.finalizingRecording { ProgressView().controlSize(.small); Text("Finalizing recording").font(.caption) }
             if model.recording { Label("Recording", systemImage: "record.circle.fill").font(.callout.weight(.semibold)).foregroundStyle(.red) }
         }.accessibilityElement(children: .combine)
     }
@@ -181,7 +182,7 @@ struct LiveView: View {
             if model.ready { Button("Disconnect") { model.disconnect() } }
             else { Button(model.scanning ? "Scanning…" : "Find headset") { model.scan() }.disabled(model.scanning || model.fileOperation != nil) }
             Button(model.recording ? "Stop recording" : "Record") { model.recording ? model.stopRecording() : model.startRecording() }
-                .buttonStyle(.borderedProminent).tint(model.recording ? .red : .accentColor).disabled(!model.ready || model.playback || model.fileOperation != nil)
+                .buttonStyle(.borderedProminent).tint(model.recording ? .red : .accentColor).disabled(!model.ready || model.playback || model.finalizingRecording || model.fileOperation != nil)
         }
     }
     private func addMarker() { guard model.recording, !marker.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }; model.annotate(marker); marker = "" }

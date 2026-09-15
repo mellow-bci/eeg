@@ -356,3 +356,27 @@ a harness paging error, not evidence of writer loss. It was replaced with the
 streaming full-reader before accepting results. See qualification/RECORDING_LOAD.md
 for reproduction and measurement scope. This leaves asynchronous trial/finish
 lifecycle integration and hardware qualification outstanding.
+
+## Background final storage barrier
+
+Normal Stop now ceases acquisition admission on the UI executor, sets a visible
+finalizingRecording state, and transfers the final store.finish barrier to a
+separate serial queue. No new capture or file import/export/replay is admitted
+until completion returns to the UI. Success produces “Recording finalized”;
+failure produces an explicit incomplete/uncertain result rather than the former
+unconditional “Recording stopped” event. The canonical store still drains and
+writes its normal statistics and summary; no second finalization implementation
+or alternate file format was introduced.
+
+Orderly app termination/background entry waits for that finalization queue,
+preserving the previous shutdown durability barrier. Forced termination remains
+incomplete, and a permanently stalled disk can still delay orderly termination.
+Shadow-stop, trial interruption and checkpoint writes before this final barrier
+remain synchronous; this change does not claim a fully asynchronous lifecycle.
+
+A new core test transfers the finish control to a separate executor only after
+admission ceases, holds an actual output write behind a semaphore, verifies
+completion is not reported early, then releases it and verifies the finalized
+sample and summary. Seven focused recording-queue tests passed. All three native
+targets built. The app pending-state interaction has not yet been hardware-tested;
+no participant trial or headset connection was started for this change.

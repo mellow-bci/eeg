@@ -20,6 +20,8 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     private var shadowToken = UUID()
     @Published private(set) var writerStatistics: EEGQueuedRecordingStore.Statistics?
     @Published var recording = false
+    @Published private(set) var finalizingRecording = false
+    private let finalizationQueue=DispatchQueue(label:"cloud.autonomy.eeg.finalization",qos:.userInitiated)
     @Published var sampleCount = 0
     @Published var decodeErrors = 0
     @Published var transportStable = false
@@ -197,7 +199,12 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         do {try recordTransport(reason:reason,receivedAt:receivedAt)} catch {storageFailed(error)}
     }
     /// Called on orderly lifecycle shutdown. Forced kill leaves the file incomplete.
-    func prepareForTermination() {disconnect()}
+    func prepareForTermination() {
+        disconnect()
+        // Orderly termination retains its durability barrier. Normal Stop does
+        // not block the UI; forced termination can still leave an incomplete file.
+        finalizationQueue.sync {}
+    }
     private func startDeadline(seconds:Double,message:String) {
         connectionTimer?.invalidate()
         connectionTimer=Timer.scheduledTimer(withTimeInterval:seconds,repeats:false) { [weak self] _ in
@@ -214,7 +221,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     private func fail(_ error:Error) { message=error.localizedDescription;event(error.localizedDescription);disconnect() }
     func disconnect() { connectionTimer?.invalidate();scanTimer?.invalidate();central?.stopScan();scanning=false;configuring=false;setTransport(false,reason:"disconnect_requested");if recording { stopRecording() };if let p=peripheral { central?.cancelPeripheralConnection(p) };ready=false;transportStable=false }
     func startRecording() {
-        guard ready,!recording,!playback,fileOperation==nil,let store=store else { return }
+        guard ready,!recording,!finalizingRecording,!playback,fileOperation==nil,let store=store else { return }
         do {
             let url=try store.start();recording=true
             trial=nil;trialPlan=nil;trialsStarted=0;trialSession=EEGTrialSession { try store.appendTrialEvidence($0) }
@@ -229,8 +236,26 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         interruptTrial(reason: "recording_stopped")
         guard recording else { return }
         do { try store?.appendEvent(kind:"transport_checkpoint",fields:["stable":String(transportStable),"decode_errors":String(decodeErrors),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]) } catch { storageFailed(error);return }
-        do { try store?.finish() } catch { message=error.localizedDescription }
-        recording=false;refreshRecordings();event("Recording stopped")
+        guard let store else {return}
+        // Admission is stopped on the acquisition executor before ownership of
+        // the final barrier transfers to the finalization queue. Restart and
+        // file operations remain disabled until its completion returns.
+        recording=false;finalizingRecording=true
+        event("Recording input stopped; finalization pending")
+        finalizationQueue.async { [weak self] in
+            let result=Result {try store.finish()}
+            DispatchQueue.main.async {
+                guard let self else {return}
+                self.finalizingRecording=false
+                switch result {
+                case .success: self.event("Recording finalized")
+                case .failure(let error):
+                    self.message="Recording finalization failed: "+error.localizedDescription
+                    self.event("Recording finalization failed; file is incomplete or uncertain")
+                }
+                self.refreshRecordings()
+            }
+        }
     }
     /// Uses exactly the receipt clock used by the decoder, not wall-clock time.
     var recordingClock: Double { ProcessInfo.processInfo.systemUptime-origin }
@@ -339,7 +364,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         }
     }
     func replay(_ info:EEGRecordingInfo,offset:Int=0) {
-        guard !recording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before replay.";return}
+        guard !recording,!finalizingRecording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before replay.";return}
         fileOperation="Loading waveform";let directory=self.directory
         fileQueue.async { [weak self] in
             let result=Result {try EEGRecordingStore(directory:directory).replay(recording:info.url,offset:offset,limit:1280)}
@@ -353,7 +378,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         }
     }
     func export(_ info:EEGRecordingInfo,to destination:URL,completion:@escaping(Bool)->Void = {_ in}) {
-        guard !recording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before exporting.";completion(false);return}
+        guard !recording,!finalizingRecording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before exporting.";completion(false);return}
         fileOperation="Exporting CSV";let directory=self.directory
         fileQueue.async { [weak self] in
             let result=Result {try EEGRecordingStore(directory:directory).exportCSV(recording:info.url,to:destination)}
@@ -372,7 +397,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     /// Import work is isolated from main-thread interaction and Bluetooth callbacks.
     func importRawCapture(_ url:URL) {
-        guard !recording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before importing.";return}
+        guard !recording,!finalizingRecording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before importing.";return}
         guard url.isFileURL else {message="Import requires a local capture file.";return}
         fileOperation="Importing raw recording"
         let scoped=url.startAccessingSecurityScopedResource()
