@@ -1,4 +1,5 @@
 import Foundation
+import Darwin
 import XCTest
 @testable import EEGCore
 
@@ -133,6 +134,20 @@ final class RecordingLoadQualificationTests: XCTestCase {
         try writer.enqueueEvent(kind:"transport_status",fields:["status":"stable"])
         XCTAssertTrue(consumer.submit(.event(try JSONSerialization.data(withJSONObject:metadata.merging(["kind":"device_metadata"]) {_,new in new}))))
         XCTAssertTrue(consumer.submit(.event(Data("{\"kind\":\"transport_status\",\"status\":\"stable\"}".utf8))))
+        func residentBytes() throws -> UInt64 {
+            var info = mach_task_basic_info()
+            var size = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size / MemoryLayout<integer_t>.size)
+            let result = withUnsafeMutablePointer(to: &info) { pointer in
+                pointer.withMemoryRebound(to: integer_t.self, capacity: Int(size)) {
+                    task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &size)
+                }
+            }
+            guard result == KERN_SUCCESS else { throw NSError(domain: "qualification.task_info", code: Int(result)) }
+            return UInt64(info.resident_size)
+        }
+        let baselineResident = try residentBytes()
+        var sampledPeakResident = baselineResident
+        var memorySamples = 1
         let count=Int(duration*128)
         var admission=[Double](),peakPending=0
         for index in 0..<count {
@@ -148,11 +163,18 @@ final class RecordingLoadQualificationTests: XCTestCase {
             XCTAssertTrue(consumer.submit(.sample(sample)))
             peakPending=max(peakPending,consumer.pendingInputs)
             admission.append(ProcessInfo.processInfo.systemUptime-began)
+            if (index + 1) % 128 == 0 {
+                sampledPeakResident = max(sampledPeakResident, try residentBytes())
+                memorySamples += 1
+            }
         }
         queue.sync {}
         let beforeFinish=ProcessInfo.processInfo.systemUptime
         try writer.finish()
         let finishSeconds=ProcessInfo.processInfo.systemUptime-beforeFinish
+        let finalResident = try residentBytes()
+        sampledPeakResident = max(sampledPeakResident, finalResident)
+        memorySamples += 1
         let store=try EEGRecordingStore(directory:directory)
         let replay=try EEGReplayInference.run(store:store,recording:url,profile:profile,
             participantID:profile.participantID,sessionID:"synthetic-concurrent",maximumWindows:count/256+1)
@@ -178,6 +200,9 @@ final class RecordingLoadQualificationTests: XCTestCase {
         let report:[String:Any]=[
             "schema":"eeg.concurrent-load-qualification.v1","synthetic":true,"hardware_validated":false,
             "duration_seconds":duration,"samples_verified":verified,"windows_matched_to_replay":results.count,
+            "resident_bytes_before_capture":baselineResident,
+            "resident_bytes_after_drain_before_replay":finalResident,
+            "resident_bytes_sampled_peak":sampledPeakResident,"resident_memory_samples":memorySamples,
             "profile_id":profile.id,"os":ProcessInfo.processInfo.operatingSystemVersionString,
             "admission_seconds_p99":p99(admission),"inference_availability_delay_seconds_p99":p99(delays),
             "inference_availability_delay_seconds_max":delays.max()!,"finish_drain_seconds":finishSeconds,
@@ -185,7 +210,7 @@ final class RecordingLoadQualificationTests: XCTestCase {
             "written_inputs":stats.writtenInputs,"failed_writes":stats.failedWrites,"discarded_inputs":stats.discardedInputs,
             "limitations":["Synthetic 128 Hz receipt schedule, not Bluetooth", "No app main-queue presentation or audio timing",
                 "Delay includes producer scheduling plus worker processing; not isolated classifier time",
-                "No physiological validity; artifact/model rejections remain legitimate outputs", "No process RSS measurement"]]
+                "No physiological validity; artifact/model rejections remain legitimate outputs", "RSS is whole test-process resident size sampled each second plus boundaries; includes test arrays and may miss peaks, excludes subsequent replay"]]
         try JSONSerialization.data(withJSONObject:report,options:[.prettyPrinted,.sortedKeys]).write(to:URL(fileURLWithPath:reportPath),options:.withoutOverwriting)
     }
 

@@ -115,3 +115,38 @@ zero failures. Raw report: [concurrent-load-60s-20260915.json](concurrent-load-6
 The report covers only this one-minute synthetic host run. It does not establish
 long-duration memory stability, physical headset behavior, UI latency or a
 physiologically useful classifier. No runtime algorithm or output gate changed.
+
+### Resident-memory sampling
+
+The concurrent harness additionally queries `task_info(MACH_TASK_BASIC_INFO)`
+before sample production, every 128 samples (nominally one second), and after
+recording drain, before replay. Failure to obtain the measurement fails the test;
+no zero/unavailable value is substituted. The report records the baseline,
+post-drain resident bytes, sampled peak and number of observations.
+
+These are whole-test-process resident sizes, including the fixture, sample
+admission timings and inference-result buffers retained by the test. They are
+not the standalone app's memory footprint or proof of a leak. Sampling can miss
+short-lived peaks, and allocator retention means end-minus-start is not a leak
+estimate. Finalized replay and sample verification occur after these memory
+measurements. The existing numerical replay and preservation assertions remain
+required; memory results have no arbitrary pass threshold.
+
+### 2026-09-15 three-minute memory-instrumented result
+
+Production sources `c7d68f4`, with memory instrumentation added in this change;
+release Swift test on macOS 26.6.2. Reproduce using the concurrent recipe above
+with `EEG_RECORDING_LOAD_SECONDS=180` and a new report path. One test passed in
+182.259 seconds. [Raw report](concurrent-memory-180s-20260915.json).
+
+- 23,040 samples verified; all 90 full windows matched finalized replay.
+- 23,132 inputs written, zero failed writes and zero discarded inputs.
+- Admission p99 0.149 ms; inference availability delay p99 6.413 ms, maximum 6.514 ms.
+- Recording queue peak 75; observed inference queue peak 2; drain 1.330 ms.
+- 182 resident-memory observations: baseline 35,356,672 bytes (33.72 MiB),
+  post-drain and sampled peak 38,502,400 bytes (36.72 MiB).
+
+This single three-minute synthetic run does not establish long-session memory
+stability, a disk-latency bound, native UI responsiveness or physical acquisition.
+The queue peak is retained as observed rather than treated as evidence of zero
+storage stalls. No physiological inference or system-control qualification occurred.
