@@ -55,3 +55,11 @@ file-format choice.
 Acceptance remains the capability matrix's independent-reader roundtrip gate.
 Do not mark EDF implemented/tested based on this document, header generation,
 synthetic waveforms alone, or successful opening without numeric comparison.
+
+## Clock-anchor implementation checkpoint
+
+New native app recordings now carry the explicit observation documented in
+[RECORDING_CLOCK_ANCHOR.md](RECORDING_CLOCK_ANCHOR.md). Older recordings remain
+without this evidence. The anchor preserves a bracket and unmeasured clock
+accuracy; no EDF writer or automatic sample retiming is enabled. Drift,
+clock-adjustment handling and independent-reader qualification remain necessary.

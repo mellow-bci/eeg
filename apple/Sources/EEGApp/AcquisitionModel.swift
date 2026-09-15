@@ -253,6 +253,9 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         do {
             let url=try store.start();recording=true
             trial=nil;trialPlan=nil;savingTrialPlan=false;savingTrialRevision=false;interruptingTrial=false;trialsStarted=0;trialSession=EEGTrialSession()
+            let anchor = try EEGRecordingClockAnchor.capture(receiptClock: { self.recordingClock })
+            let anchorJSON = String(decoding: try JSONEncoder().encode(anchor), as: UTF8.self)
+            try store.enqueueEvent(kind:"recording_clock_anchor",fields:["json":anchorJSON])
             try store.enqueueEvent(kind:"device_metadata",fields:metadata.mapValues{$0.map{String(format:"%02x",$0)}.joined()})
             try recordTransport(reason:"recording_start")
             event("Recording started: "+url.lastPathComponent)

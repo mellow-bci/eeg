@@ -28,6 +28,23 @@ final class AcquisitionInterruptionTests:XCTestCase {
         XCTAssertTrue(gate.begin(first))
         XCTAssertTrue(gate.accepts(first))
     }
+    func testNewRecordingPersistsOneExplicitClockAnchor() async throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let model=AcquisitionModel(storageDirectory:directory)
+        model.ready=true;model.startRecording();model.stopRecording()
+        try await waitUntil {!model.finalizingRecording}
+        let file=try XCTUnwrap(FileManager.default.contentsOfDirectory(at:directory,includingPropertiesForKeys:nil).first {$0.pathExtension == "jsonl"})
+        let events=try String(contentsOf:file).split(separator:"\n").map {try JSONSerialization.jsonObject(with:Data($0.utf8)) as! [String:Any]}
+        let anchors=events.filter {$0["kind"] as? String == "recording_clock_anchor"}
+        XCTAssertEqual(anchors.count,1)
+        let anchor=try XCTUnwrap(JSONSerialization.jsonObject(with:Data(try XCTUnwrap(anchors.first?["json"] as? String).utf8)) as? [String:Any])
+        XCTAssertEqual(anchor["schema"] as? String,"eeg.recording-clock-anchor.v1")
+        let before=try XCTUnwrap(anchor["receiptBefore"] as? Double),after=try XCTUnwrap(anchor["receiptAfter"] as? Double)
+        XCTAssertGreaterThanOrEqual(before,0);XCTAssertGreaterThanOrEqual(after,before)
+        XCTAssertEqual(anchor["wallClockAccuracy"] as? String,"unmeasured")
+        XCTAssertEqual(events.last?["kind"] as? String,"summary")
+    }
     private func waitUntil(_ condition:()->Bool) async throws {
         for _ in 0..<200 {
             if condition() {return}
