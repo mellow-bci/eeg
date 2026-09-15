@@ -60,7 +60,9 @@ def main():
     cases = [('continuous_control','EDF+C','1',['+0','+1','+2']),
              ('discontinuous_positive_duration','EDF+D','1',['+0','+2','+4']),
              ('zero_duration_unique_receipts','EDF+D','0',['+0','+0.01','+2']),
-             ('zero_duration_repeated_receipts','EDF+D','0',['+0','+0','+2'])]
+             ('zero_duration_repeated_receipts','EDF+D','0',['+0','+0','+2']),
+             ('nominal_128hz_single_sample_records','EDF+C','.0078125',
+              ['+0','+0.0078125','+0.015625'])]
     report = {'schema':'eeg.edf-reader-probe.v1','synthetic':True,
               'python':platform.python_version(), 'platform':platform.platform(),
               'versions':{name:importlib.metadata.version(name) for name in ['edfio','pyedflib','numpy']},
@@ -88,6 +90,11 @@ def main():
     (output/'report.json').write_text(json.dumps(report,indent=2,allow_nan=False)+'\n')
     control=report['cases'][0]['readers']
     assert all(r['accepted'] and r['digital_exact'] and r['physical_exact'] for r in control.values()), 'Continuous control failed; do not interpret candidate results as compatibility evidence'
+    nominal = report['cases'][-1]['readers']
+    assert all(r['accepted'] and r['digital_exact'] and r['physical_exact']
+               and r['data_record_duration'] == 1 / 128
+               and r['reported_duration_seconds'] == 3 / 128
+               for r in nominal.values()), 'Nominal 128 Hz fixture roundtrip failed'
     print(json.dumps(report,indent=2,allow_nan=False))
 
 

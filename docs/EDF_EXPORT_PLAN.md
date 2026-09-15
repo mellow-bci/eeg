@@ -150,6 +150,28 @@ on Python 3.9.6/macOS arm64. These optional validation packages were installed i
 an isolated environment; they are not dependencies of the native app. No vendor
 assets or human recordings were used.
 
+### Follow-up: nominal 128 Hz exchange candidate
+
+A separate synthetic EDF+C fixture with one sample per signal per record and
+record duration `.0078125` (1/128 second) passed both readers. Both returned all
+three signed samples and unsigned physical values exactly, record duration
+0.0078125 seconds and total duration 0.0234375 seconds, without warnings. The
+eight-character duration spelling fits the header. Assertions now cover these
+sample and duration results in the probe.
+
+[Full follow-up report](qualification/edf-nominal-reader-probe-20260915.json)
+also reruns the earlier controls and incompatible layouts. This is a minimal
+format fixture, not native exporter output or a qualified hardware timeline.
+
+This opens an explicit **derived nominal timeline** exchange option for further
+implementation. It does not preserve recorded receipt times as EDF sample times.
+Before enabling it, the planner must separate continuity runs without filling
+gaps, preserve every original sample including short tails, retain original JSONL
+and clock evidence, and record the nominal timing policy and source hashes in an
+exchange receipt. Event mapping and segment start uncertainty remain unresolved.
+No existing receipt-layout preflight is silently reinterpreted, and no EDF export
+option is enabled by this probe. Native acquisition and measurements are unchanged.
+
 | Fixture | edfio 0.4.16 | PyEDFlib 0.1.42 |
 |---|---|---|
 | Continuous control, three 1-second records | Exact digital/physical sample roundtrip | Exact digital/physical sample roundtrip |
