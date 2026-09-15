@@ -2,13 +2,33 @@ import SwiftUI
 import AVFAudio
 import EEGCore
 
+/// Injection boundaries for controller tests; production uses the actual model
+/// and AVSpeechSynthesizer. No synthetic acquisition mode is exposed in the app.
+protocol TrialCueAcquisition: AnyObject {
+    var recording:Bool {get}
+    var transportStable:Bool {get}
+    var trial:EEGTrialEvidence? {get}
+    var recordingClock:Double {get}
+    func trialObservationTime(uptime:Double)->Double
+    func submitTrialBegin(_ planned:EEGTrialEvidence,completion:@escaping(Result<Void,Error>)->Void) throws
+    func submitTrialTransition(_ change:(inout EEGTrialEvidence,Double)throws->Void,
+                               at:Double?,completion:((Result<Void,Error>)->Void)?) throws
+    func cancelTrial(reason:String)
+}
+protocol TrialSpeechOutput: AnyObject {
+    var delegate:AVSpeechSynthesizerDelegate? {get set}
+    func speak(_ utterance:AVSpeechUtterance)
+    @discardableResult func stopSpeaking(at boundary:AVSpeechBoundary)->Bool
+}
+extension AVSpeechSynthesizer: TrialSpeechOutput {}
+
 /// Native speech callbacks are observations, not proof that audio was heard.
 final class TrialCueController: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
     @Published var status="Idle"
     @Published var checkCompleted=false
     @Published var busy=false
-    private weak var acquisition:AcquisitionModel?
-    private let speech=AVSpeechSynthesizer()
+    private weak var acquisition:(any TrialCueAcquisition)?
+    private let speech:any TrialSpeechOutput
     private var utterance:AVSpeechUtterance?
     private enum Purpose {case check,instruction,end,stop}
     private var purpose:Purpose = .check
@@ -16,7 +36,9 @@ final class TrialCueController: NSObject, ObservableObject, AVSpeechSynthesizerD
     private var timer:Timer?
     private var runID=UUID()
     private var waiting=false
-    init(acquisition:AcquisitionModel) {self.acquisition=acquisition;super.init();speech.delegate=self}
+    init(acquisition:any TrialCueAcquisition,speech:any TrialSpeechOutput=AVSpeechSynthesizer()) {
+        self.acquisition=acquisition;self.speech=speech;super.init();speech.delegate=self
+    }
     deinit {timer?.invalidate()}
     func audioCheck() {
         guard !busy else {return}

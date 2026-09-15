@@ -2,7 +2,7 @@ import SwiftUI
 import CoreBluetooth
 import EEGCore
 
-final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate {
+final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate, TrialCueAcquisition {
     struct Device: Identifiable { let id: UUID; let name: String; let peripheral: CBPeripheral }
     @Published var devices: [Device] = []
     @Published var phase = "Disconnected"

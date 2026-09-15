@@ -523,3 +523,23 @@ speech, cancellation and timing behavior still require an actual audio/hardware
 qualification; no sound or participant experiment was initiated here.
 
 Full suite: 117 tests, one opt-in qualification skipped, zero failures.
+
+## Actual cue-controller tests without audio playback
+
+A separate EEGAppTests target now imports the real TrialCueController. Narrow
+acquisition and speech-output protocols allow it to hold save callbacks and
+observe requested utterances. Production defaults remain AcquisitionModel and
+AVSpeechSynthesizer; no test headset, bypass or simulated success mode is exposed
+in the application. The test acquisition uses the canonical EEGTrialSession
+prepare/acknowledge implementation.
+
+Tests check that instruction speech waits for both initial and cue-request saves,
+stop invalidates a late initial save, save failure prevents instruction speech,
+transport loss before acknowledgement stops the instruction, and old speech
+callbacks after stop are ignored. Delegate events are injected into the actual
+controller and dispatched through its main-queue handling. No speech output is
+played. This verifies controller sequencing under the tested cases, not physical
+audio delivery, speech latency, headset quality or participant compliance.
+
+Validation: 122 tests, one opt-in load qualification skipped, zero failures;
+macOS, iOS and visionOS native builds passed.
