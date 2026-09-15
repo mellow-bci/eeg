@@ -83,7 +83,7 @@ public struct EEGEvaluationArtifact: Sendable {
             })
         }
         let object: [String: Any] = [
-            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-7",
+            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-8",
             "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
             "participant_id": dataset.participantID, "controls_only": report.controlsOnly,
@@ -99,6 +99,7 @@ public struct EEGEvaluationArtifact: Sendable {
             "trials": trials, "conditions": conditions, "session_conditions": sessionConditions, "rejection_fraction": report.rejectionFraction,
             "definitions": [
                 "time_axis": "recorded receipt-time seconds; window end is the last sample receipt",
+                "detector_timing": "nonnegative receipt times; overlapping or reordered windows within the current session/continuity are rejected and reset persistence; forward gaps over 0.05 seconds restart persistence",
                 "prediction": "experimental candidate or explicit neutral; null is rejection, not neutral",
                 "training_source_audit": "whole-content hash coverage of profile training sources among current manifest training sources; missing sources leave historical excerpt reuse unchecked; all present is not physiological or independence qualification",
                 "dataset_excerpt_check": "canonical-counter-adc-blocks-v1: scans every sample offset against 256-sample blocks of earlier manifest sessions; exact bytes confirm rolling-hash candidates; covers samples emitted by analysisWindows; no independence proof",

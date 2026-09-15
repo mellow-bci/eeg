@@ -161,6 +161,23 @@ class MentalTests(unittest.TestCase):
         self.assertFalse(result['system_control_enabled'])
         self.assertEqual(result['status'],'no_reliable_command')
 
+    def test_overlapping_reordered_and_negative_windows_rejected(self):
+        profile = train(records(), 'participant')
+        for start in (1.99, 1.0, 0.0):
+            detector = Detector(profile)
+            detector.infer(inference(4, 0))
+            rejected = detector.infer(inference(4, start))
+            self.assertEqual(rejected['reason'], 'overlapping_or_reordered_window')
+            self.assertIsNone(rejected.get('experimental_candidate'))
+            self.assertIsNone(rejected['command'])
+            self.assertEqual(detector.infer(inference(4, 4))['reason'], 'insufficient_persistence')
+        detector = Detector(profile)
+        self.assertEqual(detector.infer(inference(4, -1))['reason'], 'invalid_timing')
+        detector.infer(inference(4, 0))
+        self.assertEqual(detector.infer(inference(4, 2.0078125))['experimental_candidate'], 'task')
+        detector.reset()
+        self.assertEqual(detector.infer(inference(4, 0))['reason'], 'insufficient_persistence')
+
     def test_gap_session_artifact_and_bad_timing_reset_persistence(self):
         for invalid in ('gap','session','segment','artifact','timing','features'):
             detector=Detector(self.profile)

@@ -66,8 +66,13 @@ public struct EEGExperimentalDetector {
         else if window.participant_id != participantID { invalid = "participant_mismatch" }
         else if window.session_id.isEmpty || window.window_id.isEmpty { invalid = "missing_recording_identity" }
         else if window.continuity_id.isEmpty { invalid = "missing_continuity_identity" }
-        else if !window.start.isFinite || !window.end.isFinite || window.end <= window.start { invalid = "invalid_timing" }
+        else if !window.start.isFinite || window.start < 0 || !window.end.isFinite || window.end <= window.start { invalid = "invalid_timing" }
         if let invalid { reset(); return output(invalid) }
+        if session == window.session_id, continuity == window.continuity_id,
+           let previousEnd = lastEnd, window.start < previousEnd {
+            reset()
+            return output("overlapping_or_reordered_window")
+        }
         if session != window.session_id || continuity != window.continuity_id || lastEnd == nil || abs(window.start - (lastEnd ?? 0)) > 0.05 {
             reset()
         }

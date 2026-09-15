@@ -147,7 +147,9 @@ def save_profile(profile,path):
 def load_profile(path):return validate_profile(json.loads(Path(path).read_text()))
 
 class Detector:
-    def __init__(self,profile):self.profile=copy.deepcopy(validate_profile(profile));self.last_end=None;self.session=None;self.continuity=None;self.pending=None;self.count=0;self.pending_start=None
+    def __init__(self,profile):self.profile=copy.deepcopy(validate_profile(profile));self.reset()
+    def reset(self):
+        self.last_end=None;self.session=None;self.continuity=None;self.pending=None;self.count=0;self.pending_start=None
     def infer(self,record):
         p=self.profile
         base={'schema':'eeg.command-proposal.v1','profile_id':p['profile_id'],'feature_config_id':CONFIG_ID,
@@ -160,16 +162,19 @@ class Detector:
         elif record.get('participant_id')!=p['participant_id']:reason='participant_mismatch'
         elif any(not isinstance(record.get(key),str) or not record[key] for key in ('session_id','window_id')):reason='missing_recording_identity'
         elif not isinstance(record.get('continuity_id'),str) or not record['continuity_id']:reason='missing_continuity_identity'
-        if reason:self.pending=None;self.count=0;return dict(base,reason=reason)
+        if reason:self.reset();return dict(base,reason=reason)
         try: x=np.asarray(record.get('values'),dtype=float)
         except (TypeError,ValueError):
-            self.pending=None;self.count=0
+            self.reset()
             return dict(base,reason='invalid_features')
-        if x.shape!=(len(NAMES),) or not np.isfinite(x).all():self.pending=None;self.count=0;return dict(base,reason='invalid_features')
+        if x.shape!=(len(NAMES),) or not np.isfinite(x).all():self.reset();return dict(base,reason='invalid_features')
         end=record.get('end');start=record.get('start')
-        if type(end) not in (int,float) or type(start) not in (int,float) or not math.isfinite(end) or not math.isfinite(start) or end<=start:
-            self.pending=None;self.count=0;self.last_end=None;self.session=None
+        if type(end) not in (int,float) or type(start) not in (int,float) or not math.isfinite(end) or not math.isfinite(start) or start<0 or end<=start:
+            self.reset()
             return dict(base,reason='invalid_timing')
+        if self.session==record['session_id'] and self.continuity==record['continuity_id'] and self.last_end is not None and start<self.last_end:
+            self.reset()
+            return dict(base,reason='overlapping_or_reordered_window')
         if self.session!=record.get('session_id') or self.continuity!=record['continuity_id'] or self.last_end is None or abs(start-self.last_end)>.05:self.pending=None;self.count=0
         self.session=record.get('session_id');self.continuity=record['continuity_id'];self.last_end=end
         # Finite inputs can still overflow normalization or squared distances.
@@ -183,14 +188,14 @@ class Detector:
                 scores=np.asarray(scores);prob=np.exp(scores-scores.max());prob/=prob.sum()
                 if not np.isfinite(prob).all():raise FloatingPointError('Nonfinite class scores')
         except FloatingPointError:
-            self.pending=None;self.count=0;self.pending_start=None
+            self.reset()
             return dict(base,reason='numerical_failure')
         order=np.argsort(-prob);best=int(order[0]);label=p['classes'][best]
         base['uncalibrated_class_scores']=dict(zip(p['classes'],prob.tolist()));base['candidate_label']=label
         if distances[best]>p['gaussians'][best]['distance_limit']:reason='out_of_training_distribution'
         elif prob[best]<p['design']['score_threshold'] or prob[best]-prob[order[1]]<p['design']['margin_threshold']:reason='ambiguous_score'
         elif label=='neutral':reason='neutral'
-        if reason:self.pending=None;self.count=0;return dict(base,reason=reason)
+        if reason:self.reset();return dict(base,reason=reason)
         self.count=self.count+1 if self.pending==label else 1;self.pending=label
         if self.count==1:self.pending_start=start
         if self.count<p['design']['persistence_windows']:return dict(base,reason='insufficient_persistence')

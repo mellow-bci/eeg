@@ -17,3 +17,7 @@ Native dataset loading now checks exact cross-session excerpts as well as comple
 recording hashes. See [the algorithm, boundaries and tests](DATASET_EXCERPT_CHECK.md).
 Saved profiles still cannot exclude partial reuse of historical sources absent
 from the evaluation manifest; passing the check is not an independence claim.
+
+The shared sequential detector now explicitly rejects negative and overlapping
+window timing; see [DETECTOR_TIMING.md](DETECTOR_TIMING.md) for the engineering
+rule, reset semantics and synthetic validation boundaries.

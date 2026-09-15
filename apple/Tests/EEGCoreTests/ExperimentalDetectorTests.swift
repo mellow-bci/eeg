@@ -42,6 +42,7 @@ final class ExperimentalDetectorTests: XCTestCase {
             (["window_id": ""], "missing_recording_identity"),
             (["continuity_id": ""], "missing_continuity_identity"),
             (["end": 2], "invalid_timing"),
+            (["start": -1], "invalid_timing"),
             (["values": [Double]()], "invalid_features")]
         for (fields, reason) in cases {
             var d = try detector(); _ = d.infer(try window(4, 0))
@@ -50,6 +51,21 @@ final class ExperimentalDetectorTests: XCTestCase {
             XCTAssertNil(output.experimentalCandidate)
             XCTAssertEqual(d.infer(try window(4, 4)).reason, "insufficient_persistence")
         }
+    }
+    func testOverlappingAndReorderedWindowsCannotAccumulatePersistence() throws {
+        for start in [1.99, 1.0, 0.0] {
+            var d = try detector()
+            _ = d.infer(try window(4, 0))
+            let rejected = d.infer(try window(4, start))
+            XCTAssertEqual(rejected.reason, "overlapping_or_reordered_window")
+            XCTAssertNil(rejected.experimentalCandidate)
+            XCTAssertNil(rejected.evidenceStart)
+            XCTAssertNil(rejected.command)
+            XCTAssertEqual(d.infer(try window(4, 4)).reason, "insufficient_persistence")
+        }
+        var adjacent = try detector()
+        _ = adjacent.infer(try window(4, 0))
+        XCTAssertEqual(adjacent.infer(try window(4, 2.0078125)).experimentalCandidate, "task")
     }
     func testNeutralOutliersAndNumericalFailureReset() throws {
         for (value, reason) in [(0.0, "neutral"), (10000.0, "out_of_training_distribution"), (1e308, "numerical_failure")] {
