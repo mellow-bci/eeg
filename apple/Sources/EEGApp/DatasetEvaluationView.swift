@@ -46,13 +46,18 @@ struct DatasetEvaluationView: View {
                 }
                 ForEach(report.conditions.keys.sorted(), id: \.self) { condition in
                     let exposure = report.conditions[condition]!
-                    VStack(alignment: .leading) {
-                        Text(condition.replacingOccurrences(of: "_", with: " ")).font(.headline)
-                        Text("Eligible: \(exposure.eligibleSeconds.formatted(.number.precision(.fractionLength(2)))) s · Rejected: \(exposure.rejectedSeconds.formatted(.number.precision(.fractionLength(2)))) s · Unarmed: \(exposure.unarmedSeconds.formatted(.number.precision(.fractionLength(2)))) s")
-                        Text("Candidate episodes: \(exposure.episodeOnsets) · Carry-ins: \(exposure.carryInCandidates)")
-                        Text("Empirical episodes/hour: \(exposure.episodeOnsetsPerHour.map { $0.formatted(.number.precision(.fractionLength(2))) } ?? "Unavailable")")
-                        Text("One-sided 95% Poisson upper/hour: \(exposure.poissonUpper95PerHour.map { $0.formatted(.number.precision(.fractionLength(2))) } ?? "Unavailable")")
-                    }.font(.caption).accessibilityElement(children: .combine)
+                    exposureSummary(condition: condition, exposure: exposure)
+                }
+                DisclosureGroup("Results by session") {
+                    Text("Compare individual sessions before interpreting pooled rates.").font(.caption)
+                    ForEach(report.sessionConditions.keys.sorted(), id: \.self) { session in
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(session).font(.headline).textSelection(.enabled)
+                            ForEach(report.sessionConditions[session]!.keys.sorted(), id: \.self) { condition in
+                                exposureSummary(condition: condition, exposure: report.sessionConditions[session]![condition]!)
+                            }
+                        }
+                    }
                 }
                 ForEach(Array(report.trials.enumerated()), id: \.offset) { _, trial in
                     VStack(alignment: .leading) {
@@ -78,6 +83,15 @@ struct DatasetEvaluationView: View {
             case .failure(let error): failure = "Export failed: \(error.localizedDescription)"
             }
         }
+    }
+    private func exposureSummary(condition: String, exposure: EEGConditionExposure) -> some View {
+                    VStack(alignment: .leading) {
+                        Text(condition.replacingOccurrences(of: "_", with: " ")).font(.headline)
+                        Text("Eligible: \(exposure.eligibleSeconds.formatted(.number.precision(.fractionLength(2)))) s · Rejected: \(exposure.rejectedSeconds.formatted(.number.precision(.fractionLength(2)))) s · Unarmed: \(exposure.unarmedSeconds.formatted(.number.precision(.fractionLength(2)))) s")
+                        Text("Candidate episodes: \(exposure.episodeOnsets) · Carry-ins: \(exposure.carryInCandidates)")
+                        Text("Empirical episodes/hour: \(exposure.episodeOnsetsPerHour.map { $0.formatted(.number.precision(.fractionLength(2))) } ?? "Unavailable")")
+                        Text("One-sided 95% Poisson upper/hour: \(exposure.poissonUpper95PerHour.map { $0.formatted(.number.precision(.fractionLength(2))) } ?? "Unavailable")")
+                    }.font(.caption).accessibilityElement(children: .combine)
     }
     private func percent(_ value: Double?) -> String { value?.formatted(.percent.precision(.fractionLength(1))) ?? "Unavailable" }
     private func evaluate(_ url: URL) {

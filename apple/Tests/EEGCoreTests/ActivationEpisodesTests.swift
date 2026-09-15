@@ -2,9 +2,9 @@ import XCTest
 @testable import EEGCore
 
 final class ActivationEpisodesTests: XCTestCase {
-    private func row(_ start: Double, trial: String = "a", trialStart: Double = 0, usable: Bool = true, armed: Bool = true) -> EEGTrainingDataset.EvaluationWindow {
+    private func row(_ start: Double, session: String = "session", trial: String = "a", trialStart: Double = 0, usable: Bool = true, armed: Bool = true) -> EEGTrainingDataset.EvaluationWindow {
         .init(input: EEGInferenceWindow(values: [], feature_config_id: "test", artifact_flags: [], usable: usable,
-            participant_id: "test", session_id: "session", continuity_id: "segment", window_id: String(start), start: start, end: start + 2),
+            participant_id: "test", session_id: session, continuity_id: "segment", window_id: String(start), start: start, end: start + 2),
             label: "neutral", trialID: trial, condition: "ordinary_activity", shadowEnabled: armed, trialStart: trialStart, trialEnd: 20, cueCompletedAt: nil)
     }
     private func candidate(_ evidence: Double) -> EEGExperimentalProposal {
@@ -33,6 +33,30 @@ final class ActivationEpisodesTests: XCTestCase {
         XCTAssertEqual(result.unarmedSeconds, 2)
         XCTAssertEqual(result.episodeOnsets, 2)
         XCTAssertEqual(result.episodeOnsetsPerHour, 1800)
+    }
+    func testSessionRatesDoNotHideDifferentActivityOrCarryIns() throws {
+        var counter = EEGActivationEpisodes()
+        try counter.consume(row(0, session:"quiet"), proposal:nil)
+        try counter.consume(row(2, session:"quiet"), proposal:nil)
+        try counter.consume(row(4, session:"quiet", usable:false), proposal:nil)
+        try counter.consume(row(0, session:"active"), proposal:candidate(0))
+        try counter.consume(row(2, session:"active"), proposal:candidate(0))
+        try counter.consume(row(4, session:"active", trial:"b", trialStart:4), proposal:candidate(0))
+        let quiet = try XCTUnwrap(counter.sessionConditions["quiet"]?["ordinary_activity"])
+        let active = try XCTUnwrap(counter.sessionConditions["active"]?["ordinary_activity"])
+        XCTAssertEqual(quiet.eligibleSeconds,4)
+        XCTAssertEqual(quiet.rejectedSeconds,2)
+        XCTAssertEqual(quiet.episodeOnsets,0)
+        XCTAssertEqual(quiet.episodeOnsetsPerHour,0)
+        XCTAssertNotNil(quiet.poissonUpper95PerHour)
+        XCTAssertEqual(active.eligibleSeconds,6)
+        XCTAssertEqual(active.episodeOnsets,1)
+        XCTAssertEqual(active.carryInCandidates,1)
+        XCTAssertNil(active.episodeOnsetsPerHour)
+        XCTAssertNil(active.poissonUpper95PerHour)
+        XCTAssertEqual(counter.conditions["ordinary_activity"]?.eligibleSeconds,10)
+        XCTAssertEqual(counter.conditions["ordinary_activity"]?.candidateWindows,3)
+        XCTAssertNil(counter.conditions["ordinary_activity"]?.episodeOnsetsPerHour)
     }
     func testInvalidEvidenceChronologyRejected() {
         var counter = EEGActivationEpisodes()

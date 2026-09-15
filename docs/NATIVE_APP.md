@@ -631,3 +631,29 @@ duplicate arguments, a mixed-task dataset in controls-only mode and a malformed
 manifest: each must fail with stderr diagnostics and no stdout receipt. Temporary
 fixtures are removed by the test script. CI runs this check; synthetic agreement
 is not physiological validation or completion of interactive app qualification.
+
+
+## Session-specific evaluation exposure
+
+Evaluation algorithm `native-labeled-evaluation-2` adds `session_conditions` to the
+existing `eeg.native-evaluation.v1` receipt. Keys are recording session IDs and
+condition names. Each entry uses the same exposure fields as pooled `conditions`:
+eligible, rejected and unarmed seconds; candidate windows; episode onsets;
+carry-ins; empirical rate and conditional Poisson upper bound. The native results
+view exposes these under “Results by session”, using the same presentation as
+pooled conditions. Existing pooled fields remain unchanged.
+
+One episode-accounting pass produces each window's contribution and accumulates
+it into both summaries. It does not rerun inference independently per session or
+change classifier parameters. A carry-in invalidates the affected session's rate
+and the pooled rate; another session with no carry-in retains its own estimate.
+This makes variability inspectable, but does not establish cross-session robustness.
+Short exposures remain weak evidence, and correlated events violate the simple
+Poisson assumption. No control output is enabled by this addition.
+
+Regression coverage uses distinct quiet and active synthetic sessions, including
+rejected exposure and a carried candidate, and checks receipt serialization.
+No live acquisition or physiological experiment was performed.
+
+Validation: 131 tests, one opt-in qualification skipped, zero failures. Native
+macOS, iOS and visionOS builds passed. Interactive layout validation is pending.

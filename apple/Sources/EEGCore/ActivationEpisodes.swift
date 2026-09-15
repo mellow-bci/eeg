@@ -7,6 +7,14 @@ public struct EEGConditionExposure: Sendable {
     public internal(set) var candidateWindows = 0
     public internal(set) var episodeOnsets = 0
     public internal(set) var carryInCandidates = 0
+    mutating func accumulate(_ other: Self) {
+        eligibleSeconds += other.eligibleSeconds
+        unarmedSeconds += other.unarmedSeconds
+        rejectedSeconds += other.rejectedSeconds
+        candidateWindows += other.candidateWindows
+        episodeOnsets += other.episodeOnsets
+        carryInCandidates += other.carryInCandidates
+    }
     public var poissonUpper95PerHour: Double? {
         guard eligibleSeconds.isFinite, eligibleSeconds > 0, carryInCandidates == 0,
               let countBound = EEGPoissonBound.upper95(count: episodeOnsets) else { return nil }
@@ -43,6 +51,7 @@ struct EEGActivationEpisodes {
     var trials: [EEGTrialTiming] { trialOrder.compactMap { trialStorage[$0] } }
     private var previous: Previous?
     private(set) var conditions = [String: EEGConditionExposure]()
+    private(set) var sessionConditions = [String: [String: EEGConditionExposure]]()
     mutating func consume(_ row: EEGTrainingDataset.EvaluationWindow, proposal: EEGExperimentalProposal?) throws {
         let input = row.input, duration = row.input.end - row.input.start
         guard duration.isFinite, duration > 0 else { throw EEGLabeledEvaluation.Failure.invalidTiming }
@@ -55,7 +64,7 @@ struct EEGActivationEpisodes {
         guard trial.start == row.trialStart, trial.end == row.trialEnd, trial.label == row.label,
               trial.condition == row.condition, trial.cueCompletedAt == row.cueCompletedAt else { throw EEGLabeledEvaluation.Failure.invalidTiming }
         trial.coveredSeconds += duration
-        var metrics = conditions[row.condition] ?? EEGConditionExposure()
+        var metrics = EEGConditionExposure()
         if !row.shadowEnabled { metrics.unarmedSeconds += duration }
         else if !input.usable { metrics.rejectedSeconds += duration }
         else { metrics.eligibleSeconds += duration }
@@ -77,7 +86,8 @@ struct EEGActivationEpisodes {
         }
         if trialStorage[key] == nil { trialOrder.append(key) }
         trialStorage[key] = trial
-        conditions[row.condition] = metrics
+        conditions[row.condition, default: EEGConditionExposure()].accumulate(metrics)
+        sessionConditions[input.session_id, default: [:]][row.condition, default: EEGConditionExposure()].accumulate(metrics)
         previous = Previous(label: label, session: input.session_id, trial: row.trialID, continuity: input.continuity_id, end: input.end)
     }
 }

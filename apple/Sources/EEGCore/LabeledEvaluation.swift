@@ -18,6 +18,7 @@ public struct EEGLabeledEvaluation: Sendable {
     public let metrics: [String: Metric]
     public let trials: [EEGTrialTiming]
     public let conditions: [String: EEGConditionExposure]
+    public let sessionConditions: [String: [String: EEGConditionExposure]]
     public let systemControlEnabled = false
     public let hardwareValidated = false
     public var rejectionFraction: Double { Double(predictions.filter { $0.predictedLabel == nil }.count) / Double(predictions.count) }
@@ -59,6 +60,6 @@ public struct EEGLabeledEvaluation: Sendable {
                 falsePositive: predictions.filter { $0.actual != label && $0.predictedLabel == label }.count,
                 falseNegative: predictions.filter { $0.actual == label && $0.predictedLabel != label }.count)
         }
-        return EEGLabeledEvaluation(controlsOnly: controlsOnly, profileID: profile.id, predictions: predictions, metrics: metrics, trials: episodes.trials, conditions: episodes.conditions)
+        return EEGLabeledEvaluation(controlsOnly: controlsOnly, profileID: profile.id, predictions: predictions, metrics: metrics, trials: episodes.trials, conditions: episodes.conditions, sessionConditions: episodes.sessionConditions)
     }
 }
