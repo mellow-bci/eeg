@@ -1,6 +1,9 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import EEGCore
+#if os(macOS)
+import AppKit
+#endif
 
 struct ProfileInspectionView: View {
     @State private var importing = false
@@ -12,7 +15,7 @@ struct ProfileInspectionView: View {
         Panel(title: "Independent training profile") {
             ProfileLibraryView { profile = $0; failure = nil }
             HStack {
-                Button("Open profile", systemImage: "doc.badge.plus") { importing = true }.disabled(loading)
+                Button("Open profile", systemImage: "doc.badge.plus") { openDocument() }.disabled(loading || importing)
                 if loading { ProgressView().controlSize(.small) }
                 Spacer()
                 if profile != nil { Button("Close profile") { profile = nil; failure = nil } }
@@ -34,24 +37,45 @@ struct ProfileInspectionView: View {
             }
             if let failure { Label(failure, systemImage: "exclamationmark.triangle").foregroundStyle(.red).textSelection(.enabled) }
         }
+        #if !os(macOS)
         .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in
-            switch result {
-            case .failure(let error): failure = error.localizedDescription
-            case .success(let url):
-                loading = true; profile = nil; failure = nil
-                Task { @MainActor in
-                    let result = await Task.detached(priority: .userInitiated) {
-                        Result { () throws -> EEGMentalProfile in
-                            let access = url.startAccessingSecurityScopedResource()
-                            defer { if access { url.stopAccessingSecurityScopedResource() } }
-                            return try EEGProfileStore.readDocument(url)
-                        }
-                    }.value
-                    loading = false
-                    switch result {
-                    case .success(let value): profile = value
-                    case .failure(let error): failure = "Profile rejected: \(error)"
+            receiveDocument(result)
+        }
+        #endif
+    }
+    private func openDocument() {
+        #if os(macOS)
+        importing = true
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.json]
+        panel.begin { response in
+            importing = false
+            if response == .OK, let url = panel.url { receiveDocument(.success(url)) }
+        }
+        #else
+        importing = true
+        #endif
+    }
+    private func receiveDocument(_ result: Result<URL, Error>) {
+        switch result {
+        case .failure(let error): failure = error.localizedDescription
+        case .success(let url):
+            loading = true; profile = nil; failure = nil
+            Task { @MainActor in
+                let result = await Task.detached(priority: .userInitiated) {
+                    Result { () throws -> EEGMentalProfile in
+                        let access = url.startAccessingSecurityScopedResource()
+                        defer { if access { url.stopAccessingSecurityScopedResource() } }
+                        return try EEGProfileStore.readDocument(url)
                     }
+                }.value
+                loading = false
+                switch result {
+                case .success(let value): profile = value
+                case .failure(let error): failure = "Profile rejected: \(error)"
                 }
             }
         }

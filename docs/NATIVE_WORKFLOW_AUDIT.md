@@ -156,3 +156,29 @@ classified initial queue rejection as a recording storage failure.
 Native platform compilation verifies the view and call sites. Interactive
 settings persistence, startup behavior under a physical stream and accessibility
 remain unqualified until exercised in the application.
+
+## Native profile opening exercised — 2026-09-15
+
+The Mac became available. On the current SwiftUI profile importer, the selected
+repository `apple/Fixtures/spectrum/mental-profile.json` left Open disabled;
+Spotlight reported `public.json`. Broadening the picker to `.data` did not resolve
+it and was removed. The macOS profile picker now uses `NSOpenPanel` with the same
+JSON filter, one-file selection and the existing bounded `readDocument` validator.
+iOS/visionOS retain the SwiftUI picker. Both feed one profile-loading function;
+no validation or training path was duplicated. Opening is disabled while a panel
+or load is active.
+
+The native panel enabled Open. The application subsequently displayed the fixture
+profile ID `635267ad37d2d8fa13c18b30053edce07c4803e94abbf35ca4a6694f5a65aa61`,
+participant `participant`, two training sessions and `neutral, task` classes,
+with command output disabled. Computer-use inspection timed out after panel close;
+a two-second process sample showed an idle main event loop. Bringing the app to
+the foreground through Finder restored inspection. This does not establish the
+root cause of that observation timeout.
+
+Processing limits expanded to 512 and 4194304. Entering zero produced the positive
+integer validation message. Defaults were restored and the fixture profile was
+closed. It was opened from the repository, not copied into the saved-profile
+library. No hardware connection, cue, physiological experiment or command was
+started. Persistence across application restart and other document pickers remain
+to be exercised. Three native platform builds passed for the panel change.
