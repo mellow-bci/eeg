@@ -246,3 +246,37 @@ The rebuilt macOS Diagnostics page was inspected with acquisition disconnected:
 all counters were zero and both duration fields showed “No writes observed”. No
 recording was started during this UI check. Snapshot publication skips unchanged
 values to avoid unnecessary idle view invalidation. Platform builds passed.
+
+## Recorded live-output verification
+
+`EEGShadowVerification.run` uses the canonical finalized record reader and starts
+the same analysis-window assembler and inference processor at the selected
+`shadow_start` event. It does not align a mid-recording run to windows beginning
+at sample zero. Device metadata comes from preceding recorded metadata; stable
+startup follows the native host's guarded start contract. The verifier supports
+the current generation-zero run protocol; reset/restart must have a new run ID.
+
+The selected profile, participant assertion, session, feature recipe, output
+status/control flag, candidate/rejection reasons, ordinal, sample indices/count,
+and receipt-time bounds are checked. Exact training content is rejected after
+the same complete read. Duplicate/out-of-order lifecycle evidence rejects.
+Source read/schema/completion failure discards the provisional comparison.
+
+The report includes source SHA-256, mismatched and missing ordinals, counts and
+stop reason. `completeMatch` requires at least one output, no differences or
+missing full-window outputs, and a recognized ordinary stop. Pending worker
+windows discarded at stop can therefore produce a missing-output report. Partial
+window tails are not invented as live outputs. A match is software consistency
+only, not wearer identity, label accuracy, source authenticity or mental-command
+qualification. No actions are enabled.
+
+The existing offline panel exposes comparison using a selected recording, current
+profile, recorded run ID and window limit. Run-ID discovery in the UI and physical
+live/replay qualification remain pending. The UI has compiled on three platforms;
+the new comparison controls have not yet been exercised interactively.
+
+Tests generate a synthetic live consumer run starting at sample 13, persist its
+outputs, and independently replay the recorded boundary. They verify equality,
+altered candidate detection, missing outputs and stop detection. The full suite
+passed 102 tests; focused follow-up coverage also checks incomplete source and
+invalid limit rejection. These fixtures provide no physiological evidence.

@@ -10,6 +10,8 @@ struct ReplayInferenceView: View {
     @State private var maximumWindows = 10000
     @State private var running = false
     @State private var report: EEGReplayInferenceReport?
+    @State private var shadowRunID = ""
+    @State private var shadowReport: EEGShadowVerification.Report?
     @State private var failure: String?
 
     var body: some View {
@@ -30,6 +32,21 @@ struct ReplayInferenceView: View {
             Text("Processing stops with an error if this limit is exceeded; it never returns a truncated report.").font(.caption).foregroundStyle(.secondary)
             Button("Run offline check", systemImage: "play") { run() }
                 .disabled(running || model.recording || model.ready || recordingName.isEmpty || participantID.isEmpty || sessionID.isEmpty || maximumWindows <= 0)
+            Divider()
+            Text("Verify recorded live outputs").font(.headline)
+            TextField("Recorded shadow run ID",text:$shadowRunID)
+            Text("Replays this run from its recorded start boundary. A match checks software consistency, not physiological accuracy or authenticity.").font(.caption).foregroundStyle(.secondary)
+            Button("Compare recorded outputs") { verifyShadow() }
+                .disabled(running || model.recording || model.ready || recordingName.isEmpty || shadowRunID.isEmpty || maximumWindows<=0)
+            if let shadowReport {
+                Text(shadowReport.completeMatch ? "Recorded outputs match replay" : "Comparison incomplete or different").font(.headline)
+                LabeledContent("Replay / recorded windows",value:"\(shadowReport.replayWindows) / \(shadowReport.recordedWindows)")
+                LabeledContent("Mismatched windows",value:String(shadowReport.mismatchedOrdinals.count))
+                LabeledContent("Missing outputs",value:String(shadowReport.missingOrdinals.count))
+                LabeledContent("Stop reason",value:shadowReport.stopReason ?? "No stop recorded")
+                Text(shadowReport.recordingSHA256).font(.caption.monospaced()).textSelection(.enabled)
+                Text("System control remains disabled.").font(.caption)
+            }
             if running { ProgressView("Validating recording and extracting features…") }
             if let failure { Text(failure).foregroundStyle(.red).textSelection(.enabled) }
             if let report {
@@ -51,14 +68,32 @@ struct ReplayInferenceView: View {
             }
         }
         .disabled(running)
-        .onChange(of: recordingName) { _, _ in report = nil; failure = nil }
+        .onChange(of: recordingName) { _, _ in report = nil; shadowReport=nil; failure = nil }
+        .onChange(of: shadowRunID) { _, _ in shadowReport=nil }
     }
 
+    private func verifyShadow() {
+        guard !running,!model.recording,!model.ready else {return}
+        let directory=model.directory,url=directory.appendingPathComponent(recordingName)
+        let runID=shadowRunID,limit=maximumWindows
+        running=true;shadowReport=nil;report=nil;failure=nil
+        Task { @MainActor in
+            let result=await Task.detached(priority:.utility) {
+                Result {try EEGShadowVerification.run(store:EEGRecordingStore(directory:directory),recording:url,
+                    profile:profile,runID:runID,maximumWindows:limit)}
+            }.value
+            running=false
+            switch result {
+            case .success(let value):shadowReport=value
+            case .failure(let error):failure="Shadow comparison rejected: \(error)"
+            }
+        }
+    }
     private func run() {
         guard !running, !model.recording, !model.ready else { return }
         let directory = model.directory, url = directory.appendingPathComponent(recordingName)
         let participant = participantID, session = sessionID, limit = maximumWindows
-        running = true; report = nil; failure = nil
+        running = true; report = nil; shadowReport=nil; failure = nil
         Task { @MainActor in
             let result = await Task.detached(priority: .utility) {
                 Result { try EEGReplayInference.run(store: EEGRecordingStore(directory: directory), recording: url,

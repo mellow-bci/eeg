@@ -194,6 +194,19 @@ public final class EEGRecordingStore {
         return digest
     }
 
+    /// Canonical validated record traversal. Outputs remain provisional until
+    /// the complete finalized source passes validation and source-change checks.
+    @discardableResult func finalizedRecords(recording: URL, consume: (Data, EEGSample?) throws -> Void) throws -> String {
+        try validate(recording)
+        var validation=StreamValidation()
+        let digest=try Self.lines(recording) { data in
+            try consume(data,validation.consume(data))
+        }
+        try validation.finish()
+        guard validation.summarized else {throw EEGRecordingError.invalidData}
+        return digest
+    }
+
     /// Close without a completion summary after a failed or cancelled acquisition.
     /// Existing bytes remain available for inspection; this is not a completed dataset.
     public func abort() {
