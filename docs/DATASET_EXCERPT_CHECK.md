@@ -70,7 +70,40 @@ physiological qualification remains outstanding.
 Validation checkpoint (2026-09-15): 13 selected native tests passed, including the
 recording-to-profile-to-held-out-evaluation route. A subsequent four-test overlap
 suite also passed, adding every one of the 256 possible excerpt-start alignments
-at the 511-sample boundary. That alignment test processed 130,816 synthetic input
-samples in 2.017 seconds in the debug test process; this is not a hardware/UI
+at the 511-sample boundary. That alignment test processed 130,816 synthetic excerpt
+samples plus 1,024 reference samples in 2.017 seconds in the debug test process; this is not a hardware/UI
 latency or memory benchmark. All three native platform builds succeeded. No live
 headset experiment or app interaction was performed for this validation rule.
+
+## Saved-profile source coverage
+
+Starting with `native-labeled-evaluation-7`, the receipt includes
+`training_source_audit` (`eeg.training-source-audit.v1`): status, matches and
+missing training session IDs. Each match records the profile training-session ID,
+its canonical EEG hash and matching current manifest training-session IDs. Lists
+are sorted for deterministic reproduction. Renamed sources can match by content;
+matching names with different EEG content instead stop evaluation with
+`trainingSourceMismatch`. Merely adding an evaluation source does not satisfy a
+training-source match; reuse of training content in evaluation is separately rejected.
+
+The app displays the matched/expected source count and missing IDs. Add original
+training recordings to the manifest's training split to include them in the
+cross-session excerpt scan. This does not retrain the inspected profile or tune
+on evaluation data. Missing sources do not erase descriptive evaluation metrics,
+but must not be interpreted as an excluded historical leakage risk. The status
+`all_training_sources_present` only describes content coverage; it never enables
+commands or proves independence, cue validity or physiological accuracy.
+
+The audit contains hashes and identifiers, not raw samples or vendor assets.
+Profiles themselves remain unchanged; absent historical sources are not replaced
+with fabricated excerpt fingerprints. The audit is implemented in EEGCore and
+used by native evaluation/receipts; UI and CLI share that path.
+
+Source-audit validation checkpoint (2026-09-15): 11 selected evaluation/dataset
+unit and integration tests passed. After applying explicit snake-case audit JSON
+keys, the seven evaluation tests passed again. The native CLI evaluated a
+synthetic evaluation-only manifest, retained 40 predictions, and exported missing
+training sources `a` and `b` with no matches; control/hardware-validation flags
+remained false. All three native platform builds passed. The new UI source-count
+and missing-source text compiled, but interactive layout/accessibility for this
+addition has not yet been qualified. No headset or physiological test was run.

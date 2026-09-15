@@ -72,7 +72,7 @@ swift run --package-path apple EEGEvaluate --manifest DATASET.json --profile PRO
 ```
 
 `eeg.native-evaluation.v1`, introduced in `native-labeled-evaluation-5` and retained
-in version 6, stores
+in subsequent receipt versions, stores
 `session_resampling` per class with algorithm, status, sorted session IDs, options
 and available bounds. Without opt-in this field is null. Unavailable results have
 an explicit status and no bounds. Seeds are unsigned 64-bit integers; consumers

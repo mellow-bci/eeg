@@ -81,7 +81,7 @@ public struct EEGLabeledEvaluation: Sendable {
     public let systemControlEnabled = false
     public let hardwareValidated = false
     public var rejectionFraction: Double { Double(predictions.filter { $0.predictedLabel == nil }.count) / Double(predictions.count) }
-    public enum Failure: Error { case noEvaluation, participantMismatch, trainingOverlap, insufficientClassWindows, invalidLabels, invalidTiming }
+    public enum Failure: Error { case noEvaluation, participantMismatch, trainingOverlap, trainingSourceMismatch, insufficientClassWindows, invalidLabels, invalidTiming }
 
     /// Experimental window and declared-trial observations. Correlated windows are not
     /// independent physiological trials. Rejection is never a neutral prediction.
@@ -90,6 +90,7 @@ public struct EEGLabeledEvaluation: Sendable {
         guard !dataset.evaluation.isEmpty else { throw Failure.noEvaluation }
         let sessions = dataset.sessions.filter { $0.split == "evaluation" }
         guard sessions.allSatisfy({ !profile.trainingSessions.contains($0.id) && !profile.trainingRecordingHashes.values.contains($0.eegSHA256) }) else { throw Failure.trainingOverlap }
+        _ = try EEGTrainingSourceAudit.run(profile: profile, sessions: dataset.sessions)
         if controlsOnly {
             let controls = ["cued_neutral", "ordinary_activity", "blink_control", "jaw_control", "head_movement_control"]
             guard dataset.evaluation.allSatisfy({ $0.label == "neutral" && controls.contains($0.condition) }) else { throw Failure.invalidLabels }

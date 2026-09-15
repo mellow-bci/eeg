@@ -6,6 +6,7 @@ import CryptoKit
 public struct EEGEvaluationArtifact: Sendable {
     public let report: EEGLabeledEvaluation
     public let data: Data
+    public let trainingSourceAudit: EEGTrainingSourceAudit
     public let sessionResampling: [String: EEGSessionResampling.Result]?
     public static func run(manifest: Data, store: EEGRecordingStore, profile: EEGMentalProfile,
                            controlsOnly: Bool = false, resampling: EEGSessionResampling.Options? = nil) throws -> EEGEvaluationArtifact {
@@ -18,6 +19,9 @@ public struct EEGEvaluationArtifact: Sendable {
     static func make(report: EEGLabeledEvaluation, dataset: EEGTrainingDataset, manifest: Data,
                      profile: EEGMentalProfile, resampling: EEGSessionResampling.Options? = nil) throws -> EEGEvaluationArtifact {
         try resampling?.validate()
+        let trainingSourceAudit = try EEGTrainingSourceAudit.run(profile: profile, sessions: dataset.sessions)
+        var sourceAuditObject = try JSONSerialization.jsonObject(with: JSONEncoder().encode(trainingSourceAudit)) as! [String: Any]
+        sourceAuditObject["status"] = trainingSourceAudit.status
         func nullable<T>(_ value: T?) -> Any { value.map { $0 as Any } ?? NSNull() }
         let predictions: [[String: Any]] = zip(report.predictions, dataset.evaluation).map { prediction, row in
             ["window_id": prediction.windowID, "session_id": prediction.sessionID,
@@ -79,7 +83,7 @@ public struct EEGEvaluationArtifact: Sendable {
             })
         }
         let object: [String: Any] = [
-            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-6",
+            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-7",
             "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
             "participant_id": dataset.participantID, "controls_only": report.controlsOnly,
@@ -89,12 +93,14 @@ public struct EEGEvaluationArtifact: Sendable {
             "session_resampling": try sessionResampling.map { try JSONSerialization.jsonObject(with: JSONEncoder().encode($0)) } ?? NSNull(),
             "trial_metrics": report.trialMetrics.mapValues(trialMetricObject),
             "session_trial_metrics": report.sessionTrialMetrics.mapValues { $0.mapValues(trialMetricObject) },
+            "training_source_audit": sourceAuditObject,
             "sources": sources, "predictions": predictions, "metrics": metrics, "session_metrics": sessionMetrics,
             "control_conditions_without_eligible_exposure": report.controlConditionsWithoutEligibleExposure,
             "trials": trials, "conditions": conditions, "session_conditions": sessionConditions, "rejection_fraction": report.rejectionFraction,
             "definitions": [
                 "time_axis": "recorded receipt-time seconds; window end is the last sample receipt",
                 "prediction": "experimental candidate or explicit neutral; null is rejection, not neutral",
+                "training_source_audit": "whole-content hash coverage of profile training sources among current manifest training sources; missing sources leave historical excerpt reuse unchecked; all present is not physiological or independence qualification",
                 "dataset_excerpt_check": "canonical-counter-adc-blocks-v1: scans every sample offset against 256-sample blocks of earlier manifest sessions; exact bytes confirm rolling-hash candidates; covers samples emitted by analysisWindows; no independence proof",
                 "class_rejection": "null predictions divided by windows of the actual class; includes unarmed and unusable windows; null rate when the class is absent",
                 "scored_trial": "candidate persistence evidence must start within the scored interval and at or after the recorded cue; task success requires the target label, neutral false positive accepts any task candidate; missing cue yields null; carry-ins are not credited",
@@ -117,6 +123,6 @@ public struct EEGEvaluationArtifact: Sendable {
                 "Parent lineage does not audit historical model-selection or evaluation reuse."]
         ]
         let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys, .prettyPrinted])
-        return EEGEvaluationArtifact(report: report, data: data, sessionResampling: sessionResampling)
+        return EEGEvaluationArtifact(report: report, data: data, trainingSourceAudit: trainingSourceAudit, sessionResampling: sessionResampling)
     }
 }

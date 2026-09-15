@@ -86,6 +86,41 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertThrowsError(try EEGLabeledEvaluation.run(profile: profile,
             dataset: EEGTrainingDataset(evaluation: Array(dataset.evaluation.prefix(5)), participantID: profile.participantID, records: [], sessions: dataset.sessions)))
     }
+    func testTrainingSourceCoverageAndContradictoryContent() throws {
+        let (profile, dataset, _) = try fixture()
+        let absent = try EEGTrainingSourceAudit.run(profile: profile, sessions: dataset.sessions)
+        XCTAssertEqual(absent.status, "training_sources_missing")
+        XCTAssertEqual(absent.missingTrainingSessions, profile.trainingSessions.sorted())
+        let originals = profile.trainingSessions.map { id in
+            EEGTrainingDataset.SessionSummary(id: id, split: "train", fileSHA256: "unused",
+                eegSHA256: profile.trainingRecordingHashes[id]!, usableWindows: 20, rejectedWindows: 0)
+        }
+        let complete = try EEGTrainingSourceAudit.run(profile: profile, sessions: originals + dataset.sessions)
+        XCTAssertEqual(complete.status, "all_training_sources_present")
+        XCTAssertTrue(complete.missingTrainingSessions.isEmpty)
+        XCTAssertEqual(complete.matches.map(\.trainingSessionID), profile.trainingSessions.sorted())
+        let first = originals[0]
+        let renamed = EEGTrainingDataset.SessionSummary(id: "renamed-source", split: "train", fileSHA256: "different",
+            eegSHA256: first.eegSHA256, usableWindows: 20, rejectedWindows: 0)
+        let partial = try EEGTrainingSourceAudit.run(profile: profile, sessions: [renamed])
+        XCTAssertEqual(partial.matches.first?.manifestSessionIDs, ["renamed-source"])
+        XCTAssertEqual(partial.missingTrainingSessions.count, profile.trainingSessions.count - 1)
+        let changed = EEGTrainingDataset.SessionSummary(id: first.id, split: "train", fileSHA256: "unused",
+            eegSHA256: String(repeating: "0", count: 64), usableWindows: 20, rejectedWindows: 0)
+        let conflicting = EEGTrainingDataset(evaluation: dataset.evaluation, participantID: dataset.participantID,
+            records: [], sessions: [changed] + dataset.sessions)
+        XCTAssertThrowsError(try EEGLabeledEvaluation.run(profile: profile, dataset: conflicting)) { error in
+            guard case EEGLabeledEvaluation.Failure.trainingSourceMismatch = error else { return XCTFail("Unexpected: \(error)") }
+        }
+        let report = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset)
+        let artifact = try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: Data("fixture".utf8), profile: profile)
+        let json = try JSONSerialization.jsonObject(with: artifact.data) as! [String: Any]
+        let audit = json["training_source_audit"] as! [String: Any]
+        XCTAssertEqual(audit["status"] as? String, "training_sources_missing")
+        XCTAssertEqual(audit["missing_training_sessions"] as? [String], profile.trainingSessions.sorted())
+        XCTAssertFalse(artifact.report.systemControlEnabled)
+    }
+
     func testControlsOnlyCannotBeMistakenForTaskEvaluation() throws {
         let (profile, full, _) = try fixture()
         let controls = EEGTrainingDataset(evaluation: full.evaluation.filter { $0.label == "neutral" },
@@ -122,7 +157,7 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertEqual(receipt.data, try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile).data)
         let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
         XCTAssertEqual(object["controls_only"] as? Bool, true)
-        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-6")
+        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-7")
         let sessions = try XCTUnwrap(object["session_conditions"] as? [String: [String: [String: Any]]])
         XCTAssertEqual(Set(sessions.keys),Set(report.sessionConditions.keys))
         for (session, conditions) in report.sessionConditions {

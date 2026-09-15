@@ -72,6 +72,14 @@ struct DatasetEvaluationView: View {
                         Text("Not a validated confidence interval or qualification decision. Review missing exposure and session independence separately.").font(.caption)
                     }
                 }
+                if let audit = artifact?.trainingSourceAudit {
+                    LabeledContent("Profile training sources present", value: "\(audit.matches.count) / \(profile.trainingSessions.count)")
+                    if !audit.missingTrainingSessions.isEmpty {
+                        Text("Missing original training sources: " + audit.missingTrainingSessions.joined(separator: ", ")).textSelection(.enabled)
+                        Text("Historical excerpt reuse cannot be checked against these missing sources. Include the original recordings as training sources in this manifest; evaluation does not refit the profile.").font(.caption)
+                    }
+                    Text("Source coverage is a content check, not proof of independent sessions or mental-command accuracy.").font(.caption).foregroundStyle(.secondary)
+                }
                 LabeledContent("Scope", value: report.controlsOnly ? "Controls only" : "Full labeled evaluation")
                 if !report.controlConditionsWithoutEligibleExposure.isEmpty {
                     Text("No eligible control exposure: " + report.controlConditionsWithoutEligibleExposure.map { $0.replacingOccurrences(of:"_",with:" ") }.joined(separator:", ")).font(.callout)

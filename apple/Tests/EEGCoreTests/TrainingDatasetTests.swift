@@ -41,6 +41,8 @@ final class TrainingDatasetTests: XCTestCase {
         XCTAssertFalse(try EEGReplayInference.run(store: store, recording: c, profile: artifact.profile, participantID: "synthetic", sessionID: "c").systemControlEnabled)
         let receipt = try EEGEvaluationArtifact.run(manifest: manifestData, store: store, profile: artifact.profile)
         let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
+        XCTAssertEqual(receipt.trainingSourceAudit.status, "all_training_sources_present")
+        XCTAssertEqual(receipt.trainingSourceAudit.matches.count, 2)
         XCTAssertEqual(object["schema"] as? String, "eeg.native-evaluation.v1")
         XCTAssertEqual(Data(base64Encoded: object["manifest_base64"] as! String), manifestData)
         XCTAssertEqual(object["profile_id"] as? String, artifact.profile.id)
