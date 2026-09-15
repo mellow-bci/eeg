@@ -216,3 +216,24 @@ file; open the exported profile and manifest, then compare the exported JSON wit
 The focused test passed (one test, 56.819 seconds); the CLI comparison and Python
 syntax check passed. No production source changed in this follow-up, so the prior
 three-platform build result is not claimed as a new build.
+
+
+## Continuous complete-plan software check (2026-09-15)
+
+The existing Replay and failure tests workflow now sets
+`EEG_TRIAL_ASSOCIATION_TEST_EXPORT` during its native suite, then invokes
+`tools/check_trial_association_cli.py` on that generated fixture. It reuses the
+same native test, source recording, profile and receipt constructor; there is no
+second inference implementation or fabricated UI result. The temporary fixture
+is synthetic and is not uploaded by this change.
+
+The local rehearsal used both native profile and complete-plan export environment
+variables simultaneously. It passed 194 tests, with two opt-in paced/concurrent
+load qualifications skipped and zero failures, in 121.559 seconds. The independent
+Python loader accepted the exported native profile with experimental status and
+control disabled. The complete-plan CLI check passed exact receipt equality,
+source digest, all trial IDs/outcomes, exposure fractions and schedule accounting.
+
+This is a local workflow rehearsal, not a claim that the revised remote job has
+already passed. Check the GitHub run for the corresponding workflow revision.
+No new UI, headset or physiological qualification was performed.

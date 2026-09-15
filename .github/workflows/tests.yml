@@ -16,6 +16,7 @@ jobs:
       - run: python -W error::ResourceWarning -m unittest discover -s tests -p 'test_*.py' -v
       - name: Native tests and synthetic profile export
         env:
+          EEG_TRIAL_ASSOCIATION_TEST_EXPORT: ${{ runner.temp }}/eeg-complete-plan-fixture
           EEG_NATIVE_PROFILE_TEST_EXPORT: ${{ runner.temp }}/eeg-native-profile.json
         run: swift test --package-path apple
       - name: Validate native profile with Python loader
@@ -32,3 +33,5 @@ jobs:
           PYTHON
       - name: Native evaluation CLI end-to-end
         run: python tools/check_native_evaluation_cli.py
+      - name: Complete trial-plan evaluation CLI equivalence
+        run: python tools/check_trial_association_cli.py "${{ runner.temp }}/eeg-complete-plan-fixture"
