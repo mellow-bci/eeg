@@ -150,3 +150,34 @@ This single three-minute synthetic run does not establish long-session memory
 stability, a disk-latency bound, native UI responsiveness or physical acquisition.
 The queue peak is retained as observed rather than treated as evidence of zero
 storage stalls. No physiological inference or system-control qualification occurred.
+
+### Current-revision Debug check, 2026-09-15
+
+Sources `9b2ee491e7e638cec2f1c3ac78dffe96dec169eb`, unmodified worktree,
+macOS 26.6.2. Ran the existing paced concurrent harness in the default **Debug**
+configuration; one test passed in 126.328 seconds. This checks the updated core,
+not a new duration milestone: the earlier Release run above lasted three minutes.
+
+```sh
+EEG_CONCURRENT_LOAD_REPORT=/tmp/eeg-concurrent-120s-20260915.json \
+EEG_RECORDING_LOAD_SECONDS=120 \
+swift test --package-path apple --filter RecordingLoadQualificationTests.testPacedRecordingWithInference
+```
+
+[Raw measured report](concurrent-debug-120s-20260915.json):
+
+- All 15,360 samples verified; all 60 complete live inference windows matched replay.
+- 15,422 queued inputs written; zero failed writes and zero discarded inputs.
+- Admission p99 0.253 ms; inference availability delay p99 100.734 ms,
+  maximum 101.283 ms. This includes producer scheduling and worker processing.
+- Observed inference queue peak 13; recording queue peak 3; final drain 1.865 ms.
+- 122 resident-memory observations: baseline 35,635,200 bytes, post-drain and
+  sampled peak 39,206,912 bytes. Replay runs after these memory measurements.
+
+The observed Debug inference delay is higher than the earlier Release measurement.
+Build optimization and host conditions differ; these observations do not isolate
+a source regression or establish an upper latency bound. No additional timing
+threshold was imposed or result discarded. The sample/replay correctness checks
+passed. This does not qualify Bluetooth throughput, application presentation,
+physical hardware, long-duration memory stability or physiological classification.
+No source code, detector settings, raw acquisition path or output gate changed.
