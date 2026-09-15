@@ -56,3 +56,8 @@ canonical evaluation receipt, including source and outcome accounting. The
 rebuilt macOS app was launched and inspected in Live signals: disconnected,
 zero samples, no source loaded, Record disabled. No Bluetooth discovery or
 physiological capture was performed during this check.
+
+CI run [34938754603](https://github.com/autonomy-cloud/eeg/actions/runs/34938754603)
+completed successfully for `06dbfdeb90db61d89ea50be2e655e81d93836430`.
+The independent source-identity check passed in that runner at 06:56:12 UTC on
+2026-09-15. This is CI evidence for that revision, not later changes or hardware.

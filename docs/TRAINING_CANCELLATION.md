@@ -53,3 +53,33 @@ Final local macOS, iOS simulator and visionOS simulator builds succeeded on
 2026-09-15 after the UI control was added. The source-identity oracle also passed
 against the updated core. Physical-device operation and interactive cancellation
 latency remain unqualified.
+
+## Observed macOS UI cancellation and retry
+
+The native macOS app built from `8c6ad99` was exercised on 2026-09-15 using
+four synthetic recordings from the existing TrainingDatasetTests fixture.
+The manifest was pinned to the saved fixture receipt's source hashes. Original
+recording/profile library files were snapshotted by hash before exclusive fixture
+copies were added. No headset discovery or capture was performed.
+
+Two initial attempts completed before cancellation could be applied. They are
+counted as completed runs, not cancellation successes. Their saved profile matched
+the fixture's JSON exactly. On the next run, the currently visible Cancel training
+button was clicked while the worker was running. The app returned to idle and
+reported `Training cancelled. No profile was published by this operation.` The
+previous saved profile was byte-for-byte unchanged and the profile directory had
+no additional or temporary files.
+
+After archiving that verified synthetic profile, a new training run succeeded:
+40 usable training windows, zero rejected labeled windows. The resulting profile
+bytes exactly matched the pre-cancellation run, and its JSON matched the fixture
+trainer. The synthetic profile was closed, the app quit, and only verified
+synthetic additions were archived out of the library. Both original recording
+files and the empty original profile library were restored and hash-checked.
+
+Evidence: [native-ui-training-cancel-20260915.json](qualification/native-ui-training-cancel-20260915.json).
+This supersedes the unqualified UI-control statement above **only for this
+observed macOS path**. No exact cancellation stage/latency, SVD interruption,
+publication-race injection, iOS/visionOS interaction, physiological performance
+or hardware behavior was measured. The application used its production workflow;
+no delay, fake success or alternative fitting path was introduced for this test.
