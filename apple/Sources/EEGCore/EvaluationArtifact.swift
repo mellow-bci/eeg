@@ -103,6 +103,8 @@ public struct EEGEvaluationArtifact: Sendable {
         }
         let object: [String: Any] = [
             "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-12",
+            "implementation_source": ["schema": EEGSourceIdentity.schema,
+                "sha256": EEGSourceIdentity.sha256, "input_file_count": EEGSourceIdentity.inputFileCount],
             "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
             "minimum_windows_per_class": report.minimumWindowsPerClass,

@@ -19,6 +19,8 @@ jobs:
           EEG_TRIAL_ASSOCIATION_TEST_EXPORT: ${{ runner.temp }}/eeg-complete-plan-fixture
           EEG_NATIVE_PROFILE_TEST_EXPORT: ${{ runner.temp }}/eeg-native-profile.json
         run: swift test --package-path apple
+      - name: Verify compiled core source identity
+        run: python tools/check_source_identity.py "$(swift build --package-path apple --show-bin-path)/EEGSourceIdentityTool"
       - name: Validate native profile with Python loader
         env:
           EEG_NATIVE_PROFILE_TEST_EXPORT: ${{ runner.temp }}/eeg-native-profile.json

@@ -275,6 +275,12 @@ final class LabeledEvaluationTests: XCTestCase {
         let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
         XCTAssertEqual(object["controls_only"] as? Bool, true)
         XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-12")
+        let identity = try XCTUnwrap(object["implementation_source"] as? [String: Any])
+        XCTAssertEqual(identity["schema"] as? String, "eeg.core-source.v1")
+        XCTAssertEqual(identity["sha256"] as? String, EEGSourceIdentity.sha256)
+        XCTAssertEqual(identity["input_file_count"] as? Int, EEGSourceIdentity.inputFileCount)
+        XCTAssertNotNil(EEGSourceIdentity.sha256.range(of: "^[0-9a-f]{64}$", options: .regularExpression))
+        XCTAssertGreaterThan(EEGSourceIdentity.inputFileCount, 3)
         let confusion = object["confusion"] as! [String: [String: Any]]
         XCTAssertEqual(confusion.values.reduce(0) { $0 + ($1["actual_windows"] as! Int) }, report.predictions.count)
         let sessionConfusion = object["session_confusion"] as! [String: [String: [String: Any]]]
