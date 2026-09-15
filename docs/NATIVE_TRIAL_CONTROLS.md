@@ -214,3 +214,19 @@ evaluation. The existing training-export rejection and changed-source-hash check
 also run for each condition. This closes the offline collection-to-evaluation
 path, but the waveforms are synthetic and contain no actual blink/jaw/head effects.
 The two targeted tests passed; no physiological experiment was performed.
+
+
+### Review context and native UI check
+
+Trial review displays the trial ID, requested condition and participant report.
+Artifact controls are explicitly marked evaluation-only. A new trial clears the
+previous review reason and readiness checkboxes; reviewer identity remains for
+operator continuity. This prevents silently carrying an acceptance explanation
+from the preceding trial. The existing review validation and journal are unchanged.
+
+All three native platform builds passed. The rebuilt disconnected macOS app was
+opened through the native UI. Switching the control-plan toggle displayed the
+four-condition explanation, then restoring it returned the neutral/subtraction
+explanation. Save-plan and start-trial remained disabled. No audio or capture was
+started. Active-trial review layout and reason reset still require interactive
+session qualification; they were not exercised by fabricating a live trial.

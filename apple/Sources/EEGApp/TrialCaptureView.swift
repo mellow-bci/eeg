@@ -44,6 +44,12 @@ struct TrialCaptureView: View {
             }
             Text("Requires an active recording with stable transport. Keep eyes open. Reports and reviews must occur after the end cue; they are not objective evidence of a mental state.").font(.caption).foregroundStyle(.secondary)
             if let trial=model.trial {
+                Text(trial.id).font(.caption.monospaced()).textSelection(.enabled)
+                LabeledContent("Requested condition", value: conditionName(trial.requestedCondition))
+                if trial.isControl {
+                    Text("Artifact-control trial · evaluation only. Acceptance records the reported activity, not verified movement or mental intent.").font(.caption)
+                }
+                if let report = trial.participantReport { LabeledContent("Participant report", value: reportName(report)) }
                 LabeledContent("Trial state", value: trial.phase.rawValue)
                 if trial.phase == .awaitingReport {
                     HStack {
@@ -65,6 +71,27 @@ struct TrialCaptureView: View {
                 if let reason=trial.reviewReason { Text(reason).font(.caption) }
             }
             if let error { Text(error).foregroundStyle(.red).textSelection(.enabled) }
+        }
+        .onChange(of: model.trial?.id) { _,_ in
+            reason = ""; error = nil; ready = false; heard = false
+        }
+    }
+    private func conditionName(_ condition: EEGTrialEvidence.Condition) -> String {
+        switch condition {
+        case .neutral: return "Neutral, eyes open"
+        case .silentSerialSubtraction: return "Silent serial subtraction"
+        case .ordinaryActivity: return "Ordinary seated activity"
+        case .blinkControl: return "Blink control"
+        case .jawControl: return "Gentle jaw movement control"
+        case .headMovementControl: return "Gentle head movement control"
+        }
+    }
+    private func reportName(_ report: EEGTrialEvidence.ParticipantReport) -> String {
+        switch report {
+        case .attempted: return "Attempted"
+        case .uncertain: return "Uncertain"
+        case .notAttempted: return "Not attempted"
+        case .missedCue: return "Missed cue"
         }
     }
     private var active: Bool { model.trial.map { $0.phase != .reviewed && $0.phase != .interrupted } ?? false }
