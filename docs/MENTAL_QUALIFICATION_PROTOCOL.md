@@ -116,16 +116,21 @@ require other independent participants and an explicitly different evaluation de
 
 ## Compatibility with the actual processing workflow
 
-The current path is `processing.workflow`: explicit canonical adapters → nonoverlapping
-256-sample windows → 70 spectral features → independent PCA/diagonal-Gaussian profile →
-read-only proposals. Use the `eeg.dataset.v1` manifest with the named labels above and
+The standalone app now uses the native EEGCore path: canonical recording reader →
+nonoverlapping 256-sample windows → 70 spectral features → independent
+PCA/diagonal-Gaussian profile → read-only experimental proposals. `EEGEvaluate`
+uses the same native evaluator and receipt path. `processing.workflow` remains
+the independent Python research/reference implementation, not the app runtime. Use the `eeg.dataset.v1` manifest with the named labels above and
 monotonic trial boundaries. Only fully contained windows receive a label.
 
 Current engineering requirements are neutral plus one or more task classes, at least 20 training
 windows/class across at least two training sessions, accepted/verified-label declarations,
 unique windows, one canonical recording hash/session and different hashes across sessions.
-Evaluation requires at least ten windows/class and rejects training/evaluation ID/content
-overlap. These minimum counts prevent trivial inputs; they do **not** establish statistical
+Native full evaluation defaults to ten windows/class; its positive configurable
+minimum is saved in each receipt (see [EVALUATION_MINIMUM.md](EVALUATION_MINIMUM.md)).
+Freeze this option before prospective evaluation, alongside the analysis plan.
+The Python research evaluator retains its own documented requirements. Both reject
+training/evaluation ID/content overlap. These minimum counts prevent trivial inputs; they do **not** establish statistical
 power, physiological sufficiency or independence of windows inside a trial.
 
 The manifest accepts only `train` and `evaluation` splits. Use C in a separate development
@@ -204,9 +209,11 @@ screening targets, not validated clinical or scientific thresholds. Compare with
 always-neutral baseline and a label-permutation analysis grouped by whole trials/session;
 never permute correlated individual samples. Report trial/session uncertainty and the
 limitations of only three test sessions. Passing point estimates alone does not satisfy
-ordinary-activity exposure, artifact-control or neural-origin claims. The current CLI does
-not calculate these trial-level uncertainty/permutation results; retain predictions for
-a separate reviewed analysis rather than inventing them.
+ordinary-activity exposure, artifact-control or neural-origin claims. The native CLI supports optional whole-session exploratory resampling, with explicit
+unavailable/degenerate outcomes; this is not validated confidence coverage. See
+[SESSION_RESAMPLING.md](SESSION_RESAMPLING.md). Grouped permutation analysis remains
+unimplemented; retain predictions for a separately reviewed analysis rather than
+inventing its result.
 
 There is **no automatic pass to neural origin or output control**. Outcomes are:
 
@@ -252,14 +259,15 @@ a correction must be recorded separately rather than mutating the completed tria
 Unknown behavioral observation remains `unknown`, including for an accepted
 reported-task label. The evidence sidecar must be retained with the dataset.
 
-Remaining controller duties: persist events durably, bind recording identity/clock,
-connect actual audio callbacks, detect playback/timing/transport failures and call
-interrupt, implement pause/stop, precommit balanced trial order, collect review in
-the UI, and preserve a reproducibility bundle. There is no automatic late-cue
-tolerance or evidence of precise playback timing here: the controller must treat
-its detected timing failures as interruptions. No live experiment has exercised
-this state machine yet. Unit tests verify explicit review, scored intervals,
-readiness/sequence/time rejection, interrupted trials and missed-cue exclusion.
+Implemented controller paths now include recording-bound queued revision writes,
+publication only after persistence acknowledgement, AV speech callbacks, bounded
+playback/storage timing checks, transport interruption, explicit stop, seeded trial
+plans and operator review. See `TrialCueController.swift`, `AcquisitionModel.swift`,
+`TrialSession.swift` and [NATIVE_TRIAL_CONTROLS.md](NATIVE_TRIAL_CONTROLS.md).
+Controller/recovery tests verify these software transitions with controlled inputs.
+They do not establish physical cue audibility, precise headset/cue timing, disk
+power-loss durability or a completed prospective human session. Those remain
+qualification duties; interrupted trials must never silently resume.
 
 ### Recording trial snapshots
 
@@ -282,18 +290,23 @@ actual playback callbacks still need separate transitions.
 Tests verify ordered snapshots, source binding, unchanged sample replay, skipped
 history/identity rejection, terminal-state rejection, and that an oversized
 snapshot failure prevents recording completion. The latter is an injected
-persistence-path failure, not a disk-full or power-loss experiment. Raw snapshot
-recovery, crash interpretation and audio/UI controller integration remain open;
-JSONL presence or recording completion does not independently validate labels.
+persistence-path failure, not a disk-full or power-loss experiment. Native
+`TrialEvidenceRecovery`, `TrialPlan` and `TrialDatasetExport` now recover
+ordered evidence, validate seeded plans and produce source-pinned manifests.
+Missing/faulted history is rejected; recovery and controller tests cover synthetic
+cases. Real crash/power-loss behavior and the physical audio/UI workflow remain
+unqualified. JSONL presence or recording completion does not independently validate
+labels.
 
 ### Native scored-trial accounting checkpoint
 
 The native Swift evaluator now records target observations and neutral false-positive
 observations using full persistence evidence contained in the scored interval, plus
 armed usable coverage. See [NATIVE_TRIAL_OUTCOMES.md](NATIVE_TRIAL_OUTCOMES.md) for
-exact definitions and the distinction from episode-onset latency. This does not
-supply the outstanding trial/session uncertainty or grouped permutation analysis,
-nor does it qualify any real participant model. The Python CLI is unchanged.
+exact definitions and the distinction from episode-onset latency. Optional
+exploratory session resampling is separately documented; neither it nor
+these counts supplies grouped permutation analysis or qualifies a real participant
+model. The Python CLI is unchanged.
 
 ### Native trivial comparator
 
@@ -302,3 +315,13 @@ above, with pooled/per-session window metrics and cued-trial observations. See
 [ALWAYS_NEUTRAL_BASELINE.md](ALWAYS_NEUTRAL_BASELINE.md) for denominators, null
 outcomes and limits. It does not supply the outstanding grouped permutation test
 or a physiological acceptance decision.
+
+### Implementation audit (2026-09-15)
+
+Implementation-status descriptions above were reconciled against code at
+`2795e0e`. This update changes no prospective task, trial schedule, acceptance
+criterion or model. The full local `swift test --package-path apple` run reported
+174 tests, two skipped and zero failures. The skips were the explicitly opt-in
+paced recording and concurrent recording/inference load qualifications; they
+were not run or claimed by this audit. Software tests are not wearer readiness,
+hardware qualification or physiological evidence.
