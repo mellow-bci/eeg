@@ -3,12 +3,12 @@ import XCTest
 @testable import EEGCore
 
 final class TrainingDatasetTests: XCTestCase {
-    private func recording(_ store: EEGRecordingStore, offset: Int, windows: Int = 20) throws -> URL {
+    private func recording(_ store: EEGRecordingStore, offset: Int, windows: Int = 20, frequencyShift: Double = 0) throws -> URL {
         let url = try store.start()
         try store.appendEvent(kind: "device_metadata", fields: ["81072f44-9f3d-11e3-a9dc-0002a5d5c51b": "018000102010"])
         try store.appendEvent(kind: "transport_status", fields: ["status": "stable"])
         for i in 0..<(windows * 256) {
-            let frequency = i < 2560 ? 10.0 : 17.0
+            let frequency = (i < 2560 ? 10.0 : 17.0) + frequencyShift
             let word = UInt16(31200 + offset + Int(50 * sin(Double(i) * 2 * .pi * frequency / 128)))
             try store.append(sample: EEGSample(index: i, counter: i % 128, receivedAt: Double(i) / 128, continuous: true,
                 adcWords: [UInt16](repeating: word, count: 15),
@@ -65,6 +65,40 @@ final class TrainingDatasetTests: XCTestCase {
         }
 
 
+    }
+    func testHeldOutSignalAndLabelChangesCannotChangeFittedProfile() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = try EEGRecordingStore(directory: directory)
+        let a = try recording(store, offset: 0), b = try recording(store, offset: 10)
+        let c = try recording(store, offset: 20)
+        let changedSignal = try recording(store, offset: 30, frequencyShift: 4)
+        let training = [session("a", a), session("b", b)]
+        func load(_ heldOut: [[String: Any]]) throws -> EEGTrainingDataset {
+            try EEGTrainingDataset.load(manifest(training + heldOut), store: store)
+        }
+        let baseline = try load([session("c", c, split: "evaluation")])
+        let expected = try EEGProfileCreation.train(baseline.records, participantID: baseline.participantID)
+        var relabeled = session("c", c, split: "evaluation")
+        var trials = relabeled["trials"] as! [[String: Any]]
+        trials[0]["label"] = "task"; trials[1]["label"] = "neutral"
+        relabeled["trials"] = trials
+        let labelChange = try load([relabeled])
+        let signalChange = try load([session("different", changedSignal, split: "evaluation")])
+        let noHeldOut = try load([])
+        // Verify the intervention actually reaches the canonical evaluation inputs.
+        XCTAssertEqual(baseline.evaluation.count, 20)
+        XCTAssertEqual(labelChange.evaluation.map(\.label), baseline.evaluation.map { $0.label == "neutral" ? "task" : "neutral" })
+        XCTAssertEqual(labelChange.evaluation.map { $0.input.values }, baseline.evaluation.map { $0.input.values })
+        XCTAssertNotEqual(signalChange.evaluation.map { $0.input.values }, baseline.evaluation.map { $0.input.values })
+        XCTAssertTrue(noHeldOut.evaluation.isEmpty)
+        for dataset in [labelChange, signalChange, noHeldOut] {
+            XCTAssertEqual(dataset.records.count, 40)
+            let fitted = try EEGProfileCreation.train(dataset.records, participantID: dataset.participantID)
+            // Includes normalization, selection, PCA, Gaussian parameters, thresholds,
+            // training provenance and the profile digest, not merely session IDs.
+            XCTAssertEqual(fitted.data, expected.data)
+        }
     }
     func testDuplicateRecordingCannotBecomeEvaluationSession() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

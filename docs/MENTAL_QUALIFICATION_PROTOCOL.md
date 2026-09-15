@@ -100,6 +100,12 @@ performance persists; initial success does not remove this confound.
 
 ## Session separation and frozen model
 
+The native software separation has an explicit
+[held-out intervention test](qualification/TRAINING_HELDOUT_INVARIANCE.md):
+changing evaluation signals/labels or removing evaluation sessions must leave
+the serialized fitted profile unchanged. This supports implementation isolation;
+it does not replace the prospective acquisition and frozen-design requirements below.
+
 | Sessions | Purpose | Allowed use |
 |---|---|---|
 | A and B | Initial independent development acquisitions, preferably different days with headset reapplied | Training only. Fit all scaling, feature ranking, PCA and Gaussian parameters here. |
