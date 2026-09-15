@@ -201,3 +201,16 @@ and artifact response qualification remains required.
 
 Validation: 135 tests, one optional skip, zero failures; macOS, iOS and visionOS
 builds passed. Interactive controls and physical cue timing remain unqualified.
+
+
+### Control recording to evaluation receipt
+
+`TrialDatasetExportTests` now finds a seeded plan starting with each of the four
+control conditions, records a complete reviewed trial with synthetic samples, and
+runs the exported manifest through `EEGEvaluationArtifact.run(controlsOnly:true)`.
+It verifies six windows per trial, neutral ground-truth declarations, explicit
+condition exposure, no task recall, disabled control and rejection of full task
+evaluation. The existing training-export rejection and changed-source-hash checks
+also run for each condition. This closes the offline collection-to-evaluation
+path, but the waveforms are synthetic and contain no actual blink/jaw/head effects.
+The two targeted tests passed; no physiological experiment was performed.

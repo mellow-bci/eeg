@@ -3,12 +3,28 @@ import XCTest
 
 final class TrialDatasetExportTests: XCTestCase {
     func testRecoveredManifestUsesCanonicalExtractionAndPinsSource() throws { try checkExport(controls:false) }
-    func testControlsExportForEvaluationButCannotTrain() throws { try checkExport(controls:true) }
-    private func checkExport(controls:Bool) throws {
+    func testControlsExportForEvaluationButCannotTrain() throws {
+        var checked = Set<String>()
+        for seed in UInt64(0)..<100 {
+            let plan = try EEGTrialPlan(sessionID:"session",participantID:"synthetic",seed:seed,controls:true)
+            if checked.insert(plan.trials[0].requestedCondition.rawValue).inserted { try checkExport(controls:true,seed:seed) }
+            if checked.count == 4 { break }
+        }
+        XCTAssertEqual(checked,Set(["ordinary_activity","blink_control","jaw_control","head_movement_control"]))
+    }
+    private func controlProfile() throws -> EEGMentalProfile {
+        let root = URL(fileURLWithPath:#filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        let object = try JSONSerialization.jsonObject(with:Data(contentsOf:root.appendingPathComponent("Fixtures/spectrum/mental-training.json"))) as! [String:Any]
+        var rows = object["records"] as! [[String:Any]]
+        for i in rows.indices { rows[i]["participant_id"] = "synthetic" }
+        let records = try JSONDecoder().decode([EEGTrainingRecord].self,from:JSONSerialization.data(withJSONObject:rows))
+        return try EEGProfileCreation.train(records,participantID:"synthetic").profile
+    }
+    private func checkExport(controls:Bool,seed:UInt64 = 42) throws {
         let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at:root) }
         let store=try EEGRecordingStore(directory:root),file=try store.start()
-        let plan=try EEGTrialPlan(sessionID:"session",participantID:"synthetic",seed:42,controls:controls)
+        let plan=try EEGTrialPlan(sessionID:"session",participantID:"synthetic",seed:seed,controls:controls)
         try store.appendEvent(kind:"trial_plan",fields:["json":String(decoding:try JSONEncoder().encode(plan),as:UTF8.self)])
         try store.appendEvent(kind:"device_metadata",fields:["81072f44-9f3d-11e3-a9dc-0002a5d5c51b":"018000102010"])
         try store.appendEvent(kind:"transport_status",fields:["status":"stable"])
@@ -41,6 +57,18 @@ final class TrialDatasetExportTests: XCTestCase {
         XCTAssertEqual(dataset.evaluation.count,6)
         XCTAssertTrue(dataset.records.isEmpty)
         if controls {
+            let profile = try controlProfile()
+            let receipt = try EEGEvaluationArtifact.run(manifest:data,store:store,profile:profile,controlsOnly:true)
+            XCTAssertTrue(receipt.report.controlsOnly)
+            XCTAssertFalse(receipt.report.systemControlEnabled)
+            XCTAssertEqual(receipt.report.predictions.count,6)
+            XCTAssertTrue(receipt.report.predictions.allSatisfy { $0.actual == "neutral" })
+            XCTAssertNil(receipt.report.metrics["task"]?.recall)
+            let condition = plan.trials[0].requestedCondition.rawValue
+            XCTAssertEqual(Set(receipt.report.conditions.keys),Set([condition]))
+            let exposure = try XCTUnwrap(receipt.report.conditions[condition])
+            XCTAssertEqual(exposure.eligibleSeconds + exposure.rejectedSeconds + exposure.unarmedSeconds,6 * 255.0/128,accuracy:1e-10)
+            XCTAssertThrowsError(try EEGEvaluationArtifact.run(manifest:data,store:store,profile:profile))
             XCTAssertTrue(dataset.evaluation.allSatisfy { $0.label == "neutral" && $0.condition == plan.trials[0].requestedCondition.rawValue })
             XCTAssertThrowsError(try EEGTrialDatasetExport.manifest(sources:[.init(recording:file,split:.train,independenceDeclaration:"synthetic")],store:store)) { error in
                 guard case EEGTrialDatasetExport.Failure.controlTraining = error else { return XCTFail("Unexpected: \(error)") }
