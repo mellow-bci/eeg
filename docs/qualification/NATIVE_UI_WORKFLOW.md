@@ -47,3 +47,17 @@ repeatable offline counterpart; the UI steps must be exercised separately.
   accessibility audit, long-duration operation or physiological accuracy is proved.
 - Control exposure was absent and visibly flagged. Command output stayed disabled.
 - Existing wearer recordings and application processing settings were unchanged.
+
+## Follow-up: automatic profile listing
+
+The stale listing observed above is corrected: successful saves increment a
+library revision, and the profile list reloads. If a list/inspection read is
+already running, the refresh is retained and performed after it completes.
+Manual refresh remains available for external filesystem changes.
+
+Rebuilt all three native targets and repeated synthetic manifest import/training
+in the macOS app. Started with an empty profile list; the saved profile's Inspect
+button appeared automatically after the 40-window training completed, without
+pressing Refresh profiles. Saved profile JSON still matched the original fixture.
+Archived only verified synthetic additions out of the app library afterward.
+No hardware or physiological claims follow from this UI check.

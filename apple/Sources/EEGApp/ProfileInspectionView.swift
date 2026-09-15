@@ -7,10 +7,11 @@ struct ProfileInspectionView: View {
     @State private var loading = false
     @Binding var profile: EEGMentalProfile?
     let preparedManifest: Data?
+    let libraryRevision: Int
     @State private var failure: String?
     var body: some View {
         Panel(title: "Independent training profile") {
-            ProfileLibraryView { profile = $0; failure = nil }
+            ProfileLibraryView(revision: libraryRevision) { profile = $0; failure = nil }
             HStack {
                 Button("Open profile", systemImage: "doc.badge.plus") { importing=true }.disabled(loading || importing)
                 if loading { ProgressView().controlSize(.small) }

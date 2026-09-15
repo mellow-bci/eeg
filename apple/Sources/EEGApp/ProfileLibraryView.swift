@@ -3,9 +3,11 @@ import EEGCore
 
 struct ProfileLibraryView: View {
     @EnvironmentObject private var model: AcquisitionModel
+    let revision: Int
     let onOpen: (EEGMentalProfile) -> Void
     @State private var entries: [EEGProfileStore.Entry] = []
     @State private var busy = false
+    @State private var refreshPending = false
     @State private var failure: String?
     private var store: EEGProfileStore { EEGProfileStore(directory: model.directory.deletingLastPathComponent().appendingPathComponent("Profiles", isDirectory: true)) }
     var body: some View {
@@ -32,9 +34,11 @@ struct ProfileLibraryView: View {
             Text("Listing is not validation. Inspect checks the saved contents and identity before evaluation.").font(.caption).foregroundStyle(.secondary)
             Divider()
         }.task { refresh() }
+        .onChange(of: revision) { _, _ in refresh() }
     }
     private func refresh() {
-        guard !busy else { return }
+        guard !busy else { refreshPending = true; return }
+        refreshPending = false
         let store = store
         busy = true; failure = nil
         Task { @MainActor in
@@ -44,6 +48,7 @@ struct ProfileLibraryView: View {
             case .success(let values): entries = values
             case .failure(let error): entries = []; failure = "Profile library unavailable: \(error)"
             }
+            if refreshPending { refresh() }
         }
     }
     private func open(_ id: String) {
@@ -57,6 +62,7 @@ struct ProfileLibraryView: View {
             case .success(let profile): onOpen(profile)
             case .failure(let error): failure = "Saved profile rejected: \(error)"
             }
+            if refreshPending { refresh() }
         }
     }
 }
