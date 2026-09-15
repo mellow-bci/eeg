@@ -1,6 +1,6 @@
 # EDF exchange implementation and qualification plan
 
-Status: candidate receipt-layout preflight implemented and tested, 2026-09-15. No EDF writer/export is implemented or enabled. Native
+Status: receipt-layout preflight and explicit nominal-time segmentation planning implemented and tested, 2026-09-15. No EDF writer/export is implemented or enabled. Native
 JSONL remains the preservation format. This work stays inside EEGCore and the
 existing import/export UI, with no Cortex runtime dependency.
 
@@ -213,3 +213,61 @@ record onsets, or design an explicitly declared nominal-time EDF exchange plus
 original receipt-time provenance. Do not silently relabel irregular receipt times
 as regular neural sampling, drop tails, fill gaps, or remove the native originals
 to make a reader accept a file. No alternative timing policy is selected here.
+
+## Explicit nominal-time segmentation planner
+
+`EEGEDFNominalPlan.inspect` now implements the next planning step for an explicit
+alternative: **one continuous EDF+C file per continuity run**, with a derived
+128 Hz sample axis within each run. This is our exchange design, not a recovered
+device clock or proof of actual sampling accuracy. The original receipt-layout
+plan retains its original semantics. Both planners still report export disabled;
+no writer or new UI export option is supplied by this checkpoint.
+
+The versioned timing-policy identifier is
+`derived_nominal_128hz_per_continuity_run_v1`. The nominal relative last sample
+time is `(count - 1)/128`, whereas file duration is `count/128`. Neither replaces
+the recorded first/last receipt timestamps or the conditional wall-clock bounds
+attached to each run. Runs must not be concatenated to hide intervening gaps.
+No exact EDF header start time has yet been chosen from those bounds.
+
+The implementation reuses `EEGEDFReceiptPlan` for source configuration, ADC mapping,
+receipt ordering and clock preflight. It then reads canonical finalized records
+to locate boundaries at the actual sample position, rather than rounding a
+boundary to the existing 256-sample analysis window. A new run begins after a
+transport recovery or metadata event, a discontinuity flag, an index/counter
+gap, or a receipt gap greater than the existing canonical 0.5-second criterion.
+This is conservative observed-evidence segmentation, not an assertion that
+all unreported physical sample loss can be detected.
+
+Samples observed while transport is unstable reject the entire nominal plan.
+They are not dropped, and the native file remains available. Duplicate receipt
+times remain separate samples. Counter wrap alone does not split a run. Metadata
+refresh conservatively splits even if the supported configuration stays the same.
+Each segment includes its source sample ordinal range, original sample indices,
+receipt endpoints, count, start-time bounds and boundary reasons. The source's
+analysis warnings remain attached, including missing microvolts and partial windows;
+this raw ADC proposal does not invent voltage calibration or filter measurements.
+
+Memory is bounded by a configurable positive `maximumSegments` (default 10,000).
+Exceeding it rejects the plan before accepting another segment, including a short
+final run; it never truncates output. The sample limit remains the receipt
+preflight's EDF record-count bound. Cancellation is checked during traversal.
+The source digest and total sample count must match the preflight, and segment
+counts must account for every sample before any plan is returned.
+
+Eight native tests passed, covering the earlier receipt preflight and five new
+cases: continuous arbitrary tails; gaps within/across analysis windows; transport
+and metadata boundaries; unstable samples; repeated receipt times. Tests also
+check segment-limit rejection, counter wrapping, original-file preservation,
+nominal duration versus final sample position, and exact sample accounting.
+All three native builds (macOS, iOS Simulator and visionOS Simulator) passed.
+
+```sh
+swift test --package-path apple --filter 'EDFNominalPlanTests|EDFReceiptPlanTests'
+./apple/build-native.sh all
+```
+
+Still required: bounded native writer, full source/provenance packaging, explicit
+header-time policy, timed/untimed event treatment, independent-reader numeric and
+annotation roundtrips, real-headset exchange qualification and actual UI export.
+The earlier hand-built reader probe does not qualify output from this planner.
