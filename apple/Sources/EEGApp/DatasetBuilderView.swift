@@ -11,6 +11,7 @@ struct DatasetBuilderView: View {
     @State private var declarations: [String:String] = [:]
     @State private var running = false
     @State private var exporting = false
+    @State private var exportData = Data()
     @State private var message: String?
     @State private var failure: String?
     var body: some View {
@@ -33,7 +34,10 @@ struct DatasetBuilderView: View {
             Text("Renaming or splitting one recording does not create independence. Keep evaluation sessions out of tuning; this declaration does not prove independence.").font(.caption).foregroundStyle(.secondary)
             HStack {
                 Button("Validate and prepare dataset") { prepare() }.disabled(running || model.ready || model.recording || selectedCount == 0)
-                Button("Export prepared manifest") { exporting=true }.disabled(manifest == nil || running)
+                Button("Export prepared manifest") {
+                    guard let manifest else { return }
+                    exportData=manifest;exporting=true
+                }.disabled(manifest == nil || running)
             }
             if running { ProgressView("Recovering evidence and checking recorded windows…") }
             if let message { Text(message).textSelection(.enabled) }
@@ -42,7 +46,7 @@ struct DatasetBuilderView: View {
         .disabled(running)
         .onChange(of: choices) { _,_ in invalidate() }
         .onChange(of: declarations) { _,_ in invalidate() }
-        .fileExporter(isPresented:$exporting,document:DatasetManifestDocument(data:manifest ?? Data()),contentType:.json,defaultFilename:"eeg-dataset.json") { result in
+        .fileExporter(isPresented:$exporting,document:DatasetManifestDocument(data:exportData),contentType:.json,defaultFilename:"eeg-dataset.json") { result in
             switch result {
             case .success: message="Manifest exported. Keep its original recordings for replay."
             case .failure(let error): failure="Export failed: " + error.localizedDescription

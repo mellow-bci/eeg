@@ -12,6 +12,7 @@ struct DatasetEvaluationView: View {
     @State private var running = false
     @State private var artifact: EEGEvaluationArtifact?
     @State private var exporting = false
+    @State private var exportData = Data()
     @State private var exportMessage: String?
     private var report: EEGLabeledEvaluation? { artifact?.report }
     @State private var failure: String?
@@ -31,7 +32,10 @@ struct DatasetEvaluationView: View {
             if running { ProgressView("Evaluating held-out recordings…") }
             if let failure { Text(failure).foregroundStyle(.red).textSelection(.enabled) }
             if let report {
-                Button("Export evaluation JSON", systemImage: "square.and.arrow.up") { exporting = true }
+                Button("Export evaluation JSON", systemImage: "square.and.arrow.up") {
+                    guard let artifact else { return }
+                    exportData = artifact.data; exporting = true
+                }
                 if let exportMessage { Text(exportMessage).font(.caption) }
                 LabeledContent("Scope", value: report.controlsOnly ? "Controls only" : "Full labeled evaluation")
                 if !report.controlConditionsWithoutEligibleExposure.isEmpty {
@@ -88,7 +92,7 @@ struct DatasetEvaluationView: View {
             case .success(let url): evaluate(url)
             }
         }
-        .fileExporter(isPresented: $exporting, document: EvaluationDocument(data: artifact?.data ?? Data()), contentType: .json, defaultFilename: "eeg-evaluation.json") { result in
+        .fileExporter(isPresented: $exporting, document: EvaluationDocument(data: exportData), contentType: .json, defaultFilename: "eeg-evaluation.json") { result in
             switch result {
             case .success: exportMessage = "Evaluation receipt exported. Keep the matching profile and original recordings for reproduction."
             case .failure(let error): failure = "Export failed: \(error.localizedDescription)"

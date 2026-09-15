@@ -647,3 +647,18 @@ qualify physical callback ordering. macOS, iOS simulator and visionOS simulator
 native builds pass. Actual EPOC X stop/reconnect and radio-reset qualification
 remain outstanding; a missing terminal callback can still require lifecycle
 recovery and is not represented as successful reconnection.
+
+### Stable export document selection (2026-09-15)
+
+Dataset and evaluation export buttons now capture the selected Data value before
+presenting the save panel. Their FileDocuments use that snapshot, rather than the
+mutable prepared manifest or current evaluation artifact. Selection invalidation
+can no longer substitute empty/new bytes into an already requested export through
+those view bindings. The bytes and schema themselves are unchanged.
+
+Code inspection also confirmed that evaluation's existing generation guard drops
+results after a prepared-manifest change. Native builds pass for macOS and both
+simulator targets. The save-panel/selection-change race was not reproduced on
+hardware; this change removes the mutable dependency identified in source. The
+prior interactive synthetic export qualification applies to the preceding build,
+not to a fresh interactive race test of this change.
