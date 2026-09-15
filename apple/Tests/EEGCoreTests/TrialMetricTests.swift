@@ -39,7 +39,7 @@ final class TrialMetricTests: XCTestCase {
     func testSessionsCannotBeReplacedByPooledRates() throws {
         let trials = [trial("1", candidate: true), trial("2", candidate: true),
                       trial("1", session: "B"), trial("2", session: "B", cue: nil)]
-        let report = EEGLabeledEvaluation(controlsOnly: false, profileID: "test", predictions: [],
+        let report = EEGLabeledEvaluation(minimumWindowsPerClass: 10, controlsOnly: false, profileID: "test", predictions: [],
             metrics: EEGLabeledEvaluation.summarize([], classes: ["task"]), trials: trials,
             conditions: [:], sessionConditions: [:])
         let summary = report.trialMetrics, sessions = report.sessionTrialMetrics

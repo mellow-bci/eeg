@@ -9,10 +9,11 @@ public struct EEGEvaluationArtifact: Sendable {
     public let trainingSourceAudit: EEGTrainingSourceAudit
     public let sessionResampling: [String: EEGSessionResampling.Result]?
     public static func run(manifest: Data, store: EEGRecordingStore, profile: EEGMentalProfile,
-                           controlsOnly: Bool = false, resampling: EEGSessionResampling.Options? = nil) throws -> EEGEvaluationArtifact {
+                           controlsOnly: Bool = false, minimumWindowsPerClass: Int = 10, resampling: EEGSessionResampling.Options? = nil) throws -> EEGEvaluationArtifact {
         try resampling?.validate()
+        guard minimumWindowsPerClass > 0 else { throw EEGLabeledEvaluation.Failure.invalidMinimumWindows }
         let dataset = try EEGTrainingDataset.load(manifest, store: store, settings: profile.settings)
-        let report = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset, controlsOnly: controlsOnly)
+        let report = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset, controlsOnly: controlsOnly, minimumWindowsPerClass: minimumWindowsPerClass)
         return try make(report: report, dataset: dataset, manifest: manifest, profile: profile, resampling: resampling)
     }
     // Internal so production callers cannot attach an unrelated manifest to results.
@@ -92,9 +93,10 @@ public struct EEGEvaluationArtifact: Sendable {
             })
         }
         let object: [String: Any] = [
-            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-10",
+            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-11",
             "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
+            "minimum_windows_per_class": report.minimumWindowsPerClass,
             "participant_id": dataset.participantID, "controls_only": report.controlsOnly,
             "system_control_enabled": false, "hardware_validated": false,
             "manifest_base64": manifest.base64EncodedString(),
@@ -116,6 +118,7 @@ public struct EEGEvaluationArtifact: Sendable {
                 "time_axis": "recorded receipt-time seconds; window end is the last sample receipt",
                 "detector_timing": "nonnegative receipt times; overlapping or reordered windows within the current session/continuity are rejected and reset persistence; forward gaps over 0.05 seconds restart persistence",
                 "always_neutral_baseline": "signal-free comparator predicts neutral for every evaluated window, including detector-rejected/unarmed windows; same labels and denominators, pooled and per session; cued-trial candidate observations are zero for task detection and neutral false positives, retaining unavailable cue evidence as null rates; not a trained model, significance test, qualification or control policy",
+                "minimum_windows_per_class": "caller-selected positive integer required for each profile class in full evaluation; counts all labeled windows including rejected inputs; not applied to controls-only evaluation; no physiological sufficiency claim",
                 "prediction": "experimental candidate or explicit neutral; null is rejection, not neutral",
                 "confusion": "actual labels index rows; predicted_counts index predicted labels; rejected_windows is separate and includes every null prediction; raw counts retain absent classes as zeros; rows sum to actual_windows; pooled and per session; correlated windows are not independent trials",
                 "training_source_audit": "whole-content hash coverage of profile training sources among current manifest training sources; missing sources leave historical excerpt reuse unchecked; all present is not physiological or independence qualification",

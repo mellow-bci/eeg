@@ -8,6 +8,7 @@ struct DatasetEvaluationView: View {
     @State private var generation = 0
     @EnvironmentObject private var model: AcquisitionModel
     @State private var controlsOnly = false
+    @State private var minimumWindows = "10"
     @State private var resamplingEnabled = false
     @State private var resamplingIterations = "10000"
     @State private var resamplingSeed = "0"
@@ -27,6 +28,10 @@ struct DatasetEvaluationView: View {
             Text("Evaluate labeled sessions").font(.headline)
             Toggle("Controls-only evaluation", isOn: $controlsOnly).disabled(running)
                 .onChange(of: controlsOnly) { _, _ in artifact = nil; failure = nil; exportMessage = nil }
+            LabeledContent("Minimum windows per class") {
+                TextField("Minimum windows per class", text: $minimumWindows).labelsHidden().accessibilityLabel("Minimum windows per class")
+            }.disabled(running)
+            Text("A data-count requirement, not proof of adequate physiological evidence. Rejected windows count toward it.").font(.caption)
             DisclosureGroup("Exploratory session resampling") {
                 Toggle("Include session resampling range", isOn: $resamplingEnabled)
                 if resamplingEnabled {
@@ -42,7 +47,7 @@ struct DatasetEvaluationView: View {
                     Text("Keeps each session intact. This range is not validated confidence coverage; few sessions or dependent acquisitions limit interpretation. It never enables control.").font(.caption)
                 }
             }.disabled(running)
-            Text(controlsOnly ? "Only neutral-labeled control conditions are accepted. Task recall cannot be measured from control trials." : "Full evaluation requires at least 10 windows per class.").font(.caption)
+            Text(controlsOnly ? "Only neutral-labeled control conditions are accepted. Task recall cannot be measured from control trials." : "Full evaluation requires at least \(minimumWindows) windows per class.").font(.caption)
             Text("Choose a dataset manifest with evaluation sessions. Rejected windows remain in the denominator; labels are declarations, not independently verified mental states.").foregroundStyle(.secondary)
             Button("Evaluate prepared dataset", systemImage: "chart.bar") {
                 if let data=preparedManifest { evaluate { data } }
@@ -158,6 +163,7 @@ struct DatasetEvaluationView: View {
             }
         }
         .onDisappear { evaluationWorker?.cancel() }
+        .onChange(of: minimumWindows) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
         .onChange(of: resamplingEnabled) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
         .onChange(of: resamplingIterations) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
         .onChange(of: resamplingSeed) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
@@ -221,6 +227,9 @@ struct DatasetEvaluationView: View {
     /// Prepared and imported datasets share one evaluation path.
     private func evaluate(load: @escaping @Sendable () throws -> Data) {
         guard !running, !model.recording, !model.ready else { return }
+        guard let minimum = Int(minimumWindows), minimum > 0 else {
+            failure = "Minimum windows per class must be a positive integer."; return
+        }
         let resampling: EEGSessionResampling.Options?
         do {
             if resamplingEnabled {
@@ -236,7 +245,7 @@ struct DatasetEvaluationView: View {
         let worker = Task.detached(priority: .utility) {
             Result {
                 try Task.checkCancellation()
-                let result = try EEGEvaluationArtifact.run(manifest: load(), store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls, resampling: resampling)
+                let result = try EEGEvaluationArtifact.run(manifest: load(), store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls, minimumWindowsPerClass: minimum, resampling: resampling)
                 try Task.checkCancellation()
                 return result
             }

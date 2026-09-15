@@ -108,6 +108,7 @@ public struct EEGLabeledEvaluation: Sendable {
         }
         return result
     }
+    public let minimumWindowsPerClass: Int
     public let controlsOnly: Bool
     public let profileID: String
     public let predictions: [Prediction]
@@ -124,11 +125,12 @@ public struct EEGLabeledEvaluation: Sendable {
     public let systemControlEnabled = false
     public let hardwareValidated = false
     public var rejectionFraction: Double { Double(predictions.filter { $0.predictedLabel == nil }.count) / Double(predictions.count) }
-    public enum Failure: Error { case noEvaluation, participantMismatch, trainingOverlap, trainingSourceMismatch, insufficientClassWindows, invalidLabels, invalidTiming }
+    public enum Failure: Error { case invalidMinimumWindows, noEvaluation, participantMismatch, trainingOverlap, trainingSourceMismatch, insufficientClassWindows, invalidLabels, invalidTiming }
 
     /// Experimental window and declared-trial observations. Correlated windows are not
     /// independent physiological trials. Rejection is never a neutral prediction.
-    public static func run(profile: EEGMentalProfile, dataset: EEGTrainingDataset, controlsOnly: Bool = false) throws -> EEGLabeledEvaluation {
+    public static func run(profile: EEGMentalProfile, dataset: EEGTrainingDataset, controlsOnly: Bool = false, minimumWindowsPerClass: Int = 10) throws -> EEGLabeledEvaluation {
+        guard minimumWindowsPerClass > 0 else { throw Failure.invalidMinimumWindows }
         guard dataset.participantID == profile.participantID else { throw Failure.participantMismatch }
         guard !dataset.evaluation.isEmpty else { throw Failure.noEvaluation }
         let sessions = dataset.sessions.filter { $0.split == "evaluation" }
@@ -139,7 +141,7 @@ public struct EEGLabeledEvaluation: Sendable {
             guard dataset.evaluation.allSatisfy({ $0.label == "neutral" && controls.contains($0.condition) }) else { throw Failure.invalidLabels }
         }
         for label in (controlsOnly ? [] : profile.parameters.classes) {
-            guard dataset.evaluation.filter({ $0.label == label }).count >= 10 else { throw Failure.insufficientClassWindows }
+            guard dataset.evaluation.filter({ $0.label == label }).count >= minimumWindowsPerClass else { throw Failure.insufficientClassWindows }
         }
         var detector = try profile.makeDetector(), predictions = [Prediction](), lastEnd = [String: Double]()
         var episodes = EEGActivationEpisodes()
@@ -159,6 +161,6 @@ public struct EEGLabeledEvaluation: Sendable {
                 actual: row.label, predictedLabel: predicted, reason: proposal?.reason ?? "shadow_disabled", inputUsable: input.usable))
         }
         let metrics = summarize(predictions, classes: profile.parameters.classes)
-        return EEGLabeledEvaluation(controlsOnly: controlsOnly, profileID: profile.id, predictions: predictions, metrics: metrics, trials: episodes.trials, conditions: episodes.conditions, sessionConditions: episodes.sessionConditions)
+        return EEGLabeledEvaluation(minimumWindowsPerClass: minimumWindowsPerClass, controlsOnly: controlsOnly, profileID: profile.id, predictions: predictions, metrics: metrics, trials: episodes.trials, conditions: episodes.conditions, sessionConditions: episodes.sessionConditions)
     }
 }

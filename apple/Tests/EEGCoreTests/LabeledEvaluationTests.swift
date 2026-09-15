@@ -3,6 +3,29 @@ import XCTest
 @testable import EEGCore
 
 final class LabeledEvaluationTests: XCTestCase {
+    func testConfigurableMinimumRejectsInsufficientDataWithoutChangingInference() throws {
+        let (profile, dataset, _) = try fixture()
+        let defaultReport = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset)
+        let relaxed = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset, minimumWindowsPerClass: 1)
+        XCTAssertEqual(defaultReport.minimumWindowsPerClass, 10)
+        XCTAssertEqual(relaxed.predictions.map(\.predictedLabel), defaultReport.predictions.map(\.predictedLabel))
+        XCTAssertThrowsError(try EEGLabeledEvaluation.run(profile: profile, dataset: dataset, minimumWindowsPerClass: 11)) {
+            guard case EEGLabeledEvaluation.Failure.insufficientClassWindows = $0 else { return XCTFail("Unexpected error: \($0)") }
+        }
+        for invalid in [0, -1] {
+            XCTAssertThrowsError(try EEGLabeledEvaluation.run(profile: profile, dataset: dataset, minimumWindowsPerClass: invalid)) {
+                guard case EEGLabeledEvaluation.Failure.invalidMinimumWindows = $0 else { return XCTFail("Unexpected error: \($0)") }
+            }
+        }
+        let receipt = try EEGEvaluationArtifact.make(report: relaxed, dataset: dataset, manifest: Data("fixture".utf8), profile: profile)
+        let json = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
+        XCTAssertEqual(json["minimum_windows_per_class"] as? Int, 1)
+        let neutral = EEGTrainingDataset(evaluation: dataset.evaluation.filter { $0.label == "neutral" },
+            participantID: dataset.participantID, records: [], sessions: dataset.sessions)
+        let controls = try EEGLabeledEvaluation.run(profile: profile, dataset: neutral, controlsOnly: true, minimumWindowsPerClass: 1000)
+        XCTAssertEqual(controls.minimumWindowsPerClass, 1000)
+        XCTAssertFalse(controls.predictions.isEmpty)
+    }
     func testMulticlassConfusionConservesWindowsAndSeparatesRejection() {
         let pairs: [(String, String?)] = [("left", "right"), ("left", nil), ("left", "left"),
             ("right", "neutral"), ("neutral", "left"), ("rejected", "rejected")]
@@ -26,7 +49,7 @@ final class LabeledEvaluationTests: XCTestCase {
             XCTAssertEqual(rows[label]?.rejectedWindows, metrics[label]?.rejectedWindows)
         }
         XCTAssertEqual(EEGLabeledEvaluation.confusion(Array(predictions.reversed()), classes: classes), rows)
-        let report = EEGLabeledEvaluation(controlsOnly: false, profileID: "fixture", predictions: predictions,
+        let report = EEGLabeledEvaluation(minimumWindowsPerClass: 10, controlsOnly: false, profileID: "fixture", predictions: predictions,
             metrics: metrics, trials: [], conditions: [:], sessionConditions: [:])
         XCTAssertEqual(Set(report.sessionConfusion.keys), Set(["a", "b"]))
         XCTAssertEqual(report.sessionConfusion["a"]?["left"]?.rejectedWindows, 0)
@@ -231,7 +254,7 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertEqual(receipt.data, try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile).data)
         let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
         XCTAssertEqual(object["controls_only"] as? Bool, true)
-        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-10")
+        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-11")
         let confusion = object["confusion"] as! [String: [String: Any]]
         XCTAssertEqual(confusion.values.reduce(0) { $0 + ($1["actual_windows"] as! Int) }, report.predictions.count)
         let sessionConfusion = object["session_confusion"] as! [String: [String: [String: Any]]]

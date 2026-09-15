@@ -31,11 +31,12 @@ extension EEGTrainingDataset.Failure: LocalizedError {
 extension EEGLabeledEvaluation.Failure: LocalizedError {
     public var errorDescription: String? {
         switch self {
+        case .invalidMinimumWindows: return "Minimum evaluation windows per class must be a positive integer."
         case .noEvaluation: return "The dataset has no evaluation windows. Add held-out recording sessions."
         case .participantMismatch: return "The dataset participant does not match the saved profile. Select the matching profile."
         case .trainingSourceMismatch: return "A manifest training session has different EEG content from the saved profile source. Restore the original source or use the correct profile; a matching session name is not sufficient."
         case .trainingOverlap: return "Evaluation overlaps the profile's training sessions or recording content. Use new held-out recordings."
-        case .insufficientClassWindows: return "Full evaluation needs at least 10 windows per profile class. Add held-out trials; use controls-only mode only for a neutral control dataset."
+        case .insufficientClassWindows: return "Full evaluation does not meet the selected minimum windows per profile class. Add held-out trials or review the evaluation setting; controls-only mode is only for a neutral control dataset."
         case .invalidLabels: return "Evaluation labels do not match the profile or selected evaluation scope. Check task labels and control conditions."
         case .invalidTiming: return "Evaluation windows have invalid or conflicting timing. Rebuild the dataset from the original recording evidence."
         }

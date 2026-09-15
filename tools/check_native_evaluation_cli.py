@@ -22,6 +22,12 @@ with tempfile.TemporaryDirectory(prefix="eeg-native-cli-") as temporary:
     assert result.returncode == 0, result.stderr.decode()
     assert result.stdout == (fixture / "expected.json").read_bytes(), "CLI differs from canonical evaluator"
     receipt = json.loads(result.stdout)
+    assert receipt["minimum_windows_per_class"] == 10
+    relaxed = subprocess.run(arguments + ["--minimum-windows-per-class", "1"], capture_output=True, timeout=120)
+    assert relaxed.returncode == 0, relaxed.stderr.decode()
+    relaxed_receipt = json.loads(relaxed.stdout)
+    assert relaxed_receipt["minimum_windows_per_class"] == 1
+    assert relaxed_receipt["predictions"] == receipt["predictions"], "Count setting changed inference"
     assert len(receipt["predictions"]) == 40
     assert receipt["system_control_enabled"] is False
     # Recompute exposure from serialized windows rather than trusting two calls
@@ -66,12 +72,16 @@ with tempfile.TemporaryDirectory(prefix="eeg-native-cli-") as temporary:
             assert metric["rejected_windows"] == rejected
             assert metric["rejection_fraction"] == (rejected / actual if actual else None)
     for args, status in [([str(executable), "--unknown"], 2),
+                         (arguments + ["--minimum-windows-per-class", "21"], 1),
                          (arguments + ["--controls-only"], 1),
                          (arguments + ["--manifest", "duplicate"], 2)]:
         failed = subprocess.run(args, capture_output=True, timeout=120)
         assert failed.returncode == status, failed.stderr.decode()
         assert not failed.stdout, "Failure leaked a provisional receipt"
         assert failed.stderr, "Failure omitted diagnostics"
+    for invalid in ("0", "-1", "1.5", "99999999999999999999999999999"):
+        failed = subprocess.run(arguments + ["--minimum-windows-per-class", invalid], capture_output=True, timeout=120)
+        assert failed.returncode == 2 and not failed.stdout and failed.stderr
     (fixture / "manifest.json").write_text("{}")
     failed = subprocess.run(arguments, capture_output=True, timeout=120)
     assert failed.returncode == 1 and not failed.stdout
