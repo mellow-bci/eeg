@@ -245,6 +245,15 @@ final class ShadowVerificationTests: XCTestCase {
             let implementation=object["verification_implementation"] as! [String:Any]
             XCTAssertEqual(implementation["sha256"] as? String,EEGSourceIdentity.sha256)
             XCTAssertEqual(try Data(contentsOf:url),source)
+            if !mutate && !omit && stop,let path=ProcessInfo.processInfo.environment["EEG_SHADOW_UI_FIXTURE"] {
+                let destination=URL(fileURLWithPath:path,isDirectory:true)
+                guard !FileManager.default.fileExists(atPath:destination.path) else {throw CocoaError(.fileWriteFileExists)}
+                try FileManager.default.createDirectory(at:destination,withIntermediateDirectories:true,attributes:[.posixPermissions:0o700])
+                try source.write(to:destination.appendingPathComponent(url.lastPathComponent),options:.withoutOverwriting)
+                try data.write(to:destination.appendingPathComponent("expected.json"),options:.withoutOverwriting)
+                let root=URL(fileURLWithPath:#filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+                try FileManager.default.copyItem(at:root.appendingPathComponent("Fixtures/spectrum/mental-profile.json"),to:destination.appendingPathComponent("profile.json"))
+            }
         }
     }
     func testMissingOutputAndMissingStopNeverPass() throws {

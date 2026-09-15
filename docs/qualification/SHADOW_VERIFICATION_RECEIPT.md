@@ -54,3 +54,38 @@ macOS, iOS simulator and visionOS simulator builds succeeded for the new UI path
 This is offline synthetic receipt qualification. Native picker interaction and
 exported-file visual/UI verification remain separate checks; no hardware or
 participant experiment was performed.
+
+## macOS picker qualification
+
+On 2026-09-15 the built app inspected a synthetic saved profile, selected its
+269-sample recording and run, and compared with a one-window limit. The UI showed
+one replayed/recorded window, zero missing/mismatched windows, matching core source
+and disabled system control. The actual native save dialog exported a 1,522-byte
+receipt. Its bytes matched the canonical test receipt exactly:
+`cc3d81d56ce68694af3a5da84027c61d741c0f5cbd2387e94307c724416bf091`.
+
+[Machine-readable observations](native-ui-shadow-export-20260915.json) identify
+the source, profile, result and qualification limits. The original two-file
+library was hash-checked before/after and restored exactly. Temporary synthetic
+recording/profile additions were archived outside the library. No live discovery,
+capture, audio cue or participant experiment occurred. Fixture installation was
+local setup, not a qualification of the recording import dialog.
+
+An accessibility issue remains: the button text was visible in the screenshot,
+but its name was absent in the observed accessibility tree. An explicit label
+alone did not resolve this observation; a text/ignore-children experiment removed
+the button from the observed tree. Both changes were reverted, and the original
+working control rebuilt. This observation is not a completed VoiceOver test or
+a claim about all assistive technologies. Accessibility qualification remains open.
+
+To reproduce the exact synthetic input and canonical expected receipt in a new
+directory before using the app:
+
+```sh
+EEG_SHADOW_UI_FIXTURE=/tmp/eeg-shadow-ui-new swift test --package-path apple \
+  --filter ShadowVerificationTests.testDeterministicReceiptPreservesResultsAndReproductionInputs
+```
+
+The opt-in test exporter refuses an existing destination and writes only the
+synthetic recording, profile and expected receipt. It does not modify the native
+application library. A future build's source fingerprint may change its receipt.
