@@ -57,10 +57,13 @@ public enum EEGMentalScoring {
         var distances = [Double](), logScores = [Double]()
         for g in p.gaussians {
             let distance = (0..<d).reduce(0.0) { sum, i in
-                let delta = projected[i] - g.mean[i]
-                return sum + delta * delta / g.variance[i]
+                // Standardize before squaring: delta² may overflow or round
+                // away even when delta² / variance is representable.
+                let standardized = (projected[i] - g.mean[i]) / sqrt(g.variance[i])
+                return sum + standardized * standardized
             }
-            let score = -0.5 * (distance + g.variance.reduce(0.0) { $0 + log(2 * Double.pi * $1) })
+            // Keep the determinant in log space instead of forming 2πσ².
+            let score = -0.5 * (distance + g.variance.reduce(0.0) { $0 + log(2 * Double.pi) + log($1) })
             guard distance.isFinite, score.isFinite else { throw EEGMentalScoringError.numericalFailure }
             distances.append(distance); logScores.append(score)
         }

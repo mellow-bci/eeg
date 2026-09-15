@@ -57,4 +57,39 @@ final class MentalScoringTests: XCTestCase {
             XCTAssertThrowsError(try EEGMentalScoring.score(values: values, parameters: f.parameters))
         }
     }
+
+    func testGaussianCoordinateScaleDoesNotChangeDistanceOrRelativeScore() throws {
+        // Analytic one-dimensional kernels, not trained/qualified profiles.
+        // Scaling coordinates and variances together must preserve distances
+        // and relative scores even at finite Double variance extremes.
+        for variance in [1.0, 1e308, 4 * Double.leastNonzeroMagnitude] {
+            let unit = sqrt(variance)
+            let parameters = EEGMentalScoringParameters(classes: ["neutral", "task"],
+                center: Array(repeating: 0, count: 70), scale: Array(repeating: 1, count: 70),
+                selected: [0], pca_mean: [0], components: [[unit]], gaussians: [
+                    .init(label: "neutral", mean: [0], variance: [variance], distance_limit: 3),
+                    .init(label: "task", mean: [unit], variance: [variance], distance_limit: 3)])
+            var values = Array(repeating: 0.0, count: 70)
+            values[0] = 3
+            let score = try EEGMentalScoring.score(values: values, parameters: parameters)
+            XCTAssertEqual(score.squaredDistances[0], 9, accuracy: 1e-12)
+            XCTAssertEqual(score.squaredDistances[1], 4, accuracy: 1e-12)
+            XCTAssertEqual(score.uncalibratedScores[0] / score.uncalibratedScores[1], exp(-2.5), accuracy: 1e-12)
+            XCTAssertTrue(score.outsideTrainingDistribution)
+            XCTAssertEqual(score.candidateLabel, "task")
+
+            // At the common mean, density is inversely proportional to SD.
+            // The narrower Gaussian must have twice the score, independent of
+            // absolute variance; this separately checks the log determinant.
+            let unequal = EEGMentalScoringParameters(classes: ["neutral", "task"],
+                center: parameters.center, scale: parameters.scale,
+                selected: [0], pca_mean: [0], components: [[unit]], gaussians: [
+                    .init(label: "neutral", mean: [0], variance: [variance], distance_limit: 3),
+                    .init(label: "task", mean: [0], variance: [variance / 4], distance_limit: 3)])
+            values[0] = 0
+            let density = try EEGMentalScoring.score(values: values, parameters: unequal)
+            XCTAssertEqual(density.uncalibratedScores[0], 1.0 / 3, accuracy: 1e-12)
+            XCTAssertEqual(density.uncalibratedScores[1], 2.0 / 3, accuracy: 1e-12)
+        }
+    }
 }

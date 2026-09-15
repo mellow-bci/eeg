@@ -65,3 +65,48 @@ Eight tests passed, including the existing Python-oracle transform/score cases,
 invalid/extreme features and detector reset/persistence checks. No production
 algorithm changed, and no new app build, hardware trial, latency qualification,
 Cortex output comparison or physiological result is claimed by this pass.
+
+## Native Gaussian coordinate-scale stability
+
+A subsequent analytic check exposed an independent native numerical defect:
+`delta * delta / variance` and `log(2π * variance)` formed intermediate products
+that could overflow or lose precision despite a representable final result.
+The new coordinate-scale test failed with `numericalFailure` before the change.
+The native scorer now computes:
+
+```text
+standardized_i = (projected_i - mean_i) / sqrt(variance_i)
+distance = sum(standardized_i²)
+log_density = -0.5 * (distance + sum(log(2π) + log(variance_i)))
+```
+
+This is the same declared diagonal-Gaussian formula with more stable evaluation,
+not a recovered vendor parameter or a new trained model. Finite checks remain;
+genuinely unrepresentable transformations, distances or scores still reject.
+This does not promise stable arithmetic for every conceivable input.
+
+`MentalScoringTests.testGaussianCoordinateScaleDoesNotChangeDistanceOrRelativeScore`
+checks variances 1, `1e308`, and four times Double's smallest positive subnormal.
+Coordinates and means scale by the square root of each variance. The independent
+analytic expectations remain squared distances 9 and 4, relative score
+`exp(-2.5)`, and out-of-distribution rejection at distance limit 3. A separate
+unequal-variance case checks normalized scores 1/3 and 2/3 at the common mean,
+testing the determinant independently from distance. These are numerical kernels,
+not evidence that such extreme parameters are fitted or qualified profiles.
+
+The following 17 tests passed after the fix, including the existing Python-oracle
+cases and the finalized live/replay recording comparison fixtures:
+
+```sh
+swift test --package-path apple --filter 'MentalScoringTests|ExperimentalDetectorTests|ShadowVerificationTests'
+```
+
+The Python research implementation and its historical fixtures were not changed;
+this check establishes native behavior and ordinary-fixture agreement, not Python
+equivalence at the new extremes. Native source identity changes with the scorer,
+so historical shadow receipts still distinguish their recorded implementation
+from the new one. Original recordings and fitted profile parameters are unchanged.
+
+`./apple/build-native.sh all` passed for macOS, iOS Simulator and visionOS Simulator.
+The independent source-identity oracle also passed. No application launch,
+Bluetooth scan, headset capture or participant trial was performed for this fix.
