@@ -759,3 +759,20 @@ This removes duplicate selection/publication paths without changing profile
 validation or inference. The race was identified by code inspection, not an
 interactively reproduced failure. Native builds on macOS, iOS and visionOS are
 the validation scope; no hardware or physiological qualification is implied.
+
+## 2026-09-15 — Native CSV unit selection
+
+The Recordings view now offers ADC counts or microvolts and forwards the selected
+unit through AcquisitionModel to the existing canonical `exportCSV` writer.
+Previously the writer supported both units but the app always requested ADC.
+The selection is captured before the save operation; macOS suggested filenames
+include the unit. Mobile share state is cleared before another export so a failed
+request does not leave the previous CSV presented as its result.
+
+No conversion or missing calibration is invented. The existing writer rejects
+microvolt export when any sample lacks calibrated values and removes partial
+output. Original recordings remain unchanged. UI text makes clear that sample
+CSV does not include markers or full provenance; retain the original JSONL.
+Nine RecordingStoreTests pass, including microvolt values, unavailable-unit
+failure and partial-output cleanup. All three native platform builds pass.
+Interactive export-unit picker and hardware qualification remain unperformed.

@@ -31,7 +31,7 @@ public enum EEGRecordingError: Error, LocalizedError {
 /// Local append-only recording storage. No cloud, account or device entitlement dependency.
 /// Serialize calls through the lock; do not execute file I/O on a real-time audio thread.
 public final class EEGRecordingStore {
-    public enum Units: String { case adc, microvolts }
+    public enum Units: String, Sendable { case adc, microvolts }
     public let directory: URL
     private let lock = NSLock()
     private var writer: EEGRecordingOutput?

@@ -193,6 +193,7 @@ struct LibraryView: View {
     @EnvironmentObject var model: AcquisitionModel
     @State private var query = ""
     @State private var filter = "All"
+    @State private var exportUnits: EEGRecordingStore.Units = .adc
     @State private var signalSelection: WaveformSelection?
     #if !os(macOS)
     @State private var shareURL: URL?
@@ -209,6 +210,11 @@ struct LibraryView: View {
                 Button { model.refreshRecordings() } label: { Label("Refresh", systemImage: "arrow.clockwise") }.disabled(model.fileOperation != nil)
             }
         }
+        Picker("CSV export units", selection: $exportUnits) {
+            Text("ADC counts").tag(EEGRecordingStore.Units.adc)
+            Text("Microvolts (µV)").tag(EEGRecordingStore.Units.microvolts)
+        }.disabled(model.fileOperation != nil)
+        Text("Microvolt export requires recorded calibrated values for every sample. CSV contains samples; retain the original recording for markers and provenance.").font(.caption).foregroundStyle(.secondary)
         if recordings.isEmpty { ContentUnavailableView("No matching recordings", systemImage: "tray", description: Text("Record a session or import a raw capture using the toolbar.")) }
         else {
             Panel(title: "\(recordings.count) recordings") {
@@ -222,7 +228,7 @@ struct LibraryView: View {
                         Spacer()
                         Button(model.selectedRecording == info.url ? "Selected" : "Review") { model.replay(info) }
                             .disabled(info.corrupt || model.ready || model.recording || model.fileOperation != nil)
-                        Button { export(info) } label: { Image(systemName: "square.and.arrow.up") }.help("Export recording as ADC CSV").accessibilityLabel("Export \(info.name) as CSV")
+                        Button { export(info) } label: { Image(systemName: "square.and.arrow.up") }.help("Export recording as \(exportUnits.rawValue) CSV").accessibilityLabel("Export \(info.name) as CSV")
                             .disabled(info.corrupt || model.ready || model.recording || model.fileOperation != nil)
                     }.padding(10).background(model.selectedRecording == info.url ? Color.accentColor.opacity(0.08) : .clear, in: RoundedRectangle(cornerRadius: 10))
                     if info.id != recordings.last?.id { Divider() }
@@ -246,12 +252,14 @@ struct LibraryView: View {
         }
     }
     private func export(_ info: EEGRecordingInfo) {
+        let units = exportUnits
         #if os(macOS)
-        let panel = NSSavePanel(); panel.allowedContentTypes = [.commaSeparatedText]; panel.nameFieldStringValue = info.url.deletingPathExtension().lastPathComponent + ".csv"
-        if panel.runModal() == .OK, let url = panel.url { model.export(info, to: url) }
+        let panel = NSSavePanel(); panel.allowedContentTypes = [.commaSeparatedText]; panel.nameFieldStringValue = info.url.deletingPathExtension().lastPathComponent + "-" + units.rawValue + ".csv"
+        if panel.runModal() == .OK, let url = panel.url { model.export(info, to: url, units: units) }
         #else
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".csv")
-        model.export(info, to: url) { succeeded in if succeeded { shareURL = url } }
+        shareURL = nil
+        model.export(info, to: url, units: units) { succeeded in if succeeded { shareURL = url } }
         #endif
     }
 }
