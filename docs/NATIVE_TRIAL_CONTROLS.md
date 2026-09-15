@@ -145,3 +145,15 @@ The save action uses SwiftUI's native JSON file exporter. Build/core-test succes
 is not UI qualification: interactive inspection was attempted, but the Mac was
 locked. Record-selection behavior, accessibility layout and the save panel remain
 unverified interactively. No user recording was exported or uploaded in this work.
+
+Prepared datasets now pass directly to profile evaluation as well as training.
+“Evaluate prepared dataset” and external manifest import invoke the same
+`EEGEvaluationArtifact.run` path, with identical source-hash, held-out-session,
+coverage and scoring gates. No export/reimport is needed for this in-app flow.
+Changing the prepared dataset clears the displayed receipt and invalidates any
+in-flight result for the previous selection; it does not silently evaluate the
+new selection. Training/evaluation remain explicitly initiated operations.
+
+The core end-to-end manifest-builder change passed CI at `f3228df`:
+https://github.com/autonomy-cloud/eeg/actions/runs/34911210527 . This is software
+regression evidence, not interactive UI, acoustic or physiological qualification.

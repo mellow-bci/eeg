@@ -4,6 +4,8 @@ import EEGCore
 
 struct DatasetEvaluationView: View {
     let profile: EEGMentalProfile
+    let preparedManifest: Data?
+    @State private var generation = 0
     @EnvironmentObject private var model: AcquisitionModel
     @State private var controlsOnly = false
     @State private var importing = false
@@ -21,7 +23,10 @@ struct DatasetEvaluationView: View {
                 .onChange(of: controlsOnly) { _, _ in artifact = nil; failure = nil; exportMessage = nil }
             Text(controlsOnly ? "Only neutral-labeled control conditions are accepted. Task recall cannot be measured from control trials." : "Full evaluation requires at least 10 windows per class.").font(.caption)
             Text("Choose a dataset manifest with evaluation sessions. Rejected windows remain in the denominator; labels are declarations, not independently verified mental states.").foregroundStyle(.secondary)
-            Button("Open dataset and evaluate", systemImage: "chart.bar") { importing = true }
+            Button("Evaluate prepared dataset", systemImage: "chart.bar") {
+                if let data=preparedManifest { evaluate { data } }
+            }.disabled(preparedManifest == nil || running || model.recording || model.ready)
+            Button("Open dataset and evaluate", systemImage: "doc.badge.plus") { importing = true }
                 .disabled(running || model.recording || model.ready)
             if running { ProgressView("Evaluating held-out recordings…") }
             if let failure { Text(failure).foregroundStyle(.red).textSelection(.enabled) }
@@ -60,6 +65,7 @@ struct DatasetEvaluationView: View {
                 Text("Experimental window-level metrics. Windows within trials are correlated. These values do not establish physiological accuracy, physiologically validated false-activation rates or safe system control. Poisson bounds assume a constant independent event rate; clustered events weaken that assumption. Carry-in activity makes rates unavailable.").font(.caption).foregroundStyle(.secondary)
             }
         }
+        .onChange(of: preparedManifest) { _,_ in generation += 1;artifact=nil;failure=nil;exportMessage=nil }
         .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { selection in
             switch selection {
             case .failure(let error): failure = error.localizedDescription
@@ -75,21 +81,26 @@ struct DatasetEvaluationView: View {
     }
     private func percent(_ value: Double?) -> String { value?.formatted(.percent.precision(.fractionLength(1))) ?? "Unavailable" }
     private func evaluate(_ url: URL) {
+        evaluate {
+            let access = url.startAccessingSecurityScopedResource()
+            defer { if access { url.stopAccessingSecurityScopedResource() } }
+            let file = try FileHandle(forReadingFrom: url)
+            defer { try? file.close() }
+            return try file.read(upToCount: 8 * 1024 * 1024 + 1) ?? Data()
+        }
+    }
+    /// Prepared and imported datasets share one evaluation path.
+    private func evaluate(load: @escaping @Sendable () throws -> Data) {
         guard !running, !model.recording, !model.ready else { return }
         let directory = model.directory, controls = controlsOnly
+        generation += 1;let request=generation
         running = true; artifact = nil; failure = nil; exportMessage = nil
         Task { @MainActor in
             let result = await Task.detached(priority: .utility) {
-                Result { () throws -> EEGEvaluationArtifact in
-                    let access = url.startAccessingSecurityScopedResource()
-                    defer { if access { url.stopAccessingSecurityScopedResource() } }
-                    let file = try FileHandle(forReadingFrom: url)
-                    defer { try? file.close() }
-                    let data = try file.read(upToCount: 8 * 1024 * 1024 + 1) ?? Data()
-                    return try EEGEvaluationArtifact.run(manifest: data, store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls)
-                }
+                Result { try EEGEvaluationArtifact.run(manifest: load(), store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls) }
             }.value
             running = false
+            guard request == generation else { return }
             switch result {
             case .success(let value): artifact = value
             case .failure(let error): failure = "Evaluation rejected: \(error)"

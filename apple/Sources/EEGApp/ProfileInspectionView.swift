@@ -6,6 +6,7 @@ struct ProfileInspectionView: View {
     @State private var importing = false
     @State private var loading = false
     @Binding var profile: EEGMentalProfile?
+    let preparedManifest: Data?
     @State private var failure: String?
     var body: some View {
         Panel(title: "Independent training profile") {
@@ -25,7 +26,7 @@ struct ProfileInspectionView: View {
                 Text(profile.id).font(.caption.monospaced()).textSelection(.enabled)
                 Label("Experimental · command output disabled", systemImage: "hand.raised")
                 Text("Integrity does not verify task labels or physiological accuracy. Opening this file does not change acquisition settings. An offline check can be started below.").font(.callout).foregroundStyle(.secondary)
-                DatasetEvaluationView(profile: profile).id(profile.id)
+                DatasetEvaluationView(profile: profile, preparedManifest: preparedManifest).id(profile.id)
                 ReplayInferenceView(profile: profile).id(profile.id)
             } else {
                 Text("Open a versioned experimental profile created here or by the independent offline trainer. Inspect its provenance, then evaluate separate labeled recordings below.").foregroundStyle(.secondary)
