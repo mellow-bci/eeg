@@ -45,6 +45,44 @@ final class TrialCueControllerTests: XCTestCase {
         XCTAssertFalse(controller.busy)
         XCTAssertFalse(controller.checkCompleted)
     }
+    func testAudioCheckTimeoutRejectsLateCompletionAndRequiresNewCheck() async throws {
+        let speech=Speech(),acquisition=Acquisition()
+        let controller=TrialCueController(acquisition:acquisition,speech:speech,uptime:{acquisition.recordingClock})
+        controller.audioCheck()
+        let expired=try XCTUnwrap(speech.utterances.last)
+        acquisition.recordingClock += EEGTrialEvidence.maximumSpeechDuration + 0.001
+        controller.tick()
+        XCTAssertFalse(controller.checkCompleted)
+        XCTAssertEqual(speech.stops,1)
+        let stopped=try XCTUnwrap(speech.utterances.last)
+        controller.speechSynthesizer(AVSpeechSynthesizer(),didFinish:expired)
+        await drainCallbacks()
+        XCTAssertFalse(controller.checkCompleted)
+        XCTAssertTrue(controller.busy)
+        controller.speechSynthesizer(AVSpeechSynthesizer(),didFinish:stopped)
+        await drainCallbacks()
+        XCTAssertFalse(controller.busy)
+        XCTAssertFalse(controller.checkCompleted)
+        controller.start(try planned(),ready:true,heard:true)
+        XCTAssertTrue(acquisition.completions.isEmpty)
+        try await ready(controller,speech)
+        controller.stop(announce:false)
+    }
+    func testStartStorageTimeoutRejectsLateAcknowledgement() async throws {
+        let speech=Speech(),acquisition=Acquisition()
+        let controller=TrialCueController(acquisition:acquisition,speech:speech,uptime:{acquisition.recordingClock})
+        try await ready(controller,speech)
+        controller.start(try planned(),ready:true,heard:true)
+        XCTAssertEqual(acquisition.completions.count,1)
+        acquisition.recordingClock += EEGTrialEvidence.maximumSpeechDuration + 0.001
+        controller.tick()
+        XCTAssertFalse(controller.checkCompleted)
+        XCTAssertTrue(speech.utterances.last!.speechString.contains("trial has stopped"))
+        acquisition.complete()
+        XCTAssertTrue(acquisition.completions.isEmpty)
+        XCTAssertFalse(speech.utterances.contains { $0.speechString.contains("Begin when this instruction ends.") })
+        controller.stop(announce:false)
+    }
     private func planned() throws -> EEGTrialEvidence {
         try EEGTrialEvidence(id:"trial",sessionID:"session",participantID:"synthetic",condition:.neutral,startingNumber:431)
     }

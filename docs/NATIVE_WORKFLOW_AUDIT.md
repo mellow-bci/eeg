@@ -727,3 +727,19 @@ trial, missing predecessor evidence and exhausted plans. macOS, iOS and visionOS
 native builds pass. This is software timing validation; no wearer trial or
 interactive countdown qualification was performed. Acquisition and decoding
 were not changed.
+
+## 2026-09-15 — Cue timeout failure qualification
+
+Two additional controller regressions inject missing completion events using the
+existing fake speech/acquisition boundaries and an explicit monotonic clock:
+
+- An audio check exceeds `maximumSpeechDuration`. A subsequent late speech
+  completion cannot set readiness. Completing the stop announcement still leaves
+  the check unconfirmed; a new audio check is required before trial admission.
+- A trial-start storage acknowledgement exceeds that same timeout. Its eventual
+  success cannot queue an instruction or another transition after cancellation.
+
+All eleven TrialCueControllerTests pass. These tests verify controller callback
+invalidation, not real speaker audibility, operating-system scheduling, or durable
+storage cancellation. No production algorithm or acquisition code changed; no
+physical headset or participant session was used.
