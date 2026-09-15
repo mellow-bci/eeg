@@ -197,8 +197,11 @@ comparison must account for all 24 trials. A 100% exposure requirement returns
 unavailable because window endpoints do not cover every instant. Separate tests
 check missing-plan versus source-mismatch handling and malformed journals. The
 CLI check exercises disabled and unavailable outcomes and invalid fraction inputs.
-These are software tests, not headset qualification. Interactive QA of the new
-controls and results remains pending.
+These are software tests, not headset qualification. Focused macOS QA now covers the controls, disabled-while-running state,
+unavailable results, byte-identical UI/CLI export and percentage-change result
+invalidation; see [NATIVE_UI_WORKFLOW.md](qualification/NATIVE_UI_WORKFLOW.md).
+Eligible-result display, other failure cases and iOS/visionOS interaction remain
+pending.
 
 Integration validation, 2026-09-15: the initial 22-test evaluation/recovery/export
 selection passed; the five-test evidence suite including the complete synthetic

@@ -123,3 +123,41 @@ export comparison or complete visual/accessibility audit was performed in this
 follow-up. CI for `d72ef1a` also passed (run `34932076804`). Source coverage and
 baseline comparisons do not establish independent sessions, physiological
 validity, Cortex parity or production readiness.
+
+## Follow-up: conditional trial comparison UI (2026-09-15)
+
+Exercised the native macOS Debug build from `962f3a3`, disconnected throughout.
+Code inspection confirmed Bluetooth initializes only on Find headset. No discovery,
+connection, audio cue or recording was started. Used the prior four synthetic
+recordings and external synthetic profile; original library files were untouched.
+
+1. Opened the exact synthetic profile, expanded Conditional trial-schedule
+   comparison and enabled its checkbox. The percentage defaulted to 80; its
+   visible label and accessible name both identified per-trial eligible exposure.
+   Inspected the actual screen layout. This was not a full accessibility audit.
+2. Opened the fixture manifest through the native panel. While evaluation ran,
+   the checkbox, percentage field and other evaluation settings were visibly
+   disabled in the accessibility tree; Cancel evaluation remained available.
+3. Evaluation returned 40 windows and 5% rejection. Expanded the new result
+   disclosure: sessions c and d each displayed “Unavailable: Requires neutral
+   and silent serial subtraction classes.” The no-automatic-significance,
+   qualification and control statement was present. No comparison number was
+   displayed for these unsupported classes.
+4. Exported through the native save panel. The full UI receipt matched CLI output
+   byte-for-byte for the same manifest, profile, recordings and fraction 0.8.
+   Preserved receipt: `native-ui-association-20260915.json`; SHA256
+   `075070a3eb9b0460e0e2e9baa586d9334dfc6d61a7a929b60c18ae77eedb8aac`.
+   Both unavailable entries omit the result field. Raw source data is not embedded.
+5. Changed the percentage from 80 to 85. Metrics, comparison results, prior export
+   confirmation and Export evaluation JSON disappeared immediately. This verifies
+   percentage-change invalidation; this pass did not separately exercise checkbox
+   invalidation, invalid percentage submission or cancellation.
+6. Closed the profile and quit. Hash-checked all original and synthetic library
+   files, moved only the four synthetic copies to the temporary qualification
+   archive and verified the library again exactly matched its two-file baseline.
+
+This qualifies the focused macOS unavailable-result/settings/export path only.
+The eligible-result display, all comparison failure messages, iOS/visionOS UI,
+full accessibility and real physiological trials remain unqualified. Core tests
+cover an eligible synthetic full recording-to-receipt result separately; that
+is not an observed UI or hardware result. No Cast files were modified.
