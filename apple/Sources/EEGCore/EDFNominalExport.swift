@@ -6,9 +6,28 @@ import CryptoKit
 /// Completion requires provenance.json; any failure removes this newly owned bundle.
 public enum EEGEDFNominalExport {
     public enum Failure: Error { case destinationExists, invalidDestination, unsupportedDate, headerField, annotationOverflow, sourceChanged }
+    public struct CleanupFailure: Error, LocalizedError {
+        public let original: String
+        public let cleanup: String
+        public let packagePath: String
+        public var errorDescription: String? {
+            "EDF export failed: \(original). Removing the partial package also failed: \(cleanup). Inspect \(packagePath); it is not a completed export."
+        }
+    }
 
     public static func write(recording: URL, store: EEGRecordingStore, to destination: URL,
                              maximumSegments: Int = 10_000) throws {
+        try write(recording: recording, store: store, to: destination, maximumSegments: maximumSegments,
+            outputFactory: { EEGFileRecordingOutput($0) },
+            removePackage: { try FileManager.default.removeItem(at: $0) })
+    }
+
+    /// Per-call I/O seams for deterministic failures; production always uses
+    /// exclusively opened real files, never a synthetic acquisition path.
+    static func write(recording: URL, store: EEGRecordingStore, to destination: URL,
+                      maximumSegments: Int = 10_000,
+                      outputFactory: (FileHandle) -> EEGRecordingOutput,
+                      removePackage: (URL) throws -> Void) throws {
         try Task.checkCancellation()
         guard destination.isFileURL else { throw Failure.invalidDestination }
         let initial = try EEGEDFNominalPlan.inspect(recording: recording, store: store, maximumSegments: maximumSegments)
@@ -17,19 +36,34 @@ public enum EEGEDFNominalExport {
             if errno == EEXIST { throw Failure.destinationExists }
             throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
         }
-        var succeeded = false
-        defer { if !succeeded { try? FileManager.default.removeItem(at: destination) } }
+        do {
+            try writeContents(recording: recording, store: store, to: destination,
+                initial: initial, maximumSegments: maximumSegments, outputFactory: outputFactory)
+        } catch {
+            let original = error
+            do { try removePackage(destination) }
+            catch {
+                throw CleanupFailure(original: String(describing: original), cleanup: String(describing: error),
+                                     packagePath: destination.path)
+            }
+            throw original
+        }
+    }
+
+    private static func writeContents(recording: URL, store: EEGRecordingStore, to destination: URL,
+                                      initial: EEGEDFNominalPlan, maximumSegments: Int,
+                                      outputFactory: (FileHandle) -> EEGRecordingOutput) throws {
         let native = destination.appendingPathComponent(recording.lastPathComponent)
         try store.exportNative(recording: recording, to: native)
         let copiedStore = try EEGRecordingStore(directory: destination)
         let plan = try EEGEDFNominalPlan.inspect(recording: native, store: copiedStore, maximumSegments: maximumSegments)
         guard plan.source.sourceSHA256 == initial.source.sourceSHA256 else { throw Failure.sourceChanged }
-        var file: FileHandle?, fileHash = SHA256(), bytes = 0, sampleOrdinal = 0, segmentOrdinal = 0
+        var file: EEGRecordingOutput?, fileHash = SHA256(), bytes = 0, sampleOrdinal = 0, segmentOrdinal = 0
         var results = [[String: Any]]()
         defer { try? file?.close() }
         func writeBytes(_ data: Data) throws {
             guard let file else { throw Failure.sourceChanged }
-            try file.write(contentsOf: data); fileHash.update(data: data); bytes += data.count
+            try file.write(data); fileHash.update(data: data); bytes += data.count
         }
         let digest = try copiedStore.finalizedRecords(recording: native) { _, sample in
             try Task.checkCancellation()
@@ -43,7 +77,7 @@ public enum EEGEDFNominalExport {
             let firstOffset = selectedWallTime - headerOrigin
             let name = String(format: "segment-%06d.edf", segmentOrdinal + 1)
             if localIndex == 0 {
-                file = try exclusiveFile(destination.appendingPathComponent(name))
+                file = outputFactory(try exclusiveFile(destination.appendingPathComponent(name)))
                 fileHash = SHA256(); bytes = 0
                 try writeBytes(header(segment: segment, origin: headerOrigin,
                     utcOffset: plan.source.clockAnchor.localUTCOffsetSeconds))
@@ -99,11 +133,17 @@ public enum EEGEDFNominalExport {
             ]
         ]
         try Task.checkCancellation()
-        let output = try exclusiveFile(destination.appendingPathComponent("provenance.json"))
+        let pending = destination.appendingPathComponent(".provenance.pending")
+        let output = outputFactory(try exclusiveFile(pending))
         defer { try? output.close() }
-        try output.write(contentsOf: JSONSerialization.data(withJSONObject: receipt, options: [.sortedKeys, .prettyPrinted]))
+        try output.write(JSONSerialization.data(withJSONObject: receipt, options: [.sortedKeys, .prettyPrinted]))
         try output.synchronize(); try output.close()
-        succeeded = true
+        // Do not expose a completion marker before receipt I/O succeeds. Same-
+        // directory exclusive rename is atomic; unsupported filesystems fail.
+        guard renameatx_np(AT_FDCWD, pending.path, AT_FDCWD,
+                           destination.appendingPathComponent("provenance.json").path, UInt32(RENAME_EXCL)) == 0 else {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
     }
 
     private static func exclusiveFile(_ url: URL) throws -> FileHandle {

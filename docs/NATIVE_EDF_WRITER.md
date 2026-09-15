@@ -10,9 +10,14 @@ interactive export and complete reader timing compatibility remain unqualified.
 The destination must be a new directory. It is created exclusively with mode 0700;
 files use exclusive creation with mode 0600. Existing directories/files are never
 overwritten. Failure attempts to remove only the newly created package; cleanup
-itself can fail on unavailable storage. No crash-atomic directory publication or
-power-loss guarantee is claimed. A package is complete only after successful
-writing, synchronization and closure of `provenance.json`.
+itself can fail on unavailable storage. A composite `CleanupFailure` preserves
+both errors and identifies the partial package when removal fails. No crash-atomic
+directory publication or power-loss guarantee is claimed. A package is complete
+only after the receipt has been written, synchronized, closed and atomically
+renamed from `.provenance.pending` to `provenance.json`. The same-directory rename
+uses Darwin `RENAME_EXCL`; unsupported filesystems fail rather than silently
+falling back to a nonexclusive publication. Directory durability across power
+loss is not qualified.
 
 The writer copies the original JSONL using the existing native archive service,
 replans the copy and checks its digest against the initial plan. EDF generation
@@ -21,8 +26,9 @@ digest and total/segment counts again. Input samples and acquisition are unchang
 Memory holds one small data record, one output hash, and bounded segment metadata;
 the planner's configurable segment cap is retained. Cancellation is checked in
 preflight, per record and before the receipt. Write failures propagate rather
-than returning successful truncated packages. Cleanup is currently best effort;
-its failure is not separately reported from the original error.
+than returning successful truncated packages. Cleanup failure is explicitly
+reported alongside the original error; a remaining pending receipt is not a
+completion marker, even if its JSON is fully parseable.
 
 Each run becomes `segment-NNNNNN.edf`, with 14 raw channels in canonical order and
 one EDF Annotations signal. There is one sample per ordinary signal per record,
@@ -123,3 +129,28 @@ This qualifies this synthetic subset and these reader paths only. Users relying
 on the affected helper would still obtain incorrect fractional starts. Marker
 translation, physical timing accuracy, hardware exchange and app export remain
 unqualified; no app capability was enabled by this finding.
+
+## Deterministic output-failure qualification
+
+The writer now reuses the existing recording-output I/O boundary. Per-call test
+wrappers surround real, exclusively created files; there is no mutable global
+failure mode and no synthetic acquisition source in production.
+
+Five native exporter tests pass. Injected failures cover a partial first-record
+write, EDF synchronization, EDF close, a propagated cancellation error, and
+receipt write/synchronization/close after both EDF segments are complete. All
+seven ordinary failure paths remove their package and preserve source bytes.
+The cancellation case injects `CancellationError` at the I/O boundary; it is not
+a timed real-device cancellation trial.
+
+Additional tests force cleanup failure: the first-record partial file remains
+4,099 bytes, both errors and the package path are reported, and no completion
+receipt exists. Receipt synchronization and close failure also leave no published
+completion marker, even when cleanup fails and the pending JSON is parseable.
+Existing-destination protection and deterministic successful exports remain tested.
+This does not simulate every OS error, physical disk exhaustion, process crash,
+permission race or filesystem implementation.
+
+```sh
+swift test --package-path apple --filter EDFNominalExportTests
+```
