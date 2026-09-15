@@ -14,13 +14,20 @@ struct DatasetBuilderView: View {
     @State private var exportData = Data()
     @State private var message: String?
     @State private var failure: String?
+    @State private var reviewing: EEGRecordingInfo?
     var body: some View {
         Panel(title: "Build a dataset from reviewed recordings") {
             Text("Choose independent recordings and assign each to training or evaluation before fitting. Only planned, reviewed trials are included. Preparation uses saved Processing settings, including the training-window limit. Changing a selection clears the prepared dataset.").foregroundStyle(.secondary)
             if recordings.isEmpty { Text("No finalized recordings available.") }
             ForEach(recordings) { info in
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(info.name).font(.caption.monospaced()).textSelection(.enabled)
+                    HStack(alignment: .top) {
+                        Text(info.name).font(.caption.monospaced()).textSelection(.enabled)
+                        Spacer()
+                        Button("Inspect trial evidence", systemImage: "doc.text.magnifyingglass") { reviewing = info }
+                            .disabled(model.ready || model.recording || model.finalizingRecording || model.fileOperation != nil)
+                            .accessibilityLabel("Inspect trial evidence for \(info.name)")
+                    }
                     Picker("Dataset use", selection: Binding(get:{ choices[info.id] ?? .skip },set:{ choices[info.id]=$0 })) {
                         Text("Not included").tag(Selection.skip)
                         Text("Training").tag(Selection.train)
@@ -44,6 +51,27 @@ struct DatasetBuilderView: View {
             if let failure { Text(failure).foregroundStyle(.red).textSelection(.enabled) }
         }
         .disabled(running)
+        .sheet(item: $reviewing) { info in
+            NavigationStack {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text(info.name).font(.callout.monospaced()).textSelection(.enabled)
+                        Text("Inspect the saved evidence before assigning this recording to a dataset. Closing this view preserves your selections; inspection does not accept or relabel trials.")
+                            .foregroundStyle(.secondary)
+                        TrialEvidenceReviewView(recording: info, initiallyExpanded: true)
+                    }.padding(24)
+                }
+                .navigationTitle("Trial evidence")
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { reviewing = nil }
+                    }
+                }
+            }
+            #if os(macOS)
+            .frame(minWidth: 600, idealWidth: 740, minHeight: 460, idealHeight: 600)
+            #endif
+        }
         .onChange(of: choices) { _,_ in invalidate() }
         .onChange(of: declarations) { _,_ in invalidate() }
         .fileExporter(isPresented:$exporting,document:DatasetManifestDocument(data:exportData),contentType:.json,defaultFilename:"eeg-dataset.json") { result in

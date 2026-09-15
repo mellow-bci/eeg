@@ -8,16 +8,30 @@ struct TrialEvidenceReviewView: View {
     @State private var loading = false
     @State private var trials: [EEGTrialEvidence]?
     @State private var failure: String?
+    @State private var failureDetails: String?
+    @State private var expanded: Bool
+
+    init(recording: EEGRecordingInfo, initiallyExpanded: Bool = false) {
+        self.recording = recording
+        _expanded = State(initialValue: initiallyExpanded)
+    }
 
     var body: some View {
-        DisclosureGroup("Recorded trial evidence") {
+        DisclosureGroup("Recorded trial evidence", isExpanded: $expanded) {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Reports and review decisions are declarations, not independent proof of mental state. This view requires a finalized recording with a saved trial plan. It does not change labels or accept trials.")
                     .font(.caption).foregroundStyle(.secondary)
                 Button("Read trial journal") { load() }
                     .disabled(loading || !recording.complete || recording.corrupt || model.recording || model.ready || model.fileOperation != nil)
                 if loading { ProgressView("Validating saved trial evidence…") }
-                if let failure { Text(failure).foregroundStyle(.red).textSelection(.enabled) }
+                if let failure {
+                    Label(failure, systemImage: "exclamationmark.triangle").foregroundStyle(.orange).textSelection(.enabled)
+                    if let failureDetails {
+                        DisclosureGroup("Technical details") {
+                            Text(failureDetails).font(.caption.monospaced()).textSelection(.enabled)
+                        }
+                    }
+                }
                 if let trials {
                     let accepted = trials.filter { $0.phase == .reviewed && $0.accepted }.count
                     Text("\(trials.count) trials recorded · \(accepted) accepted · \(trials.count - accepted) excluded or not accepted")
@@ -50,7 +64,7 @@ struct TrialEvidenceReviewView: View {
     }
     private func load() {
         guard !loading, recording.complete, !recording.corrupt, !model.recording, !model.ready else { return }
-        loading = true; trials = nil; failure = nil
+        loading = true; trials = nil; failure = nil; failureDetails = nil
         let directory = model.directory, url = recording.url
         Task { @MainActor in
             let result = await Task.detached(priority: .utility) {
@@ -59,7 +73,13 @@ struct TrialEvidenceReviewView: View {
             loading = false
             switch result {
             case .success(let values): trials = values
-            case .failure(let error): failure = "Trial journal rejected: \(error)"
+            case .failure(let error):
+                failureDetails = String(describing: error)
+                if case EEGRecordingError.missingTrialPlan(_) = error {
+                    failure = "This recording has no saved trial plan. It cannot supply planned trials for training. Record a new planned session in Capture trials; keep this recording for signal review."
+                } else {
+                    failure = "The saved trial evidence could not be verified. This recording has not been accepted for training."
+                }
             }
         }
     }

@@ -328,7 +328,7 @@ struct CalibrationView: View {
                 workflowLink(3, "Train profile", "Fit and save a versioned experimental profile.", "brain", "train")
                 workflowLink(4, "Evaluate", "Inspect the profile and test held-out sessions.", "chart.bar", "evaluate")
             }
-            Text("Review trial evidence in Recordings before preparing a dataset. These stages describe the workflow; they are not completion or validation badges.").font(.caption).foregroundStyle(.secondary)
+            Text("Inspect saved trial evidence from each recording in Prepare dataset. These stages describe the workflow; they are not completion or validation badges.").font(.caption).foregroundStyle(.secondary)
         }.id("calibration-overview")
         Panel(title: "Current boundary") {
             Label("Command output disabled", systemImage: "hand.raised").font(.headline)
