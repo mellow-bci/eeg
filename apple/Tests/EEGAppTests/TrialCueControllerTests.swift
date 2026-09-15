@@ -34,6 +34,17 @@ final class TrialCueControllerTests: XCTestCase {
         func cancelTrial(reason:String) {try? session.interrupt(reason:reason,at:recordingClock)}
         func complete(_ result:Result<Void,Error> = .success(())) {completions.removeFirst()(result)}
     }
+    func testSuspensionStopDoesNotQueueAnotherUtterance() {
+        let speech=Speech(),acquisition=Acquisition()
+        let controller=TrialCueController(acquisition:acquisition,speech:speech)
+        controller.audioCheck()
+        XCTAssertEqual(speech.utterances.count,1)
+        controller.stop(reason:"system_sleep",announce:false)
+        XCTAssertEqual(speech.stops,1)
+        XCTAssertEqual(speech.utterances.count,1)
+        XCTAssertFalse(controller.busy)
+        XCTAssertFalse(controller.checkCompleted)
+    }
     private func planned() throws -> EEGTrialEvidence {
         try EEGTrialEvidence(id:"trial",sessionID:"session",participantID:"synthetic",condition:.neutral,startingNumber:431)
     }

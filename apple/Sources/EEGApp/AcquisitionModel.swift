@@ -219,6 +219,13 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         guard changed,recording else {return}
         do {try recordTransport(reason:reason,receivedAt:receivedAt)} catch {storageFailed(error)}
     }
+    /// Stop admission and cues immediately; suspension may preempt finalization.
+    /// No automatic resume can reuse the former trial or inference state.
+    func prepareForSuspension(reason:String) {
+        trialCues.stop(reason:reason,announce:false)
+        disconnect(reason:reason)
+        phase="Suspended — reconnect to start a new recording"
+    }
     /// Called on orderly lifecycle shutdown. Forced kill leaves the file incomplete.
     func prepareForTermination() {
         disconnect()

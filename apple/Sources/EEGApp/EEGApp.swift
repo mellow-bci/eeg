@@ -14,9 +14,10 @@ struct EEGApplication: App {
             WorkspaceView().environmentObject(model).onOpenURL { model.importRawCapture($0) }
             #if os(macOS)
                 .frame(minWidth: 760, minHeight: 600)
+                .onReceive(NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.willSleepNotification)) { _ in model.prepareForSuspension(reason: "system_sleep") }
                 .onReceive(NotificationCenter.default.publisher(for: NSApplication.willTerminateNotification)) { _ in model.prepareForTermination() }
             #else
-                .onChange(of: scenePhase) { _, phase in if phase == .background { model.prepareForTermination() } }
+                .onChange(of: scenePhase) { _, phase in if phase == .background { model.prepareForSuspension(reason: "application_background") } }
             #endif
         }
         #if os(macOS)

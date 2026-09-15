@@ -123,13 +123,13 @@ final class TrialCueController: NSObject, ObservableObject, AVSpeechSynthesizerD
         }
         if uptime()-requestedAt>EEGTrialEvidence.maximumSpeechDuration {stop(reason:"speech_or_storage_timeout")}
     }
-    func stop(reason:String="participant_stopped") {
+    func stop(reason:String="participant_stopped",announce:Bool=true) {
         let wasStop=purpose == .stop
         runID=UUID();waiting=false;timer?.invalidate();timer=nil;utterance=nil
         speech.stopSpeaking(at:.immediate)
         acquisition?.cancelTrial(reason:reason)
         busy=false;checkCompleted=false;status="Stopped: "+reason
-        if !wasStop {speak("The trial has stopped. Stop the task and rest.",purpose:.stop)}
+        if announce && !wasStop {speak("The trial has stopped. Stop the task and rest.",purpose:.stop)}
     }
     func speechSynthesizer(_ synthesizer:AVSpeechSynthesizer,didStart value:AVSpeechUtterance) {
         let observed=uptime()

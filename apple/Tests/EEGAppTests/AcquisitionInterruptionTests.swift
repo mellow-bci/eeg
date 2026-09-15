@@ -35,6 +35,27 @@ final class AcquisitionInterruptionTests:XCTestCase {
         }
         XCTFail("Timed out waiting for local persistence")
     }
+    func testSuspensionStopsRecordingAndPersistsReason() async throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let model=AcquisitionModel(storageDirectory:directory)
+        model.ready=true;model.transportStable=true;model.startRecording()
+        try model.commitTrialPlan(participantID:"synthetic",sessionID:"suspension")
+        try await waitUntil {model.trialPlan != nil}
+        try await withCheckedThrowingContinuation { (continuation:CheckedContinuation<Void,Error>) in
+            do {try model.submitTrialBegin(model.nextPlannedTrial()) {continuation.resume(with:$0)}}
+            catch {continuation.resume(throwing:error)}
+        }
+        model.prepareForSuspension(reason:"system_sleep")
+        XCTAssertFalse(model.ready);XCTAssertFalse(model.recording);XCTAssertFalse(model.transportStable)
+        XCTAssertFalse(model.trialCues.busy)
+        try await waitUntil {!model.finalizingRecording && !model.savingTrialRevision}
+        XCTAssertEqual(model.trial?.phase,.interrupted)
+        XCTAssertEqual(model.trial?.reviewReason,"system_sleep")
+        let files=try FileManager.default.contentsOfDirectory(at:directory,includingPropertiesForKeys:nil).filter {$0.pathExtension=="jsonl"}
+        let recovered=try EEGRecordingStore(directory:directory).recoveredTrials(recording:XCTUnwrap(files.first))
+        XCTAssertEqual(recovered.first?.reviewReason,"system_sleep")
+    }
     func testRepeatedCancelDrainsOneInterruptionBeforeSummary() async throws {
         let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer {try? FileManager.default.removeItem(at:directory)}

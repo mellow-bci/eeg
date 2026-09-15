@@ -691,3 +691,22 @@ remain available to canonical replay inference.
 Eight ReplayInferenceTests pass. This uses the real queue/store/consumer classes
 and the acquisition fan-out ordering, but does not instantiate the app's Bluetooth
 delegate or qualify hardware throughput. No production algorithm was changed.
+
+### Explicit suspension handling (2026-09-15)
+
+macOS now observes NSWorkspace.willSleepNotification through the workspace's own
+notification center, as required by Apple's API documentation:
+https://developer.apple.com/documentation/appkit/nsworkspace/willsleepnotification
+The handler calls prepareForSuspension(system_sleep); iOS/visionOS background
+transitions use the same path with application_background. It stops speech without
+queuing a new announcement, invalidates trial/inference admission, disconnects,
+and begins normal asynchronous recording finalization. It does not automatically
+restart acquisition or trials on wake. Orderly termination retains its existing
+separate finalization barrier.
+
+Fourteen acquisition/cue tests pass, including persisted suspension interruption
+and silent speech cancellation. All three native builds pass. No actual system
+sleep or background hardware experiment was performed. The OS may suspend before
+asynchronous finalization completes; an interrupted file must remain incomplete,
+not be reported as durably finalized. No background-execution entitlement or
+sleep-delay guarantee is introduced.
