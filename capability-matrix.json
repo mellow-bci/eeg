@@ -473,7 +473,7 @@
       "id": "capability-13",
       "capability": "Sessions, recordings and markers \u00b7 Collect/Review",
       "status": "tested",
-      "status_scope": "Local JSONL/reference and one-minute-per-rate synthetic host load tested; prolonged native hardware qualification pending",
+      "status_scope": "Local JSONL/reference, one-minute-per-rate recording load and three-minute concurrent recording/inference synthetic load tested; prolonged native hardware qualification pending",
       "symbol_evidence": {
         "readable_names_and_links": "[ConnectedHeadset::addMarkerRequest](../archive/current-state/local-app-analysis/all-symbols.txt#L5059), [newDataForParquet](../archive/current-state/local-app-analysis/all-symbols.txt#L5062), [initParquetSubscription](../archive/current-state/local-app-analysis/all-symbols.txt#L5069), [RecordStorageApiHandler](../archive/current-state/local-app-analysis/all-symbols.txt#L2368)",
         "references": [
@@ -497,7 +497,7 @@
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
       "missing_parameters_assets_dependencies": "Native durability/failure-status qualification, indexed library and prolonged recording tests.",
-      "current_implementation": "Native append-only JSONL raw/sample/event records, completion/schema validation, library review, bounded replay/CSV export and analysis. Shared reads detect size/timestamp or named-inode changes and reject provisional results. Python archive and RecordingLibrary also exist; cue markers and reference Parquet recovery remain research evidence. Trial transitions and plans are recorded and recovered with shared revision checks; aborted writers omit completion. Failed summary writes/flushes attempt rollback and expose uncertainty if rollback fails. Native acquisition uses a bounded serial recording queue for high-rate writes; operational events and acknowledged trial revisions share that queue. Trial state publishes only after persistence acknowledgement; late or failed acknowledgements cannot advance cues. Finalization runs off the UI queue, although orderly application shutdown can still wait for disk operations. Offline queue tests cover order, overload, disk failure, incomplete abort and restart; physical throughput is unqualified.",
+      "current_implementation": "Native append-only JSONL raw/sample/event records, completion/schema validation, library review, bounded replay/CSV export and analysis. Shared reads detect size/timestamp or named-inode changes and reject provisional results. Python archive and RecordingLibrary also exist; cue markers and reference Parquet recovery remain research evidence. Trial transitions and plans are recorded and recovered with shared revision checks; aborted writers omit completion. Failed summary writes/flushes attempt rollback and expose uncertainty if rollback fails. Native acquisition uses a bounded serial recording queue for high-rate writes; operational events and acknowledged trial revisions share that queue. Trial state publishes only after persistence acknowledgement; late or failed acknowledgements cannot advance cues. Finalization runs off the UI queue, although orderly application shutdown can still wait for disk operations. Offline queue tests cover order, overload, disk failure, incomplete abort and restart; physical throughput is unqualified. A three-minute synthetic concurrent run preserved 23,040 samples and matched 90 full inference windows to replay, with zero discarded inputs or write failures. Whole-test-process resident memory was sampled, not native UI or hardware memory.",
       "target_component": "One recording service owns acquisition, metadata, markers, library index and completion/failure state.",
       "acceptance_gate": "Disk failure/crash recovery, exclusive private writes, schema/count validation, corruption reporting and complete export round trips.",
       "delivery_notes": "Core implemented; long-session durability/indexing qualification pending.",
@@ -513,14 +513,16 @@
         "apple/Tests/EEGCoreTests/RecordingLoadQualificationTests.swift",
         "apple/Tests/EEGAppTests/AcquisitionInterruptionTests.swift",
         "docs/qualification/RECORDING_LOAD.md",
-        "docs/qualification/recording-load-60s-20260915.json"
+        "docs/qualification/recording-load-60s-20260915.json",
+        "docs/qualification/concurrent-memory-180s-20260915.json",
+        "apple/Tests/EEGCoreTests/RecordingStoreTests.swift"
       ]
     },
     {
       "id": "capability-14",
-      "capability": "CSV/EDF exchange \u00b7 Review",
+      "capability": "Native archive and CSV/EDF exchange \u00b7 Review",
       "status": "tested",
-      "status_scope": "CSV subset only; EDF pending",
+      "status_scope": "Native JSONL and CSV subsets tested; macOS synthetic archive UI roundtrip checked; EDF pending",
       "symbol_evidence": {
         "readable_names_and_links": "[CsvExporter](../archive/current-state/local-app-analysis/all-symbols.txt#L2320), [EdfRecordExporter](../archive/current-state/local-app-analysis/all-symbols.txt#L2321), [validateSignalHeader](../archive/current-state/local-app-analysis/all-symbols.txt#L1619)",
         "references": [
@@ -539,19 +541,25 @@
         ]
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
-      "missing_parameters_assets_dependencies": "EDF schema/units/annotation design and independent roundtrip validation; CSV is only current native format.",
-      "current_implementation": "Native ADC/microvolt CSV exporter and Python CSV tools; no native EDF exporter.",
+      "missing_parameters_assets_dependencies": "EDF schema/units/annotation design and independent-reader qualification; iOS/visionOS interactive archive and CSV unit-picker qualification remain pending.",
+      "current_implementation": "Native byte-preserving JSONL archive export and ADC/microvolt CSV exporter share the recording service and file-operation path. Native archives preserve metadata, markers, trial evidence and incomplete status. UI exposes format and units; missing calibration rejects microvolt export. Native archive suggestion retains the JSONL filename. Python CSV tools also exist; no native EDF exporter.",
       "target_component": "Import/export adapters attached to recording service; original raw recording retained.",
       "acceptance_gate": "Independent-reader round trips for channels, units, timestamps, annotations and incomplete recordings; reject silent scale changes.",
-      "delivery_notes": "CSV implemented; EDF planned.",
+      "delivery_notes": "Native and CSV implemented. A 5,120-sample synthetic macOS import/export roundtrip matched original bytes. Initial import-dialog nonresponse remains unexplained; do not infer universal picker reliability. Keep original filenames for journal recovery. EDF remains planned.",
       "vendor_equivalence_claimed": false,
-      "native_hardware_validated": false
+      "native_hardware_validated": false,
+      "software_evidence": [
+        "apple/Sources/EEGCore/RecordingStore.swift",
+        "apple/Sources/EEGApp/EEGApp.swift",
+        "apple/Tests/EEGCoreTests/RecordingStoreTests.swift",
+        "docs/NATIVE_WORKFLOW_AUDIT.md"
+      ]
     },
     {
       "id": "capability-15",
       "capability": "Replay, file import and simulated sources \u00b7 Review",
       "status": "tested",
-      "status_scope": "Native replay/raw-JSON subset only",
+      "status_scope": "Native replay, native archive restoration and raw BLE JSON subsets tested",
       "symbol_evidence": {
         "readable_names_and_links": "[CSVFileInputDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2263), [EDFFileInputDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2264), [EEDFileInputDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2265), [VirtualDevice](../archive/current-state/local-app-analysis/all-symbols.txt#L2255)",
         "references": [
@@ -574,13 +582,20 @@
         ]
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
-      "missing_parameters_assets_dependencies": "Additional file schemas and recovery semantics; native raw JSON import/replay is only current coverage.",
-      "current_implementation": "Native paginated actual sample replay and bounded raw BLE JSON import through the native decoder; Python replay fixtures.",
+      "missing_parameters_assets_dependencies": "Additional exchange formats, extended import interruption qualification and mobile interactive restoration; no general EDF/CSV importer.",
+      "current_implementation": "Native paginated sample replay, bounded raw BLE JSON import through the decoder, and byte-preserving native JSONL restoration through the same recording service. Native restoration preserves filename, evidence and completion state, refuses collisions, rejects symlinks and removes failed partial output. One document picker routes explicitly by format. Python replay fixtures remain research tooling.",
       "target_component": "Recording service exposes replay through the same sample contract, with explicit source mode.",
       "acceptance_gate": "Malformed/oversized input tests, native parity, interrupted import status, no replay presented as live data.",
-      "delivery_notes": "Partial; additional import formats planned. No synthetic signal in current native UI.",
+      "delivery_notes": "Partial format coverage. A synthetic archive was imported through the macOS picker and displayed as Recorded source with 5,120 samples; no live signal was synthesized. Native journal restoration and incomplete-analysis rejection have store tests. Additional formats and hardware qualification remain pending.",
       "vendor_equivalence_claimed": false,
-      "native_hardware_validated": false
+      "native_hardware_validated": false,
+      "software_evidence": [
+        "apple/Sources/EEGCore/RecordingStore.swift",
+        "apple/Sources/EEGApp/AcquisitionModel.swift",
+        "apple/Sources/EEGApp/JSONDocumentImporter.swift",
+        "apple/Tests/EEGCoreTests/RecordingStoreTests.swift",
+        "docs/NATIVE_WORKFLOW_AUDIT.md"
+      ]
     },
     {
       "id": "capability-16",
