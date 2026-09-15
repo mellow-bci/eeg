@@ -847,3 +847,24 @@ library data was hash-checked and moved to `/tmp/eeg-archive-ui-20260915` after
 quitting; the two original user recordings were untouched. No Bluetooth, audio,
 profile training or system-control action was started. iOS/visionOS interactive
 archive handling remains unqualified.
+
+## 2026-09-15 — Saved trial evidence inspection
+
+Recording review now includes a Recorded trial evidence disclosure. On explicit
+Read trial journal, it calls the existing canonical `recoveredTrials` validator
+off the main queue. It shows accepted/not-accepted counts, participant and session
+IDs, requested conditions, reports, reviewer, observed-behavior declarations,
+review/interruption reasons and all recorded event times/details. Selecting another
+recording creates a separate view identity. No field is writable and this view
+cannot accept trials or relabel measurements.
+
+The existing validator requires a finalized stream with a saved plan. Incomplete
+or corrupt recordings cannot request this inspection; raw review/archive remains
+available under existing rules. Failed recovery is shown as rejection, never
+converted into an empty successful journal. A valid plan with no started trials
+has an explicit empty state. These checks do not establish physiological validity.
+
+Five TrialRecoveryTests pass, covering journal recovery/tampering/order/timing;
+all three native builds pass. Interactive inspection of a saved physiological
+session is still pending. This UI exposes existing evidence rather than changing
+training, acquisition or acceptance policy.

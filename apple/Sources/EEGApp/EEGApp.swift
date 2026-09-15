@@ -248,6 +248,7 @@ struct LibraryView: View {
         if let shareURL = shareURL { ShareLink(item: shareURL) { Label("Share exported recording", systemImage: "square.and.arrow.up") } }
         #endif
         if let info = model.recordings.first(where: { $0.url == model.selectedRecording }), model.playback {
+            TrialEvidenceReviewView(recording: info).id(info.url)
             WaveformWorkbench(samples: model.samples, title: "Recording review", onSelectionChange: { signalSelection = $0 })
                 .id("\(info.url.absoluteString):\(model.replayOffset)")
             IntervalAnalysisView(selection: signalSelection)
