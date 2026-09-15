@@ -46,7 +46,7 @@ struct DatasetTrainingView: View {
                     running = false
                     switch loaded {
                     case .success(let data): manifest = data; manifestName = url.lastPathComponent
-                    case .failure(let error): failure = "Manifest rejected: \(error)"
+                    case .failure(let error): failure = "Manifest rejected: \(error.localizedDescription) [\(error)]"
                     }
                 }
             }
@@ -73,7 +73,7 @@ struct DatasetTrainingView: View {
             running = false
             switch trained {
             case .success(let saved): result = saved.1; onSaved(saved.0)
-            case .failure(let error): failure = "Training rejected: \(error)"
+            case .failure(let error): failure = "Training rejected: \(error.localizedDescription) [\(error)]"
             }
         }
     }

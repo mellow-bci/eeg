@@ -117,7 +117,7 @@ struct DatasetEvaluationView: View {
             guard request == generation else { return }
             switch result {
             case .success(let value): artifact = value
-            case .failure(let error): failure = "Evaluation rejected: \(error)"
+            case .failure(let error): failure = "Evaluation rejected: \(error.localizedDescription) [\(error)]"
             }
         }
     }

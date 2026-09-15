@@ -662,3 +662,18 @@ No live acquisition or physiological experiment was performed.
 
 Validation: 131 tests, one opt-in qualification skipped, zero failures. Native
 macOS, iOS and visionOS builds passed. Interactive layout validation is pending.
+
+
+## Calibration and evaluation rejection guidance
+
+The core dataset, training-data and labeled-evaluation error types now provide
+localized descriptions consumed by the native training/evaluation views. Messages
+explain insufficient class/session coverage, duplicated content, incompatible
+features, invalid trial evidence, processing limits and training/evaluation overlap.
+The technical error case remains visible in brackets for reproduction. This is a
+presentation change; validation thresholds, classification and save behavior are
+unchanged. Uncertain labels must be excluded, not made valid merely to pass a gate.
+The profile remains experimental and cannot enable system control.
+
+Validation: 131 tests, one opt-in skip, zero failures; macOS, iOS and visionOS
+builds passed. No hardware trial or interactive error-layout check was performed.
