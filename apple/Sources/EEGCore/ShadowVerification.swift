@@ -2,6 +2,28 @@ import Foundation
 
 /// Verifies recorded shadow outputs, not intent accuracy or source authenticity.
 public enum EEGShadowVerification {
+    /// Mirrors the native host's single active consumer. It validates event order,
+    /// not output values; an unfinished final run remains inspectable as incomplete.
+    private struct RunOrder {
+        var activeID: String?
+        mutating func consume(_ object: [String: Any]) throws {
+            guard let kind=object["kind"] as? String,
+                  ["shadow_start","shadow_inference","shadow_stop"].contains(kind) else {return}
+            guard let id=object["shadow_run_id"] as? String,
+                  !id.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty,
+                  id.utf8.count<=4096 else {throw Failure.invalidRun}
+            switch kind {
+            case "shadow_start":
+                guard activeID == nil else {throw Failure.invalidRun}
+                activeID=id
+            case "shadow_inference":
+                guard activeID == id else {throw Failure.invalidRun}
+            default:
+                guard activeID == id else {throw Failure.invalidRun}
+                activeID=nil
+            }
+        }
+    }
     /// Shared event fields used by the native live host and replay qualification.
     public static var implementationFields: [String: String] {
         ["implementation_source_schema": EEGSourceIdentity.schema,
@@ -41,9 +63,11 @@ public enum EEGShadowVerification {
     public static func catalog(store: EEGRecordingStore, recording: URL, maximumRuns: Int=1024) throws -> Catalog {
         guard maximumRuns>0 else {throw Failure.invalidLimit}
         var runs=[Run](),identifiers=Set<String>()
+        var order=RunOrder()
         let digest=try store.finalizedRecords(recording:recording) {data,sample in
             guard sample == nil else {return}
             guard let object=try JSONSerialization.jsonObject(with:data) as? [String:Any] else {throw Failure.invalidRun}
+            try order.consume(object)
             guard object["kind"] as? String=="shadow_start" else {return}
             guard runs.count<maximumRuns else {throw Failure.limitExceeded}
             guard let id=object["shadow_run_id"] as? String,let session=object["session_id"] as? String,
@@ -73,6 +97,7 @@ public enum EEGShadowVerification {
         var seen=Set<Int>(),mismatches=[Int]()
         var lastRecordedOrdinal = -1
         var fingerprint=EEGRecordingFingerprint()
+        var order=RunOrder()
         let digest=try store.finalizedRecords(recording:recording) {data,sample in
             if let sample {
                 try fingerprint.append(sample)
@@ -83,6 +108,7 @@ public enum EEGShadowVerification {
                 return
             }
             guard let object=try JSONSerialization.jsonObject(with:data) as? [String:Any] else {throw Failure.invalidRun}
+            try order.consume(object)
             let kind=object["kind"] as? String
             // The native live host terminates shadow inference before recording
             // transport changes. Metadata is supplied at start, not changed in

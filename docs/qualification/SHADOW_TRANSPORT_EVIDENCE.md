@@ -63,3 +63,25 @@ swift test --package-path apple --filter ShadowVerificationTests
 The fix changes verification, not the decoder, live classifier parameters or
 system-action policy. A replay match remains a software consistency observation,
 not evidence of intent accuracy, source authenticity or physical qualification.
+
+## Single active run ordering
+
+A subsequent regression test exposed another issue in both catalog discovery and
+direct verification: each ignored conflicting events belonging to a different run
+ID. Six injected histories produced twelve failed rejection assertions across the
+two entry points. They included starts nested before/inside the selected run,
+stops for an inactive run and inference assigned to an inactive run.
+
+Both entry points now use the same bounded-state `RunOrder` validator. Start
+requires no active run; inference and stop must name the active run; stop clears
+it. Run identifiers must be present, nonblank and bounded. The validator does not
+duplicate sample assembly or classification. Catalog discovery still checks
+unique run IDs and metadata; listing is not full numeric verification.
+
+Complete sequential runs before or after the selected run remain supported.
+Tests verify two catalog entries and an unchanged match for the selected run.
+The other run has no windows and cannot claim a complete match. An unfinished
+final run remains inspectable as incomplete; no artificial stop is inserted.
+
+All seven shadow tests passed with zero failures in 4.429 seconds after this
+change. This is synthetic event-ordering evidence, not live-device qualification.

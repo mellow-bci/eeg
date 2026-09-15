@@ -181,6 +181,37 @@ final class ShadowVerificationTests: XCTestCase {
             XCTAssertTrue(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run").completeMatch)
         }
     }
+    func testSingleActiveRunOrderingAndSequentialRuns() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let store=try EEGRecordingStore(directory:directory),profile=try profile()
+        let url=try capture(store,profile:profile)
+        let original=try String(contentsOf:url).split(separator:"\n").map(String.init)
+        let start=try XCTUnwrap(original.firstIndex(where:{$0.contains("shadow_start")}))
+        let stop=try XCTUnwrap(original.firstIndex(where:{$0.contains("shadow_stop")}))
+        func renamed(_ text:String) throws -> String {
+            var object=try JSONSerialization.jsonObject(with:Data(text.utf8)) as! [String:Any]
+            object["shadow_run_id"]="other"
+            return String(decoding:try JSONSerialization.data(withJSONObject:object),as:UTF8.self)
+        }
+        let otherStart=try renamed(original[start]),otherStop=try renamed(original[stop])
+        let inference=try XCTUnwrap(original.first(where:{$0.contains("shadow_inference")}))
+        let otherInference=try renamed(inference)
+        for (event,index) in [(otherStart,start),(otherStart,start+1),(otherStop,start+1),
+                              (otherInference,stop),(otherStop,start),(otherInference,start)] {
+            var rows=original;rows.insert(event,at:index)
+            try (rows.joined(separator:"\n")+"\n").write(to:url,atomically:false,encoding:.utf8)
+            XCTAssertThrowsError(try EEGShadowVerification.catalog(store:store,recording:url))
+            XCTAssertThrowsError(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run"))
+        }
+        for index in [start,stop+1] {
+            var rows=original;rows.insert(contentsOf:[otherStart,otherStop],at:index)
+            try (rows.joined(separator:"\n")+"\n").write(to:url,atomically:false,encoding:.utf8)
+            XCTAssertEqual(try EEGShadowVerification.catalog(store:store,recording:url).runs.count,2)
+            XCTAssertTrue(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run").completeMatch)
+            XCTAssertFalse(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"other").completeMatch)
+        }
+    }
     func testMissingOutputAndMissingStopNeverPass() throws {
         let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer {try? FileManager.default.removeItem(at:directory)}
