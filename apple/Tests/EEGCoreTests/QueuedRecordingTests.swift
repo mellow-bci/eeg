@@ -244,7 +244,9 @@ final class QueuedRecordingTests: XCTestCase {
     }
     func testAcknowledgedEventWaitsForSynchronization() throws {try checkAcknowledgement(fail:false)}
     func testAcknowledgedEventReportsSynchronizationFailure() throws {try checkAcknowledgement(fail:true)}
-    private func checkAcknowledgement(fail:Bool) throws {
+    func testQueuedTrialWaitsForSynchronization() throws {try checkAcknowledgement(fail:false,trial:true)}
+    func testQueuedTrialReportsSynchronizationFailure() throws {try checkAcknowledgement(fail:true,trial:true)}
+    private func checkAcknowledgement(fail:Bool,trial:Bool=false) throws {
         let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer {try? FileManager.default.removeItem(at:directory)}
         let raw=try EEGRecordingStore(directory:directory)
@@ -254,13 +256,17 @@ final class QueuedRecordingTests: XCTestCase {
         let writer=try EEGQueuedRecordingStore(store:raw,queue:queue) {_,_ in XCTAssertTrue(fail)}
         let url=try writer.start()
         defer {release.signal();writer.abort();queue.sync {}}
-        try writer.enqueueEvent(kind:"annotation",fields:["text":"requires acknowledgement"]) { result in
+        let callback:(Result<Void,Error>)->Void = { result in
             switch result {
             case .success: XCTAssertFalse(fail)
             case .failure: XCTAssertTrue(fail)
             }
             done.signal()
         }
+        if trial {
+            try writer.enqueueTrialEvidence(EEGTrialEvidence(id:"trial",sessionID:"session",participantID:"synthetic",
+                condition:.neutral,startingNumber:431),onPersisted:callback)
+        } else {try writer.enqueueEvent(kind:"annotation",fields:["text":"requires acknowledgement"],onPersisted:callback)}
         XCTAssertEqual(entered.wait(timeout:.now()+2),.success)
         XCTAssertEqual(done.wait(timeout:.now()+0.02),.timedOut)
         release.signal()
@@ -286,6 +292,37 @@ final class QueuedRecordingTests: XCTestCase {
         writer.abort();queue.resume()
         wait(for:[completed],timeout:2);queue.sync {}
         XCTAssertEqual(writer.statistics.discardedInputs,1)
+    }
+
+    func testQueuedTrialPreservesSampleBoundaryAndRejectsDuplicateRevision() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let raw=try EEGRecordingStore(directory:directory)
+        let queue=DispatchQueue(label:"test.trial.queue")
+        let failure=expectation(description:"invalid revision abort")
+        let writer=try EEGQueuedRecordingStore(store:raw,queue:queue) {_,_ in failure.fulfill()}
+        let url=try writer.start()
+        let planned=try EEGTrialEvidence(id:"trial",sessionID:"session",participantID:"synthetic",condition:.neutral,startingNumber:431)
+        let persisted=expectation(description:"trial persisted")
+        for index in 0..<3 {try writer.enqueue(sample:sample(index))}
+        try writer.enqueueTrialEvidence(planned) { result in
+            if case .failure(let error)=result {XCTFail("Trial failed: \(error)")}
+            persisted.fulfill()
+        }
+        wait(for:[persisted],timeout:2)
+        let rows=try String(contentsOf:url).split(separator:"\n").map {
+            try JSONSerialization.jsonObject(with:Data($0.utf8)) as! [String:Any]
+        }
+        XCTAssertEqual(rows.last?["kind"] as? String,"trial_evidence")
+        XCTAssertEqual(rows.last?["sample_count_at_write"] as? Int,3)
+        let rejected=expectation(description:"duplicate rejected")
+        try writer.enqueueTrialEvidence(planned) { result in
+            if case .success=result {XCTFail("Duplicate revision accepted")}
+            rejected.fulfill()
+        }
+        wait(for:[failure,rejected],timeout:2);queue.sync {}
+        XCTAssertThrowsError(try writer.finish())
+        XCTAssertFalse(try String(contentsOf:url).contains("\"summary\""))
     }
 
 }

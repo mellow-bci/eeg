@@ -435,3 +435,27 @@ boundaries rather than physiological or device tests.
 Full validation: 110 tests, one opt-in load qualification skipped, zero failures;
 macOS, iOS and visionOS builds passed. The plan-saving UI is build-checked only;
 no fresh participant trial was performed.
+
+## Queued trial revision storage primitive
+
+The canonical recording queue now accepts enqueueTrialEvidence with a mandatory
+onPersisted callback. It calls the existing appendTrialEvidence implementation,
+including revision-chain validation and filesystem synchronization. It shares
+sample/event ordering, count and logical-byte bounds, failure handling and cleanup.
+The encoded revision length is charged to the queue byte budget; encoding is a
+temporary allocation and this is not a process-memory bound. Admission rejection
+throws without callback; admitted writes acknowledge through the same notification
+queue as acknowledged plan events. Success is an I/O acknowledgement only.
+
+Tests verify that trial acknowledgements wait for synchronization, synchronization
+failure cannot succeed, the trial's sample_count_at_write follows three preceding
+samples, and duplicate revisions abort without a summary. Thirteen focused queue
+tests passed. The app still calls synchronous trial transitions: this storage
+primitive is preparatory work for migrating the cue/lifecycle state machine, not
+a claim that live trial UI stalls are resolved.
+
+Full suite: 113 tests, one opt-in qualification skipped, zero failures. The cue
+controller migration must preserve the observation time of speech callbacks
+before awaiting storage, serialize revisions, and invalidate pending publication
+on interruption. It must not shift physiological labels to acknowledgement time
+or start speech merely because evidence was enqueued.

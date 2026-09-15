@@ -34,7 +34,7 @@ public final class EEGQueuedRecordingStore {
     }
     private var admitted=0, written=0, discarded=0, writeFailures=0, peakInputs=0, peakBytes=0
     private var maximumWait=0.0, maximumWrite=0.0
-    private enum Input { case sample(EEGSample), event(String,[String:String],Bool) }
+    private enum Input { case sample(EEGSample), event(String,[String:String],Bool), trial(EEGTrialEvidence) }
     private let store: EEGRecordingStore
     private let queue: DispatchQueue
     private let notifications=DispatchQueue(label:"cloud.autonomy.eeg.recording.failures")
@@ -108,6 +108,17 @@ public final class EEGQueuedRecordingStore {
         }
         try enqueue(.event(kind,fields,onPersisted != nil),cost:max(1,cost),completion:onPersisted)
     }
+    /// Queue a revision through the canonical revision validator and write/sync
+    /// path. Publication must await onPersisted. Logical JSON bytes are charged
+    /// to the existing queue budget; they are not an estimate of process RSS.
+    public func enqueueTrialEvidence(_ trial: EEGTrialEvidence,
+                                     onPersisted: @escaping (Result<Void,Error>)->Void) throws {
+        let cost:Int
+        do {cost=try JSONEncoder().encode(trial).count}
+        catch {reject("invalid_trial_encoding");throw error}
+        guard cost<=byteCapacity else {reject("trial_capacity");throw Failure.admissionRejected}
+        try enqueue(.trial(trial),cost:max(1,cost),completion:onPersisted)
+    }
     private func enqueue(_ input: Input,cost: Int,completion: ((Result<Void,Error>)->Void)? = nil) throws {
         lock.lock()
         guard active,!failed else { lock.unlock();throw Failure.aborted }
@@ -130,6 +141,7 @@ public final class EEGQueuedRecordingStore {
             do {
                 switch input {
                 case .sample(let sample): try store.append(sample:sample)
+                case .trial(let trial): try store.appendTrialEvidence(trial)
                 case .event(let kind,let fields,let synchronize): try store.appendEvent(kind:kind,fields:fields,synchronize:synchronize)
                 }
                 lock.lock();written+=1;maximumWrite=max(maximumWrite,ProcessInfo.processInfo.systemUptime-startedAt);lock.unlock()
