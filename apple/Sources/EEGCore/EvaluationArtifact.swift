@@ -11,6 +11,7 @@ public struct EEGEvaluationArtifact: Sendable {
     public let sessionResampling: [String: EEGSessionResampling.Result]?
     public static func run(manifest: Data, store: EEGRecordingStore, profile: EEGMentalProfile,
                            controlsOnly: Bool = false, minimumWindowsPerClass: Int = 10, resampling: EEGSessionResampling.Options? = nil, trialAssociationMinimumEligibleFraction: Double? = nil) throws -> EEGEvaluationArtifact {
+        try Task.checkCancellation()
         if let fraction = trialAssociationMinimumEligibleFraction { try EEGTrialPlanAssociation.validateMinimumEligibleFraction(fraction) }
         try resampling?.validate()
         guard minimumWindowsPerClass > 0 else { throw EEGLabeledEvaluation.Failure.invalidMinimumWindows }
@@ -24,6 +25,7 @@ public struct EEGEvaluationArtifact: Sendable {
     // Internal so production callers cannot attach an unrelated manifest to results.
     static func make(report: EEGLabeledEvaluation, dataset: EEGTrainingDataset, manifest: Data,
                      profile: EEGMentalProfile, resampling: EEGSessionResampling.Options? = nil, trialAssociation: [String: EEGTrialPlanAssociation.Assessment]? = nil) throws -> EEGEvaluationArtifact {
+        try Task.checkCancellation()
         try resampling?.validate()
         let trainingSourceAudit = try EEGTrainingSourceAudit.run(profile: profile, sessions: dataset.sessions)
         var sourceAuditObject = try JSONSerialization.jsonObject(with: JSONEncoder().encode(trainingSourceAudit)) as! [String: Any]
@@ -33,8 +35,9 @@ public struct EEGEvaluationArtifact: Sendable {
             ["predicted_counts": row.predictedCounts, "rejected_windows": row.rejectedWindows,
              "actual_windows": row.actualWindows]
         }
-        let predictions: [[String: Any]] = zip(report.predictions, dataset.evaluation).map { prediction, row in
-            ["window_id": prediction.windowID, "session_id": prediction.sessionID,
+        let predictions: [[String: Any]] = try zip(report.predictions, dataset.evaluation).map { prediction, row in
+            try Task.checkCancellation()
+            return ["window_id": prediction.windowID, "session_id": prediction.sessionID,
              "trial_id": prediction.trialID, "actual_label": prediction.actual,
              "predicted_label": nullable(prediction.predictedLabel), "reason": prediction.reason,
              "input_usable": prediction.inputUsable, "start_seconds": row.input.start,
@@ -71,8 +74,9 @@ public struct EEGEvaluationArtifact: Sendable {
         }
         let conditions = report.conditions.mapValues(exposureObject)
         let sessionConditions = report.sessionConditions.mapValues { $0.mapValues(exposureObject) }
-        let trials: [[String: Any]] = report.trials.map { trial in
-            ["session_id": trial.sessionID, "trial_id": trial.trialID, "label": trial.label,
+        let trials: [[String: Any]] = try report.trials.map { trial in
+            try Task.checkCancellation()
+            return ["session_id": trial.sessionID, "trial_id": trial.trialID, "label": trial.label,
              "condition": trial.condition, "start_seconds": trial.start, "end_seconds": trial.end,
              "cue_completed_at_seconds": nullable(trial.cueCompletedAt), "covered_seconds": trial.coveredSeconds,
              "unobserved_seconds": trial.unobservedSeconds,
@@ -150,7 +154,10 @@ public struct EEGEvaluationArtifact: Sendable {
                 "Profile hashes detect complete training-recording reuse; excerpt checks compare only source sessions present in this manifest. Short or transformed excerpts and absent historical training sources are not excluded.",
                 "Parent lineage does not audit historical model-selection or evaluation reuse."]
         ]
+        try Task.checkCancellation()
         let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys, .prettyPrinted])
+        // Foundation serialization is synchronous; discard its result if cancelled.
+        try Task.checkCancellation()
         return EEGEvaluationArtifact(report: report, data: data, trainingSourceAudit: trainingSourceAudit, trialAssociation: trialAssociation, sessionResampling: sessionResampling)
     }
 }

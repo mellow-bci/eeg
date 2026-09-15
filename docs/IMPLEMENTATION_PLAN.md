@@ -229,3 +229,13 @@ retention, incomplete/noncorrupt status after successful rollback, rejected
 analysis and explicit uncertainty when rollback fails. If storage prevents all
 rollback writes, on-disk completion may remain ambiguous; the returned error is
 not a guarantee that a future reader can detect that failure independently.
+
+
+## Shared evaluation cancellation checkpoint
+
+The canonical receipt constructor now rejects cancelled tasks and checks long
+prediction/trial conversion plus the JSON serialization boundary. A regression
+failed before the fix and passes with byte-identical independent retry output.
+See [EVALUATION_CANCELLATION.md](EVALUATION_CANCELLATION.md) for the observed core
+gap, existing UI publication guards and cooperative-cancellation limits. No
+acquisition, model or control-output behavior changed.

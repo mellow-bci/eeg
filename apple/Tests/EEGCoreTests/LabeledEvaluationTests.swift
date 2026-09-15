@@ -3,6 +3,26 @@ import XCTest
 @testable import EEGCore
 
 final class LabeledEvaluationTests: XCTestCase {
+    func testCancelledReceiptCannotPublishAndIndependentRetryMatches() async throws {
+        let (profile, dataset, _) = try fixture()
+        let report = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset)
+        let manifest = Data("synthetic cancellation fixture".utf8)
+        let baseline = try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile)
+        let cancelled = Task.detached { () throws -> EEGEvaluationArtifact in
+            // Cancel this worker deterministically; no sleeps or scheduling race.
+            withUnsafeCurrentTask { $0?.cancel() }
+            return try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile)
+        }
+        do {
+            _ = try await cancelled.value
+            XCTFail("Cancelled worker published an evaluation receipt")
+        } catch is CancellationError {
+            // Cancellation must remain an error, not an unavailable/success receipt.
+        } catch { XCTFail("Unexpected error: \(error)") }
+        let retry = try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile)
+        XCTAssertEqual(retry.data, baseline.data)
+        XCTAssertFalse(retry.report.systemControlEnabled)
+    }
     func testConfigurableMinimumRejectsInsufficientDataWithoutChangingInference() throws {
         let (profile, dataset, _) = try fixture()
         let defaultReport = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset)
