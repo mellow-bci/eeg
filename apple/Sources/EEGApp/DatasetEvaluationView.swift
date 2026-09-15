@@ -214,19 +214,7 @@ struct DatasetEvaluationView: View {
         }
     }
     private func confusionSummary(_ rows: [String: EEGLabeledEvaluation.ConfusionRow]) -> some View {
-        DisclosureGroup("Command confusion — window counts") {
-            Text("Each row is a declared actual label. Columns count predicted labels; rejection is separate. These are correlated windows, not independent trials.").font(.caption)
-            ForEach(rows.keys.sorted(), id: \.self) { actual in
-                let row = rows[actual]!
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Actual: \(actual) · \(row.actualWindows) windows").font(.headline)
-                    ForEach(row.predictedCounts.keys.sorted(), id: \.self) { predicted in
-                        LabeledContent("Predicted: \(predicted)", value: String(row.predictedCounts[predicted]!))
-                    }
-                    LabeledContent("Rejected (no prediction)", value: String(row.rejectedWindows))
-                }.monospacedDigit()
-            }
-        }
+        ConfusionMatrixView(rows: rows)
     }
     private func trialSummary(label: String, metric: EEGLabeledEvaluation.TrialMetric) -> some View {
         VStack(alignment: .leading) {
