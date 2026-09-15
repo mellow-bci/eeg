@@ -93,6 +93,29 @@ final class ReplayInferenceTests: XCTestCase {
         XCTAssertEqual(delivered,0);XCTAssertEqual(bounded.pendingInputs,0)
         bounded.stop()
     }
+    func testLiveEventByteBudgetInvalidatesAndReleasesOnDrain() throws {
+        let profile=try EEGMentalProfile.load(data:profileData())
+        let queue=DispatchQueue(label:"test.live.bytes")
+        var outputs=0
+        let live=try EEGLiveInference(profile:profile,participantID:"participant",sessionID:"held-out",
+            maximumPendingInputs:20,maximumPendingEventBytes:4,queue:queue) { _ in outputs+=1 }
+        queue.suspend()
+        XCTAssertTrue(live.submit(.event(Data("{}".utf8))))
+        XCTAssertTrue(live.submit(.event(Data("{}".utf8))))
+        XCTAssertEqual(live.pendingEventBytes,4)
+        XCTAssertFalse(live.submit(.event(Data("{}".utf8))))
+        XCTAssertEqual(live.pendingInputs,2);XCTAssertEqual(live.generation,1)
+        queue.resume();queue.sync {}
+        XCTAssertEqual(live.pendingEventBytes,0);XCTAssertEqual(outputs,0)
+        XCTAssertFalse(live.submit(.event(Data(repeating:32,count:5))))
+        XCTAssertEqual(live.pendingInputs,0)
+        XCTAssertTrue(live.submit(.event(Data("{}".utf8))))
+        queue.sync {}
+        XCTAssertEqual(live.pendingEventBytes,0)
+        live.stop()
+        XCTAssertThrowsError(try EEGLiveInference(profile:profile,participantID:"participant",sessionID:"held-out",
+            maximumPendingInputs:20,maximumPendingEventBytes:0) { _ in })
+    }
     func testRenamedTrainingContentRejected() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }

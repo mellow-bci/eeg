@@ -14,6 +14,8 @@ public final class EEGLiveInference {
     private let lock=NSLock()
     private let queue: DispatchQueue
     private let capacity: Int
+    private let eventByteCapacity: Int
+    private var eventBytes=0
     private var pending=0
     private var epoch: UInt64=0
     private var closed=false
@@ -23,33 +25,47 @@ public final class EEGLiveInference {
     private var processor: EEGWindowInference
     private let deliver: (Output)->Void
     public convenience init(profile: EEGMentalProfile, participantID: String, sessionID: String,
-                            maximumPendingInputs: Int=512, deliver: @escaping (Output)->Void) throws {
+                            maximumPendingInputs: Int=512, maximumPendingEventBytes: Int=4*1024*1024, deliver: @escaping (Output)->Void) throws {
         try self.init(profile:profile,participantID:participantID,sessionID:sessionID,
-            maximumPendingInputs:maximumPendingInputs,queue:DispatchQueue(label:"cloud.autonomy.eeg.inference",qos:.userInitiated),deliver:deliver)
+            maximumPendingInputs:maximumPendingInputs,maximumPendingEventBytes:maximumPendingEventBytes,queue:DispatchQueue(label:"cloud.autonomy.eeg.inference",qos:.userInitiated),deliver:deliver)
     }
     init(profile: EEGMentalProfile, participantID: String, sessionID: String,
-         maximumPendingInputs: Int, queue: DispatchQueue, deliver: @escaping (Output)->Void) throws {
-        guard maximumPendingInputs>0 else { throw Failure.invalidCapacity }
+         maximumPendingInputs: Int, maximumPendingEventBytes: Int=4*1024*1024, queue: DispatchQueue, deliver: @escaping (Output)->Void) throws {
+        guard maximumPendingInputs>0, maximumPendingEventBytes>0 else { throw Failure.invalidCapacity }
         processor=try EEGWindowInference(profile:profile,participantID:participantID,sessionID:sessionID)
-        capacity=maximumPendingInputs;self.queue=queue;self.deliver=deliver
+        capacity=maximumPendingInputs;eventByteCapacity=maximumPendingEventBytes;self.queue=queue;self.deliver=deliver
     }
     public var generation: UInt64 { lock.lock();defer {lock.unlock()};return epoch }
     public var pendingInputs: Int { lock.lock();defer {lock.unlock()};return pending }
+    public var pendingEventBytes: Int { lock.lock();defer {lock.unlock()};return eventBytes }
     /// False means input was NOT processed. The host must expose overload and
     /// resend current metadata/stability before resumed windows can become valid.
     @discardableResult public func submit(_ input: Input) -> Bool {
         lock.lock()
         guard !closed else { lock.unlock();return false }
-        guard pending<capacity else { epoch &+= 1;lock.unlock();return false }
-        let submittedEpoch=epoch;pending+=1
+        let bytes: Int
+        let admissible: Bool
+        switch input {
+        case .event(let data): bytes=data.count;admissible=data.count<=4*1024*1024
+        case .sample(let sample):
+            bytes=0
+            // Fixed channel cardinality bounds queued sample payloads as well.
+            admissible=sample.adcWords.count==15 && sample.electrodesADC.count==14 &&
+                (sample.electrodesMicrovolts == nil || sample.electrodesMicrovolts?.count==14) &&
+                (try? EEGRecordingStore.validateSample(sample)) != nil
+        }
+        guard admissible,pending<capacity,bytes<=eventByteCapacity-eventBytes else {
+            epoch &+= 1;lock.unlock();return false
+        }
+        let submittedEpoch=epoch;pending+=1;eventBytes+=bytes
         // Enqueue under the admission lock so concurrent callers preserve order.
-        queue.async { [self] in consume(input,generation:submittedEpoch) }
+        queue.async { [self] in consume(input,generation:submittedEpoch,eventByteCount:bytes) }
         lock.unlock();return true
     }
     public func reset() { lock.lock();epoch &+= 1;lock.unlock() }
     public func stop() { lock.lock();closed=true;epoch &+= 1;lock.unlock() }
-    private func consume(_ input: Input,generation: UInt64) {
-        defer { lock.lock();pending-=1;lock.unlock() }
+    private func consume(_ input: Input,generation: UInt64,eventByteCount: Int) {
+        defer { lock.lock();pending-=1;eventBytes-=eventByteCount;lock.unlock() }
         lock.lock();let current = !closed && generation==epoch;lock.unlock()
         guard current else { return }
         if workerEpoch != generation {

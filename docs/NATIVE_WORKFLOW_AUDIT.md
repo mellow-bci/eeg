@@ -113,3 +113,26 @@ Regression assertions check the exact indices and timestamps of known synthetic
 windows. Existing live/replay equality checks now include these fields. This
 provides alignment metadata, not proof that live capture matches replay under
 real transport/load. A full alignment audit and latency measurement remain due.
+
+## Live queue payload budget
+
+The shadow consumer now admits at most `maximumPendingInputs` inputs (default
+512) and `maximumPendingEventBytes` event bytes (default 4 MiB), including the
+currently processing input until delivery returns. Each event also retains the
+4 MiB individual limit. Admission rejects oversized events before enqueueing;
+subtraction-based capacity checks avoid integer overflow. Samples must have the
+canonical 15 ADC words and exactly 14 channel values per present dictionary,
+with the shared sample validator accepting their contents before enqueueing.
+These bounds cover logical input payloads, not exact process RSS, allocator
+capacity or caller-owned storage. The analysis window and model remain separate.
+
+Budget rejection returns false and invalidates the generation, just like count
+overload. The native host stops shadow inference visibly while raw recording
+continues. Stale queued work releases its accounting when drained. Reset/stop do
+not pretend queued memory has already been released. Limits are constructor
+configuration; they are not yet exposed in application settings.
+
+A suspended-worker test fills the byte budget below the count budget, verifies
+rejection/generation invalidation, drains stale work, and verifies accounting
+recovery and oversize rejection. This is deterministic offline evidence, not a
+hardware throughput or memory benchmark.
