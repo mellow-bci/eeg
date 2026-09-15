@@ -142,6 +142,60 @@ final class DecoderTests: XCTestCase {
         }
     }
 
+    /// Optional offline qualification export. Stability/epoch labels come from the
+    /// historical capture, never from a new native transport qualification.
+    func testExportNativeRetestForIndependentReferenceComparison() throws {
+        guard let destination = ProcessInfo.processInfo.environment["EEG_NATIVE_RETEST_OUTPUT"] else {
+            throw XCTSkip("Set EEG_NATIVE_RETEST_OUTPUT to a new JSONL path for offline Cortex comparison")
+        }
+        let original = try rows("epoc-cortex-retest-20260915-01.jsonl")
+        let info = try XCTUnwrap(original.first { $0["kind"] as? String == "stream_start" }?["info"] as? [String: Any])
+        var decoder = try self.decoder(info)
+        var samples: [EEGSample] = []
+        var rejected = 0
+        for packet in original where packet["kind"] as? String == "ble_notification" {
+            do {
+                samples += try decoder.decode(packet: data(XCTUnwrap(packet["hex"] as? String)),
+                                              receivedAt: XCTUnwrap(packet["t"] as? Double))
+            } catch { rejected += 1 }
+        }
+        let historical = original.filter { $0["kind"] as? String == "eeg_adc" }
+        XCTAssertEqual(samples.count, 15374)
+        XCTAssertEqual(samples.count, historical.count)
+        XCTAssertEqual(rejected, 2)
+        guard samples.count == historical.count else { throw TestError.badFixture }
+        var output: [[String: Any]] = [[
+            "kind": "qualification_provenance",
+            "source": "native_decoder_offline_replay",
+            "transport_labels": "historical Python capture annotations; not native hardware validation",
+            "fresh_acquisition": false
+        ]]
+        for (sample, old) in zip(samples, historical) {
+            // Check alignment before transferring only transport annotations.
+            guard sample.index == old["index"] as? Int,
+                  sample.counter == old["counter"] as? Int else { throw TestError.badFixture }
+            var row: [String: Any] = [
+                "kind": "eeg_adc", "index": sample.index, "counter": sample.counter,
+                "electrodes_adc": sample.electrodesADC,
+                "electrodes_microvolts": try XCTUnwrap(sample.electrodesMicrovolts),
+                "other_word_7": try XCTUnwrap(sample.rawContactQuality)
+            ]
+            for key in ["transport_stable", "epoch", "stable_segment"] {
+                row[key] = old[key]
+            }
+            output.append(row)
+        }
+        output.append(["kind": "summary", "samples": samples.count,
+                       "decode_errors": rejected, "source": "native_decoder_offline_replay",
+                       "fresh_acquisition": false, "physiology_validated": false])
+        var bytes = Data()
+        for row in output {
+            bytes.append(try JSONSerialization.data(withJSONObject: row, options: [.sortedKeys]))
+            bytes.append(0x0a)
+        }
+        try bytes.write(to: URL(fileURLWithPath: destination), options: [.withoutOverwriting])
+    }
+
     func testUnsupportedMetadataAndConfigurationFailClosed() throws {
         XCTAssertThrowsError(try EEGDecoder(serial: data("00"), revision: data("0740")))
         XCTAssertThrowsError(try EEGDecoder(serial: data("e50213ee2b"), revision: data("0730")))
