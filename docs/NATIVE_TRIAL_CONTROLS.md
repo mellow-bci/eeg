@@ -125,6 +125,23 @@ successful manifest is not a trained or validated classifier.
 A synthetic native regression covers planned recording → reviewed trial history
 → manifest → canonical evaluation windows, plus missing independence declaration,
 duplicate selection and source modification rejection. It does not constitute
-physiological validation. The builder returns JSON data; a native source-selection
-and save UI still needs to be connected. Raw recordings must accompany manifests
+physiological validation. The builder returns JSON data. Calibration now provides source selection, split
+assignment, per-recording independence declarations, validation and manifest export. Raw recordings must accompany manifests
 for replay; the manifest itself does not contain EEG samples.
+
+
+## Native dataset UI checkpoint
+
+`DatasetBuilderView` lists finalized, noncorrupt recordings; selections remain
+explicitly excluded until assigned to train/evaluation. Validation executes on a
+background task through the same core builder. A missing selected source rejects
+preparation instead of silently dropping it. Selection/declaration changes clear
+the prepared manifest. The training panel shares that manifest state, avoiding an
+export/reimport dependency. Training is still an explicit separate action and
+applies its own session/class/sample requirements. Existing external-manifest
+import feeds that same state and loader.
+
+The save action uses SwiftUI's native JSON file exporter. Build/core-test success
+is not UI qualification: interactive inspection was attempted, but the Mac was
+locked. Record-selection behavior, accessibility layout and the save panel remain
+unverified interactively. No user recording was exported or uploaded in this work.

@@ -7,8 +7,8 @@ struct DatasetTrainingView: View {
     @EnvironmentObject private var model: AcquisitionModel
     @State private var importing = false
     @State private var running = false
-    @State private var manifest: Data?
-    @State private var manifestName = ""
+    @Binding var manifest: Data?
+    @Binding var manifestName: String
     @State private var result: String?
     @State private var failure: String?
     var body: some View {
