@@ -98,3 +98,18 @@ qualified. Whole-content training reuse can only be checked after capture ends.
 The core live/replay regression remains the current software evidence. This app
 integration has not been exercised with a physical headset or interactive profile
 controls, and no physiological accuracy or production readiness is claimed.
+
+## Shadow source ranges
+
+Shared window results now retain first/last source sample indices, sample count
+and first/last receipt timestamps. Empty rejected windows have unavailable bounds.
+The acquisition log records these as `first_sample_index`, `last_sample_index`,
+`sample_count`, `input_start`, `input_end`, with `recorded_receipt_seconds` timing.
+The separate `receivedAt` remains callback-delivery time. Start/result/stop records
+share `shadow_run_id`; results also include reset generation. Thus a restarted
+run's ordinal zero cannot be confused with the previous run's ordinal zero.
+
+Regression assertions check the exact indices and timestamps of known synthetic
+windows. Existing live/replay equality checks now include these fields. This
+provides alignment metadata, not proof that live capture matches replay under
+real transport/load. A full alignment audit and latency measurement remain due.

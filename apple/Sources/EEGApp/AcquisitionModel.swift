@@ -277,6 +277,13 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
                     try self.store?.appendEvent(kind:"shadow_inference",fields:["profile_id":profile.id,
                         "feature_config_id":EEGMentalFeatures.configurationID,"session_id":sessionID,
                         "ordinal":String(row.ordinal),"candidate":row.candidate ?? "",
+                        "shadow_run_id":token.uuidString,"generation":String(output.generation),
+                        "first_sample_index":row.firstSampleIndex.map(String.init) ?? "",
+                        "last_sample_index":row.lastSampleIndex.map(String.init) ?? "",
+                        "sample_count":String(row.sampleCount),
+                        "input_start":row.inputStart.map { String($0) } ?? "",
+                        "input_end":row.inputEnd.map { String($0) } ?? "",
+                        "time_basis":"recorded_receipt_seconds",
                         "has_candidate":String(row.candidate != nil),"reasons":row.reasons.joined(separator:";"),
                         "status":row.status,"system_control_enabled":"false","receivedAt":String(self.recordingClock)])
                     self.shadowResult=row;self.shadowStatus="Experimental shadow result — no reliable command"
@@ -285,7 +292,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         }
         do {
             try store.appendEvent(kind:"shadow_start",fields:["profile_id":profile.id,"participant_id":profile.participantID,
-                "session_id":sessionID,"feature_config_id":EEGMentalFeatures.configurationID,
+                "session_id":sessionID,"feature_config_id":EEGMentalFeatures.configurationID,"shadow_run_id":token.uuidString,
                 "system_control_enabled":"false","receivedAt":String(recordingClock)])
             let device=metadata.mapValues { $0.map { String(format:"%02x",$0) }.joined() }.merging(["kind":"device_metadata"]) { _,new in new }
             guard consumer.submit(.event(try JSONSerialization.data(withJSONObject:device))),
@@ -295,9 +302,10 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     func stopShadow(reason: String = "operator_stopped", persist: Bool = true) {
         guard shadow != nil else { return }
+        let stoppedRun=shadowToken
         shadow?.stop();shadow=nil;shadowToken=UUID();shadowActive=false;shadowResult=nil;shadowStatus="Stopped: "+reason
         if persist,recording {
-            do { try store?.appendEvent(kind:"shadow_stop",fields:["reason":reason,"receivedAt":String(recordingClock)]) }
+            do { try store?.appendEvent(kind:"shadow_stop",fields:["shadow_run_id":stoppedRun.uuidString,"reason":reason,"receivedAt":String(recordingClock)]) }
             catch { storageFailed(error) }
         }
     }
