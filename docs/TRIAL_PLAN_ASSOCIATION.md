@@ -97,3 +97,53 @@ Validation checkpoint, 2026-09-15: nine selected native tests passed; the Python
 24-trial enumeration matched the count vector and total; macOS, iOS and visionOS
 builds succeeded. The capability table generator/check also passed. End-to-end
 receipt integration and physiological qualification remain unimplemented.
+
+## Source and trial eligibility adapter
+
+The internal `run(recording:store:expectedFileSHA256:participantID:sessionID:classes:trials:minimumEligibleFraction:)`
+overload now joins a finalized recording's recovered plan/revisions to canonical
+`EEGTrialTiming` outputs. `TrialRecordingEvidence` retains the plan already
+validated during stream recovery. No second plan parser or trial state machine
+is introduced.
+
+The adapter requires:
+
+- An exact recording digest match to the evaluator's expected source; matching
+  participant/session identities; the binary neutral/silent-subtraction classes.
+- All 24 planned trials started, reviewed, accepted and self-reported attempted.
+  Missing, rejected or unreviewed trials prevent a result for the entire plan.
+- Exactly those 24 distinct IDs in the trial summaries, all in the same session.
+- Identical recorded labels, conditions, scored intervals and cue completion
+  times to those produced by `datasetTrial()` from recovered evidence.
+- Finite, nonnegative coverage and eligible exposure, eligible no greater than
+  covered, and covered no greater than the declared interval. A relative 1e-12
+  tolerance permits summation roundoff, not missing samples. Counts must be
+  nonnegative and consistent with a single non-neutral command.
+- Every trial meets an explicit caller-selected eligible fraction in (0,1].
+  This adapter supplies no default and makes no universal validity claim for
+  the selected threshold. Its value and all per-trial fractions accompany the
+  source hash and conditional association result.
+
+All checks finish before comparison. The adapter never drops trials, imputes
+missing outcomes or rewrites samples. It is internal because its timing/count
+inputs must come from the canonical evaluator; a hand-constructed summary does
+not establish that the detector produced those outcomes. File hashes identify
+bytes, not authorship or physical truth. Self-reported attempted and operator
+accepted remain declarations, not independently verified compliance.
+
+Receipt/UI/CLI integration remains pending, including binding the evaluator's
+actual source digest and profile classes to this adapter and reporting explicit
+unavailable states. The earlier raw Boolean-map primitive is not itself a
+qualified evaluation path. Quality-dependent exclusions, sequence effects,
+exchangeability and physiological validation remain unresolved.
+
+`TrialAssociationEvidenceTests` construct complete synthetic journals with every
+transition and rest interval, then join synthetic timing summaries. They check
+source/identity/class mismatches, missing/rejected/duplicate trials, absent cues,
+invalid/insufficient exposure, count inconsistencies, result provenance and
+unchanged source bytes. These fixtures deliberately contain no EEG: they test
+the join and rejection rules, not detector performance or end-to-end capture.
+
+Source-adapter validation, 2026-09-15: 17 selected native association, recovery and
+dataset-export tests passed with zero failures. macOS, iOS and visionOS builds
+succeeded. No headset or physical trial was used.

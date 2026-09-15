@@ -115,6 +115,7 @@ public final class EEGRecordingStore {
     /// Recover all trial revisions from a finalized, unchanged recording. This
     /// validates lifecycle evidence, not physiological truth or source authenticity.
     public struct TrialRecordingEvidence: Sendable {
+        public let plan: EEGTrialPlan
         public let trials: [EEGTrialEvidence]
         public let fileSHA256: String
     }
@@ -161,8 +162,8 @@ public final class EEGRecordingStore {
             history[trial.id]=trial
         }
         try validation.finish()
-        guard validation.summarized,plan != nil else { throw EEGRecordingError.invalidData }
-        return TrialRecordingEvidence(trials:order.compactMap { history[$0] },fileSHA256:hash)
+        guard validation.summarized, let plan else { throw EEGRecordingError.invalidData }
+        return TrialRecordingEvidence(plan:plan,trials:order.compactMap { history[$0] },fileSHA256:hash)
     }
 
     public func replay(recording: URL, offset: Int = 0, limit: Int = 1280) throws -> [EEGSample] {
