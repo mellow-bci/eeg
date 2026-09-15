@@ -10,6 +10,33 @@ final class ProfileCreationTests: XCTestCase {
         for i in rows.indices { rows[i]["participant_id"] = "participant-नमस्ते-🧠" }
         return try JSONDecoder().decode([EEGTrainingRecord].self, from: JSONSerialization.data(withJSONObject: rows))
     }
+    func testCancelledTrainingAndSaveDoNotPublishAndRetryMatches() async throws {
+        let rows = try records(), participant = "participant-नमस्ते-🧠"
+        let baseline = try EEGProfileCreation.train(rows, participantID: participant)
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let path = directory.appendingPathComponent("cancelled.json")
+        let trainingCancelled = await Task.detached {
+            withUnsafeCurrentTask { $0?.cancel() }
+            do { _ = try EEGProfileCreation.train(rows, participantID: participant); return false }
+            catch is CancellationError { return true }
+            catch { return false }
+        }.value
+        XCTAssertTrue(trainingCancelled)
+        let saveCancelled = await Task.detached {
+            withUnsafeCurrentTask { $0?.cancel() }
+            do { try EEGProfileCreation.save(baseline, to: path); return false }
+            catch is CancellationError { return true }
+            catch { return false }
+        }.value
+        XCTAssertTrue(saveCancelled)
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: directory.path), [])
+        let retry = try EEGProfileCreation.train(rows, participantID: participant)
+        XCTAssertEqual(retry.data, baseline.data)
+        try EEGProfileCreation.save(retry, to: path)
+        XCTAssertEqual(try Data(contentsOf: path), baseline.data)
+    }
     func testNativeProfileRoundtripAndOptionalInteropExport() throws {
         let rows = try records(), parent = String(repeating: "a", count: 64)
         let artifact = try EEGProfileCreation.train(rows, participantID: "participant-नमस्ते-🧠", parentProfileID: parent)

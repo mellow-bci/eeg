@@ -35,11 +35,13 @@ public enum EEGTrainingData {
     /// Fits normalization and Fisher-style feature ranking on training records only.
     public static func prepare(_ records: [EEGTrainingRecord], participantID: String,
                                settings: ProcessingSettings = ProcessingSettings()) throws -> EEGPreparedTraining {
+        try Task.checkCancellation()
         try settings.validate()
         guard !participantID.isEmpty, !records.isEmpty else { throw Failure.invalidRecords }
         if let limit = settings.maxTrainingWindows, records.count > limit { throw Failure.resourceLimit }
         var hashes = [String: String](), ids = Set<String>()
         for record in records {
+            try Task.checkCancellation()
             guard record.accepted, record.label_verified else { throw Failure.unverifiedLabels }
             guard record.participant_id == participantID, !record.label.isEmpty, !record.session_id.isEmpty,
                   !record.window_id.isEmpty else { throw Failure.invalidRecords }
@@ -64,9 +66,13 @@ public enum EEGTrainingData {
             let sd = sqrt(records.reduce(0.0) { $0 + pow($1.values[j] - center[j], 2) } / n)
             return sd < 1e-8 ? 1 : sd
         }
-        let normalized = records.map { record in (0..<70).map { (record.values[$0] - center[$0]) / scale[$0] } }
+        let normalized = try records.map { record in
+            try Task.checkCancellation()
+            return (0..<70).map { (record.values[$0] - center[$0]) / scale[$0] }
+        }
         let means = grouped.map { indices in (0..<70).map { j in indices.reduce(0.0) { $0 + normalized[$1][j] } / Double(indices.count) } }
-        let ratio = (0..<70).map { j -> Double in
+        let ratio = try (0..<70).map { j -> Double in
+            try Task.checkCancellation()
             let mean = means.reduce(0.0) { $0 + $1[j] } / Double(classes.count)
             let between = means.reduce(0.0) { $0 + pow($1[j] - mean, 2) } / Double(classes.count)
             let within = grouped.indices.reduce(0.0) { total, c in
@@ -78,6 +84,7 @@ public enum EEGTrainingData {
         let selected = Array((0..<70).sorted { ratio[$0] == ratio[$1] ? $0 < $1 : ratio[$0] > ratio[$1] }.prefix(settings.selectedFeatures))
         let pcaMean = selected.map { j in normalized.reduce(0.0) { $0 + $1[j] } / n }
         let centered = normalized.map { row in selected.enumerated().map { row[$0.element] - pcaMean[$0.offset] } }
+        try Task.checkCancellation()
         return EEGPreparedTraining(classes: classes, labels: records.map { classes.firstIndex(of: $0.label)! },
             center: center, scale: scale, selected: selected, pcaMean: pcaMean, centeredSelected: centered,
             recordingHashes: hashes, windowIDs: records.map(\.window_id))

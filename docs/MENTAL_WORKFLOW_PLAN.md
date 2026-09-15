@@ -21,3 +21,7 @@ from the evaluation manifest; passing the check is not an independence claim.
 The shared sequential detector now explicitly rejects negative and overlapping
 window timing; see [DETECTOR_TIMING.md](DETECTOR_TIMING.md) for the engineering
 rule, reset semantics and synthetic validation boundaries.
+
+Native training now supports cooperative cancellation through fitting and the
+profile publication boundary; see [TRAINING_CANCELLATION.md](TRAINING_CANCELLATION.md).
+This improves the training lifecycle without changing the physiological gates.

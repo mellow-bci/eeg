@@ -9,6 +9,8 @@ struct DatasetTrainingView: View {
     @EnvironmentObject private var model: AcquisitionModel
     @State private var importing = false
     @State private var running = false
+    @State private var trainingWorker: Task<Result<(EEGMentalProfile, String), Error>, Never>?
+    @State private var cancellationRequested = false
     @Binding var manifest: Data?
     @Binding var manifestName: String
     @State private var result: String?
@@ -30,7 +32,14 @@ struct DatasetTrainingView: View {
             Button(retraining ? "Retrain and save new profile" : "Train and save experimental profile", systemImage: "brain") { train() }
                 .disabled(manifest == nil || running || model.recording || model.ready || (retraining && parentProfile == nil))
             Text("Uses saved Processing settings. Profiles are saved privately in EEG/Profiles without replacing existing files.").font(.caption).foregroundStyle(.secondary)
-            if running { ProgressView("Validating recordings and fitting profile…") }
+            if running { ProgressView(cancellationRequested ? "Waiting for training to stop…" : "Validating recordings and fitting profile…") }
+            if trainingWorker != nil {
+                Button("Cancel training", role: .cancel) {
+                    cancellationRequested = true
+                    trainingWorker?.cancel()
+                }.disabled(cancellationRequested)
+                Text("Cancellation waits for the current numerical or storage operation. A profile already saved is retained.").font(.caption).foregroundStyle(.secondary)
+            }
             if let result { Text(result).textSelection(.enabled) }
             if let failure { Text(failure).foregroundStyle(.red).textSelection(.enabled) }
         }
@@ -66,29 +75,34 @@ struct DatasetTrainingView: View {
         guard !retraining || parentProfile != nil else { return }
         let parent = retraining ? parentProfile : nil
         let directory = model.directory
-        running = true; result = nil; failure = nil
-        Task { @MainActor in
-            let trained = await Task.detached(priority: .utility) {
-                Result { () throws -> (EEGMentalProfile, String) in
-                    let root = directory.deletingLastPathComponent()
-                    let settings = try ProcessingSettingsStore(directory: root).load()
-                    let dataset = try EEGTrainingDataset.load(data, store: EEGRecordingStore(directory: directory), settings: settings)
-                    let artifact: EEGProfileCreation.Artifact
-                    if let parent {
-                        artifact = try EEGProfileCreation.retrain(dataset.records, participantID: dataset.participantID, parent: parent, settings: settings)
-                    } else {
-                        artifact = try EEGProfileCreation.train(dataset.records, participantID: dataset.participantID, settings: settings)
-                    }
-                    let profiles = root.appendingPathComponent("Profiles", isDirectory: true)
-                    let store = EEGProfileStore(directory: profiles)
-                    let path = profiles.appendingPathComponent(artifact.profile.id + ".json")
-                    let saved = try store.save(artifact)
-                    return (saved, "Saved experimental profile from \(dataset.records.count) usable training windows. Rejected labeled windows: \(dataset.sessions.reduce(0) { $0 + $1.rejectedWindows }).\n\(path.path)\nProfile opened below for a separate evaluation.")
+        running = true; result = nil; failure = nil; cancellationRequested = false
+        let worker = Task.detached(priority: .utility) {
+            Result { () throws -> (EEGMentalProfile, String) in
+                try Task.checkCancellation()
+                let root = directory.deletingLastPathComponent()
+                let settings = try ProcessingSettingsStore(directory: root).load()
+                let dataset = try EEGTrainingDataset.load(data, store: EEGRecordingStore(directory: directory), settings: settings)
+                let artifact: EEGProfileCreation.Artifact
+                if let parent {
+                    artifact = try EEGProfileCreation.retrain(dataset.records, participantID: dataset.participantID, parent: parent, settings: settings)
+                } else {
+                    artifact = try EEGProfileCreation.train(dataset.records, participantID: dataset.participantID, settings: settings)
                 }
-            }.value
-            running = false
+                let profiles = root.appendingPathComponent("Profiles", isDirectory: true)
+                let store = EEGProfileStore(directory: profiles)
+                let path = profiles.appendingPathComponent(artifact.profile.id + ".json")
+                let saved = try store.save(artifact)
+                return (saved, "Saved experimental profile from \(dataset.records.count) usable training windows. Rejected labeled windows: \(dataset.sessions.reduce(0) { $0 + $1.rejectedWindows }).\n\(path.path)\nProfile opened below for a separate evaluation.")
+            }
+        }
+        trainingWorker = worker
+        Task { @MainActor in
+            let trained = await worker.value
+            trainingWorker = nil; cancellationRequested = false; running = false
             switch trained {
             case .success(let saved): result = saved.1; onSaved(saved.0)
+            case .failure(let error) where error is CancellationError:
+                result = "Training cancelled. No profile was published by this operation."
             case .failure(let error): failure = "Training rejected: \(error.localizedDescription) [\(error)]"
             }
         }

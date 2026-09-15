@@ -8,11 +8,16 @@ public enum EEGMentalTraining {
     /// profile; provenance serialization and hardware qualification are separate.
     public static func fit(_ records: [EEGTrainingRecord], participantID: String,
                            settings: ProcessingSettings = ProcessingSettings()) throws -> EEGMentalScoringParameters {
+        try Task.checkCancellation()
         let input = try EEGTrainingData.prepare(records, participantID: participantID, settings: settings)
         let dimensions = min(settings.pcaComponents, records.count - input.classes.count, input.selected.count)
         let components = try principalComponents(input.centeredSelected, count: dimensions)
-        let projected = input.centeredSelected.map { row in components.map { component in zip(row, component).reduce(0.0) { $0 + $1.0 * $1.1 } } }
-        let gaussians = input.classes.indices.map { c -> EEGMentalScoringParameters.Gaussian in
+        let projected = try input.centeredSelected.map { row in
+            try Task.checkCancellation()
+            return components.map { component in zip(row, component).reduce(0.0) { $0 + $1.0 * $1.1 } }
+        }
+        let gaussians = try input.classes.indices.map { c -> EEGMentalScoringParameters.Gaussian in
+            try Task.checkCancellation()
             let data = projected.indices.filter { input.labels[$0] == c }.map { projected[$0] }
             let mean = (0..<dimensions).map { j in data.reduce(0.0) { $0 + $1[j] } / Double(data.count) }
             let variance = (0..<dimensions).map { j in max(settings.varianceFloor, data.reduce(0.0) { $0 + pow($1[j] - mean[j], 2) } / Double(data.count)) }
@@ -25,12 +30,14 @@ public enum EEGMentalTraining {
         let result = EEGMentalScoringParameters(classes: input.classes, center: input.center, scale: input.scale,
             selected: input.selected, pca_mean: input.pcaMean, components: components, gaussians: gaussians)
         _ = try EEGMentalScoring.score(values: input.center, parameters: result)
+        try Task.checkCancellation()
         return result
     }
 
     /// Thin right singular vectors in descending singular-value order.
     /// Sign convention follows Python: largest-magnitude coefficient is positive.
     static func principalComponents(_ rows: [[Double]], count: Int) throws -> [[Double]] {
+        try Task.checkCancellation()
         guard let width = rows.first?.count, width > 0, width <= 70, !rows.isEmpty,
               rows.count <= Int(Int32.max), count > 0, count <= min(rows.count, width),
               rows.allSatisfy({ $0.count == width && $0.allSatisfy(\.isFinite) }) else { throw Failure.dimensions }
@@ -42,12 +49,16 @@ public enum EEGMentalTraining {
         var u = [Double](repeating: 0, count: 1)
         var vt = [Double](repeating: 0, count: Int(ldvt) * width)
         var query = [Double](repeating: 0, count: 1), lwork: __LAPACK_int = -1
+        try Task.checkCancellation()
         dgesvd_(&jobU, &jobVT, &m, &n, &matrix, &lda, &singular, &u, &ldu, &vt, &ldvt, &query, &lwork, &info)
+        try Task.checkCancellation()
         guard info == 0 else { throw Failure.decomposition(info) }
         guard query[0].isFinite, query[0] >= 1, query[0] <= Double(Int32.max) else { throw Failure.dimensions }
         lwork = __LAPACK_int(ceil(query[0]))
         var workspace = [Double](repeating: 0, count: Int(lwork))
+        try Task.checkCancellation()
         dgesvd_(&jobU, &jobVT, &m, &n, &matrix, &lda, &singular, &u, &ldu, &vt, &ldvt, &workspace, &lwork, &info)
+        try Task.checkCancellation()
         guard info == 0 else { throw Failure.decomposition(info) }
         guard singular.allSatisfy(\.isFinite), vt.allSatisfy(\.isFinite) else { throw Failure.numericalFailure }
         return (0..<count).map { i in

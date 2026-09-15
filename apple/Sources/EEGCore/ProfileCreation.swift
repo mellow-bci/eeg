@@ -10,10 +10,12 @@ public enum EEGProfileCreation {
     }
     public static func train(_ records: [EEGTrainingRecord], participantID: String,
                              settings: ProcessingSettings = ProcessingSettings(), parentProfileID: String? = nil) throws -> Artifact {
+        try Task.checkCancellation()
         if let parent = parentProfileID {
             guard parent.count == 64, parent.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }) else { throw EEGMentalProfile.Failure.provenance }
         }
         let fitted = try EEGMentalTraining.fit(records, participantID: participantID, settings: settings)
+        try Task.checkCancellation()
         let encoder = JSONEncoder()
         var object = try JSONSerialization.jsonObject(with: encoder.encode(fitted)) as! [String: Any]
         let encodedRecords = try PythonCompatibleJSON.encode(JSONSerialization.jsonObject(with: encoder.encode(records)))
@@ -38,7 +40,9 @@ public enum EEGProfileCreation {
         ]) { _, new in new }
         object["profile_id"] = try ProfileCanonicalJSON.digest(PythonCompatibleJSON.encode(object))
         let data = try PythonCompatibleJSON.encode(object)
-        return Artifact(data: data, profile: try EEGMentalProfile.load(data: data))
+        let profile = try EEGMentalProfile.load(data: data)
+        try Task.checkCancellation()
+        return Artifact(data: data, profile: profile)
     }
 
     /// Refit with explicit lineage. No previous weights or validation are inherited.
@@ -50,6 +54,7 @@ public enum EEGProfileCreation {
 
     /// Publishes a fully written private file without replacing an existing profile.
     public static func save(_ artifact: Artifact, to destination: URL) throws {
+        try Task.checkCancellation()
         _ = try EEGMentalProfile.load(data: artifact.data)
         guard destination.isFileURL else { throw EEGRecordingError.invalidPath }
         let temporary = destination.deletingLastPathComponent().appendingPathComponent(".profile-" + UUID().uuidString)
@@ -59,6 +64,8 @@ public enum EEGProfileCreation {
         defer { try? handle.close(); try? FileManager.default.removeItem(at: temporary) }
         try handle.write(contentsOf: artifact.data)
         try handle.synchronize(); try handle.close()
+        // Publication is the commit point. Cancellation after it cannot retract a saved profile.
+        try Task.checkCancellation()
         guard Darwin.link(temporary.path, destination.path) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
     }
 }
