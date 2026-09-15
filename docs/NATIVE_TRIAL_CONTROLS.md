@@ -296,3 +296,31 @@ not observed behavior, a completed human trial or interactive UI qualification.
 
 The macOS, iOS and visionOS native builds succeeded for this change. The new
 post-trial field has not yet been exercised in a physical or interactive trial.
+
+
+### Observation history integrity follow-up (2026-09-15)
+
+A review of the new notes path found that `validateRevision` compared the event
+prefix but did not compare `observedBehavior`, which is stored outside event
+`detail`. At `b366b7f`, changing only the final review snapshot's notes produced
+an individually valid snapshot and a journal that recovery incorrectly accepted.
+The tampered-file regression failed before the fix (“did not throw an error”).
+
+Once a participant report exists, the shared writer/recovery revision check now
+requires the same participant report and exact observation string in subsequent
+review or interruption revisions. Notes first enter during reporting, as before.
+The regression verifies rejection of a conflicting write, successful persistence
+of the subsequent unchanged review, and rejection of a later on-disk rewrite.
+Unchanged review and interruption revisions still pass. No schema, raw sample,
+cue timing, label or classifier changes are introduced.
+
+This detects inconsistent history; it does not authenticate an observer or defeat
+someone who rewrites every matching snapshot and recomputes external hashes.
+Preserve the original source hash and audit records for provenance. Standalone
+snapshot recovery cannot detect an earlier observation without its history.
+
+The 35-test evidence/session/recording selection passed; the expanded six-test
+recovery suite separately checks the conflicting writer admission path. These are
+synthetic corruption checks, not physical disk-failure or physiological evidence.
+
+The macOS, iOS and visionOS builds also passed for the integrity fix.

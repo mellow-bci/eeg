@@ -94,7 +94,15 @@ final class TrialRecoveryTests: XCTestCase {
         try step { try $0.endCueCompleted(at: 25) }
         let notes = "Observer: synthetic reviewer; direct observation\nApprox. 12.5 s: blink; head movement unknown. No sensor reference — timing uncertain."
         try step { try $0.report(.uncertain, at: 26, observedBehavior: notes) }
+        let reported = trial
         XCTAssertThrowsError(try trial.review(accept: true, reviewer: "operator", reason: "Notes cannot override uncertainty", at: 27))
+        var nextReview = trial
+        try nextReview.review(accept: false, reviewer: "operator", reason: "Uncertain participant report", at: 27)
+        var changedReview = try JSONSerialization.jsonObject(with: JSONEncoder().encode(nextReview)) as! [String: Any]
+        changedReview["observedBehavior"] = "Rewritten before persistence"
+        let rejectedRevision = try EEGTrialEvidence.recover(JSONSerialization.data(withJSONObject: changedReview))
+        XCTAssertThrowsError(try store.appendTrialEvidence(rejectedRevision))
+        // Rejecting the conflicting revision must not prevent saving the valid one.
         try step { try $0.review(accept: false, reviewer: "operator", reason: "Uncertain participant report", at: 27) }
         try store.finish()
         let recovered = try XCTUnwrap(store.recoveredTrials(recording: file).first)
@@ -104,6 +112,24 @@ final class TrialRecoveryTests: XCTestCase {
         XCTAssertEqual(recovered.events.first { $0.kind == "participant_report" }?.at, 26)
         XCTAssertFalse(recovered.accepted)
         XCTAssertThrowsError(try recovered.datasetTrial())
+        // Each snapshot is structurally valid on its own; only the history can
+        // detect a later revision rewriting an observation from the report.
+        var lines = try String(contentsOf: file).split(separator: "\n").map(String.init)
+        let index = try XCTUnwrap(lines.lastIndex { $0.contains("\"trial_evidence\"") })
+        var event = try JSONSerialization.jsonObject(with: Data(lines[index].utf8)) as! [String: Any]
+        var evidence = event["evidence"] as! [String: Any]
+        evidence["observedBehavior"] = "Changed after reporting: no movement"
+        let altered = try EEGTrialEvidence.recover(JSONSerialization.data(withJSONObject: evidence))
+        XCTAssertThrowsError(try altered.validateRevision(after: reported))
+        // The unchanged review and an unchanged interruption remain legal.
+        XCTAssertNoThrow(try recovered.validateRevision(after: reported))
+        var interrupted = reported
+        try interrupted.interrupt(reason: "synthetic interruption", at: 27)
+        XCTAssertNoThrow(try interrupted.validateRevision(after: reported))
+        event["evidence"] = evidence
+        lines[index] = String(decoding: try JSONSerialization.data(withJSONObject: event), as: UTF8.self)
+        try (lines.joined(separator: "\n") + "\n").write(to: file, atomically: true, encoding: .utf8)
+        XCTAssertThrowsError(try store.recoveredTrials(recording: file))
     }
     func testSavedPlanMustMatchSeedExactly() throws {
         let plan=try EEGTrialPlan(sessionID:"session",participantID:"synthetic",seed:42)

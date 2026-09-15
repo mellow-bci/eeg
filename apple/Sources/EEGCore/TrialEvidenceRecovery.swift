@@ -8,6 +8,13 @@ extension EEGTrialEvidence {
             guard phase == .planned,events.isEmpty else { throw Failure.invalidTransition }
             return
         }
+        // Report observations live outside Event.detail. Once reported they
+        // must be retained by review/interruption revisions, not reinterpreted
+        // from a later snapshot during recovery.
+        if previous.participantReport != nil {
+            guard participantReport == previous.participantReport,
+                  observedBehavior == previous.observedBehavior else { throw Failure.invalidTransition }
+        }
         let encoder=JSONEncoder();encoder.outputFormatting=[.sortedKeys]
         guard previous.phase != .reviewed,previous.phase != .interrupted,
               previous.id == id,previous.sessionID == sessionID,previous.participantID == participantID,
