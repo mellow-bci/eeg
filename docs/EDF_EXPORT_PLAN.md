@@ -63,3 +63,18 @@ New native app recordings now carry the explicit observation documented in
 without this evidence. The anchor preserves a bracket and unmeasured clock
 accuracy; no EDF writer or automatic sample retiming is enabled. Drift,
 clock-adjustment handling and independent-reader qualification remain necessary.
+
+The anchor type now also validates stored v1 JSON on decoding; see the same
+clock-anchor document. Source-recording anchor selection and the export planner
+are still pending. A decoder by itself does not establish a file's time axis.
+
+### Format review follow-up (2026-09-15)
+
+The official EDF+ specification, section 2.1.2, explicitly discusses a
+discontinuous file containing one sample per ordinary signal per record and
+instructs a zero record duration for that case. This is a possible preservation
+strategy to investigate for irregular receipt timestamps and arbitrary tails;
+it is not yet the selected export policy. It would describe receipt timing, not
+prove neural sample timing. Reader support and scientific interpretation must be
+qualified before enabling it. No padding, dropped tails or invented nominal
+sample times have been introduced.

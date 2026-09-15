@@ -1,7 +1,7 @@
 import Foundation
 
 /// A host-clock observation, not a device clock or a claim of UTC accuracy.
-public struct EEGRecordingClockAnchor: Encodable, Sendable {
+public struct EEGRecordingClockAnchor: Codable, Sendable {
     public let schema = "eeg.recording-clock-anchor.v1"
     public let timeBasis = "recorded_receipt_seconds"
     public let wallClockAccuracy = "unmeasured"
@@ -10,6 +10,25 @@ public struct EEGRecordingClockAnchor: Encodable, Sendable {
     public let wallUnixSeconds: Double
     public let localUTCOffsetSeconds: Int
     public enum Failure: Error { case invalidObservation }
+
+    private enum CodingKeys: String, CodingKey {
+        case schema, timeBasis, wallClockAccuracy, receiptBefore, receiptAfter
+        case wallUnixSeconds, localUTCOffsetSeconds
+    }
+    /// Never let synthesized decoding bypass observation checks or silently
+    /// substitute the fixed provenance strings for incompatible stored values.
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        guard try values.decode(String.self, forKey: .schema) == "eeg.recording-clock-anchor.v1",
+              try values.decode(String.self, forKey: .timeBasis) == "recorded_receipt_seconds",
+              try values.decode(String.self, forKey: .wallClockAccuracy) == "unmeasured" else {
+            throw Failure.invalidObservation
+        }
+        try self.init(receiptBefore: values.decode(Double.self, forKey: .receiptBefore),
+                      receiptAfter: values.decode(Double.self, forKey: .receiptAfter),
+                      wallUnixSeconds: values.decode(Double.self, forKey: .wallUnixSeconds),
+                      localUTCOffsetSeconds: values.decode(Int.self, forKey: .localUTCOffsetSeconds))
+    }
 
     public init(receiptBefore: Double, receiptAfter: Double, wallUnixSeconds: Double,
                 localUTCOffsetSeconds: Int) throws {

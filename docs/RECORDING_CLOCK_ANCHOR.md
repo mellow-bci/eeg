@@ -37,3 +37,27 @@ synchronization, clock-change detection, sleep/wake drift or EDF interoperabilit
 
 Future export must decide how clock changes and discontinuities are represented;
 this anchor is provenance, not permission to assume an exact acquisition timeline.
+
+## Validated decoding
+
+`EEGRecordingClockAnchor` now supports decoding its existing v1 JSON representation.
+The custom decoder requires the stored schema, receipt-time basis and `unmeasured`
+accuracy declaration to match exactly. It routes numeric values through the same
+validated initializer used during capture; synthesized decoding cannot bypass
+finite-value, nonnegative receipt, bracket-order or UTC-offset checks. Required
+fields cannot be omitted or replaced by nulls or incompatible types. Unknown
+additional JSON keys are ignored; they cannot replace the defined timing semantics.
+
+The decoded object preserves both bracket endpoints, wall time and UTC offset.
+It does not choose a midpoint, retime a sample, infer a missing anchor, verify UTC
+accuracy or reconcile conflicting anchors in a recording. Consumers must still
+validate the recording and select an explicit timing policy. This is a reusable
+decoder prerequisite, not an implemented EDF export or a new user-facing feature.
+
+Added tests cover roundtrip mapping before/inside/after the bracket, every missing
+required field, incompatible provenance strings, reversed/negative bounds,
+boolean/string/null numeric substitutes and invalid/fractional UTC offsets.
+
+Validation on 2026-09-15: all four RecordingClockAnchorTests passed, followed by
+successful macOS, iOS and visionOS builds. No physical clock or EDF reader was
+used in this check.

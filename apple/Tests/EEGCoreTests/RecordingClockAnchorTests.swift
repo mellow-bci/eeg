@@ -2,6 +2,40 @@ import XCTest
 @testable import EEGCore
 
 final class RecordingClockAnchorTests: XCTestCase {
+    func testStoredAnchorRoundTripPreservesMappingAndUTCOffset() throws {
+        let original = try EEGRecordingClockAnchor(receiptBefore: 10.125, receiptAfter: 10.375,
+            wallUnixSeconds: 1770000000.25, localUTCOffsetSeconds: 19800)
+        let data = try JSONEncoder().encode(original)
+        let recovered = try JSONDecoder().decode(EEGRecordingClockAnchor.self, from: data)
+        XCTAssertEqual(recovered.localUTCOffsetSeconds, 19800)
+        XCTAssertEqual(recovered.receiptBefore, original.receiptBefore)
+        XCTAssertEqual(recovered.receiptAfter, original.receiptAfter)
+        XCTAssertEqual(recovered.wallUnixSeconds, original.wallUnixSeconds)
+        for receipt in [0.0, 10.2, 100.0] {
+            XCTAssertEqual(try recovered.wallTimeBounds(forReceiptSeconds: receipt),
+                           try original.wallTimeBounds(forReceiptSeconds: receipt))
+        }
+    }
+    func testStoredAnchorCannotBypassNumericOrProvenanceValidation() throws {
+        let anchor = try EEGRecordingClockAnchor(receiptBefore: 1, receiptAfter: 2,
+            wallUnixSeconds: 1000, localUTCOffsetSeconds: 0)
+        let original = try JSONSerialization.jsonObject(with: JSONEncoder().encode(anchor)) as! [String: Any]
+        let mutations: [(String, Any)] = [("schema", "eeg.recording-clock-anchor.v2"),
+            ("timeBasis", "device_seconds"), ("wallClockAccuracy", "verified"),
+            ("receiptBefore", -1), ("receiptAfter", 0), ("receiptBefore", true),
+            ("localUTCOffsetSeconds", 86401), ("localUTCOffsetSeconds", 1.25),
+            ("wallUnixSeconds", "1000"), ("receiptAfter", NSNull())]
+        for (key, value) in mutations {
+            var object = original; object[key] = value
+            XCTAssertThrowsError(try JSONDecoder().decode(EEGRecordingClockAnchor.self,
+                from: JSONSerialization.data(withJSONObject: object)), key)
+        }
+        for key in original.keys {
+            var object = original; object.removeValue(forKey: key)
+            XCTAssertThrowsError(try JSONDecoder().decode(EEGRecordingClockAnchor.self,
+                from: JSONSerialization.data(withJSONObject: object)), key)
+        }
+    }
     func testBracketUsesReceiptClockAndRetainsUncertainty() throws {
         var calls = [String](), receipts = [10.0, 10.25]
         let anchor = try EEGRecordingClockAnchor.capture(receiptClock: {
