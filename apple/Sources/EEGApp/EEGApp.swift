@@ -327,6 +327,7 @@ struct SystemView: View {
                 LabeledContent("Maximum queue wait",value:stats.writtenInputs+stats.failedWrites>0 ? String(format:"%.3f ms",stats.maximumQueueWaitSeconds*1000) : "No writes observed")
                 LabeledContent("Maximum write duration",value:stats.writtenInputs+stats.failedWrites>0 ? String(format:"%.3f ms",stats.maximumWriteSeconds*1000) : "No writes observed")
                 if stats.failed {Text("Writer failed; capture is incomplete.").foregroundStyle(.red)}
+                if stats.cleanupPending {Text("Closing incomplete recording. Restart is unavailable until storage cleanup finishes.").foregroundStyle(.orange)}
             }
             Text("Per-recording asynchronous input measurements. Logical bytes are not process memory. Control barriers and filesystem synchronization are excluded; these values do not establish end-to-end signal latency.").font(.caption).foregroundStyle(.secondary)
         }

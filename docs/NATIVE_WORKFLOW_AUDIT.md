@@ -318,3 +318,30 @@ This tests file selection and rejection, not successful physiological training.
 All three native targets built successfully with ./apple/build-native.sh all.
 Other consumers share the adapter but were not individually exercised in this
 check; iOS and visionOS were build-checked only. No Cast files changed.
+
+## Abort during stalled storage
+
+EEGQueuedRecordingStore now stops admission immediately on abort and schedules
+file closure on its writer queue. Failure notifications use a separate serial
+queue, so an overload notification does not wait for a stalled file write.
+Statistics expose cleanupPending; the diagnostics view displays it. Starting a
+new capture rejects with a specific error until cleanup completes. Already
+rejected control operations also fail before waiting on the writer queue.
+
+An in-flight write cannot be cancelled and may finish after abort. The file
+remains incomplete without a summary. Notification is not a closure or durability
+acknowledgement; consumers must inspect cleanupPending. A permanently stalled
+OS write can leave cleanup pending indefinitely. Graceful finish and successful
+trial/control writes still use synchronous barriers, and remain a limitation.
+
+Two tests hold the actual output adapter's second write behind a semaphore.
+They check overload notification before release, explicit abort returning before
+release, pending cleanup, immediate rejection of restart/control/admission, and
+incomplete output after release. Restart succeeds only after draining cleanup.
+These are deterministic injected stalls, not physical disk or headset timing
+qualification. Existing queue tests explicitly drain cleanup where they require
+closed-file state because notification no longer implies closure.
+
+Validation for this change: 105 Swift tests passed; macOS, iOS and visionOS native
+builds passed. The new pending-cleanup message is build-checked, not interactively
+verified against a physically stalled disk.

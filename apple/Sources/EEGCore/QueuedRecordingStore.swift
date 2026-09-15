@@ -3,9 +3,20 @@ import Foundation
 /// One recording writer. High-rate admission is nonblocking; control/evidence
 /// calls are ordered barriers and must be made by the same host as admission.
 /// A successful enqueue is not a durability acknowledgement. Failure aborts
-/// without a completion marker. Never call a control method from onFailure.
+/// without a completion marker. Failure notifications run on a separate serial
+/// queue and do not acknowledge file closure. Never call a control method from onFailure.
 public final class EEGQueuedRecordingStore {
-    public enum Failure: Error { case invalidCapacity, admissionRejected, aborted }
+    public enum Failure: Error, LocalizedError {
+        case invalidCapacity, admissionRejected, aborted, cleanupPending
+        public var errorDescription: String? {
+            switch self {
+            case .invalidCapacity: return "Recording queue limits must be positive."
+            case .admissionRejected: return "Recording queue capacity was exceeded; capture is incomplete."
+            case .aborted: return "Recording is inactive or aborted."
+            case .cleanupPending: return "Storage cleanup is still pending. Wait before starting another recording."
+            }
+        }
+    }
     public struct Statistics: Sendable, Equatable {
         public let generation: UInt64
         public let pendingInputs: Int
@@ -19,18 +30,21 @@ public final class EEGQueuedRecordingStore {
         public let maximumQueueWaitSeconds: Double
         public let maximumWriteSeconds: Double
         public let failed: Bool
+        public let cleanupPending: Bool
     }
     private var admitted=0, written=0, discarded=0, writeFailures=0, peakInputs=0, peakBytes=0
     private var maximumWait=0.0, maximumWrite=0.0
     private enum Input { case sample(EEGSample), event(String,[String:String]) }
     private let store: EEGRecordingStore
     private let queue: DispatchQueue
+    private let notifications=DispatchQueue(label:"cloud.autonomy.eeg.recording.failures")
     private let lock=NSLock()
     private let capacity: Int
     private let byteCapacity: Int
     private var pending=0, bytes=0
     private var active=false
     private var failed=false
+    private var cleanupPending=false
     private var epoch: UInt64=0
     private let onFailure: (UInt64,String)->Void
     public convenience init(directory: URL, maximumPendingInputs: Int=1024,
@@ -53,10 +67,13 @@ public final class EEGQueuedRecordingStore {
         return Statistics(generation:epoch,pendingInputs:pending,pendingPayloadBytes:bytes,
             admittedInputs:admitted,writtenInputs:written,discardedInputs:discarded,failedWrites:writeFailures,
             peakPendingInputs:peakInputs,peakPendingPayloadBytes:peakBytes,
-            maximumQueueWaitSeconds:maximumWait,maximumWriteSeconds:maximumWrite,failed:failed)
+            maximumQueueWaitSeconds:maximumWait,maximumWriteSeconds:maximumWrite,failed:failed,cleanupPending:cleanupPending)
     }
     @discardableResult public func start() throws -> URL {
-        try queue.sync {
+        lock.lock();let cleaning=cleanupPending;let alreadyActive=active;lock.unlock()
+        guard !cleaning else {throw Failure.cleanupPending}
+        guard !alreadyActive else {throw EEGRecordingError.alreadyRecording}
+        return try queue.sync {
             lock.lock();let already=active;lock.unlock()
             guard !already else { throw EEGRecordingError.alreadyRecording }
             let url=try store.start()
@@ -119,10 +136,14 @@ public final class EEGQueuedRecordingStore {
         lock.lock()
         guard active,!failed else {lock.unlock();return}
         failed=true;active=false;let generation=epoch
-        queue.async { [self] in store.abort();onFailure(generation,reason) }
+        scheduleCleanupLocked()
+        notifications.async { [self] in onFailure(generation,reason) }
         lock.unlock()
     }
     private func barrier(_ operation: () throws -> Void) throws {
+        // Rejected controls must not wait behind an already stalled writer.
+        lock.lock();let admitted=active && !failed;lock.unlock()
+        guard admitted else {throw Failure.aborted}
         try queue.sync {
             lock.lock();let usable=active && !failed;lock.unlock()
             guard usable else {throw Failure.aborted}
@@ -150,8 +171,20 @@ public final class EEGQueuedRecordingStore {
             lock.lock();active=false;lock.unlock()
         }
     }
+    /// Stop accepting input immediately. In-flight I/O cannot be cancelled; cleanup
+    /// completes on the writer queue and remains visible in statistics meanwhile.
+    /// start() rejects while cleanup is pending instead of waiting for the disk.
     public func abort() {
-        lock.lock();active=false;lock.unlock()
-        queue.sync {store.abort()}
+        lock.lock();active=false
+        scheduleCleanupLocked()
+        lock.unlock()
+    }
+    private func scheduleCleanupLocked() {
+        guard !cleanupPending else {return}
+        cleanupPending=true
+        queue.async { [self] in
+            store.abort()
+            lock.lock();cleanupPending=false;lock.unlock()
+        }
     }
 }

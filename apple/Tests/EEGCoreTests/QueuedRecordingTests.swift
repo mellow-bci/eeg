@@ -62,6 +62,7 @@ final class QueuedRecordingTests: XCTestCase {
         XCTAssertThrowsError(try writer.enqueue(sample:sample(2)))
         queue.resume()
         wait(for:[failure],timeout:3)
+        queue.sync {}
         XCTAssertThrowsError(try writer.finish())
         XCTAssertFalse(try String(contentsOf:url).contains("\"summary\""))
         XCTAssertEqual(writer.pendingInputs,0);XCTAssertEqual(writer.pendingPayloadBytes,0)
@@ -85,6 +86,7 @@ final class QueuedRecordingTests: XCTestCase {
         let url=try writer.start()
         XCTAssertThrowsError(try writer.enqueueEvent(kind:"annotation",fields:["text":String(repeating:"x",count:17)]))
         wait(for:[failure],timeout:3)
+        queue.sync {}
         XCTAssertEqual(writer.pendingInputs,0)
         XCTAssertFalse(try String(contentsOf:url).contains("\"summary\""))
     }
@@ -108,12 +110,14 @@ final class QueuedRecordingTests: XCTestCase {
         let raw=try EEGRecordingStore(directory:directory)
         raw.outputFactory={BrokenOutput($0)}
         let failure=expectation(description:"disk failure")
-        let writer=try EEGQueuedRecordingStore(store:raw,queue:DispatchQueue(label:"test.recording.disk")) {_,reason in
+        let queue=DispatchQueue(label:"test.recording.disk")
+        let writer=try EEGQueuedRecordingStore(store:raw,queue:queue) {_,reason in
             XCTAssertTrue(reason.hasPrefix("recording_write_failed:"));failure.fulfill()
         }
         let url=try writer.start()
         try writer.enqueue(sample:sample(0))
         wait(for:[failure],timeout:3)
+        queue.sync {}
         XCTAssertEqual(writer.statistics.failedWrites,1)
         XCTAssertEqual(writer.statistics.writtenInputs,0)
         XCTAssertTrue(writer.statistics.failed)
@@ -121,4 +125,73 @@ final class QueuedRecordingTests: XCTestCase {
         XCTAssertThrowsError(try writer.finish())
         XCTAssertFalse(try String(contentsOf:url).contains("\"summary\""))
     }
+    private final class StalledOutput: EEGRecordingOutput {
+        let file:FileHandle
+        let entered:DispatchSemaphore
+        let release:DispatchSemaphore
+        var writes=0
+        init(_ file:FileHandle,entered:DispatchSemaphore,release:DispatchSemaphore) {
+            self.file=file;self.entered=entered;self.release=release
+        }
+        func write(_ data:Data) throws {
+            writes+=1
+            if writes==2 {
+                entered.signal()
+                // A deadline makes a regression fail rather than hang the suite.
+                guard release.wait(timeout:.now()+5) == .success else {throw CocoaError(.fileWriteUnknown)}
+            }
+            try file.write(contentsOf:data)
+        }
+        func synchronize() throws {try file.synchronize()}
+        func close() throws {try file.close()}
+        func offset() throws -> UInt64 {try file.offset()}
+        func truncate(at offset:UInt64) throws {try file.truncate(atOffset:offset)}
+    }
+    func testOverloadNotifiesBeforeStalledWriteCanClose() throws {
+        try checkStalledAbort(overload:true)
+    }
+    func testExplicitAbortReturnsBeforeStalledWriteCanClose() throws {
+        try checkStalledAbort(overload:false)
+    }
+    private func checkStalledAbort(overload:Bool) throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let raw=try EEGRecordingStore(directory:directory)
+        let entered=DispatchSemaphore(value:0),release=DispatchSemaphore(value:0)
+        raw.outputFactory={StalledOutput($0,entered:entered,release:release)}
+        let queue=DispatchQueue(label:"test.recording.stall")
+        let notified=DispatchSemaphore(value:0)
+        let writer=try EEGQueuedRecordingStore(store:raw,maximumPendingInputs:1,queue:queue) {_,reason in
+            XCTAssertTrue(overload);XCTAssertEqual(reason,"recording_queue_overload");notified.signal()
+        }
+        let url=try writer.start()
+        defer {release.signal();queue.sync {}}
+        try writer.enqueue(sample:sample(0))
+        XCTAssertEqual(entered.wait(timeout:.now()+2),.success)
+        if overload {
+            XCTAssertThrowsError(try writer.enqueue(sample:sample(1)))
+            XCTAssertEqual(notified.wait(timeout:.now()+1),.success)
+        } else {writer.abort()}
+        // These checks execute while the real file output is still held. They
+        // prove rejection/notification does not wait for writer cleanup.
+        XCTAssertTrue(writer.statistics.cleanupPending)
+        XCTAssertEqual(writer.pendingInputs,1)
+        XCTAssertEqual(writer.statistics.failed,overload)
+        XCTAssertThrowsError(try writer.start()) { error in
+            guard case EEGQueuedRecordingStore.Failure.cleanupPending=error else {return XCTFail("Wrong rejection: \(error)")}
+        }
+        XCTAssertThrowsError(try writer.finish())
+        XCTAssertThrowsError(try writer.appendEvent(kind:"annotation",fields:[:]))
+        XCTAssertThrowsError(try writer.enqueue(sample:sample(2)))
+        release.signal();queue.sync {}
+        XCTAssertFalse(writer.statistics.cleanupPending)
+        XCTAssertEqual(writer.pendingInputs,0)
+        XCTAssertFalse(try String(contentsOf:url).contains("\"summary\""))
+        // The in-flight write can finish; it must never make this file complete.
+        XCTAssertEqual(writer.statistics.writtenInputs,1)
+        raw.outputFactory={EEGFileRecordingOutput($0)}
+        _=try writer.start();try writer.finish()
+        XCTAssertEqual(writer.generation,2)
+    }
+
 }
