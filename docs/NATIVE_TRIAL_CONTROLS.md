@@ -173,3 +173,31 @@ readable. These are independent operational gates, not measured acoustic timing:
 callback handling may lag actual sound, and physical playback still needs testing.
 Boundary regression tests exercise late requests, late starts, late completions
 and the exact permitted endpoints. No physiological or acoustic trial was run.
+
+
+## Native artifact-control collection
+
+The session-plan toggle selects `eeg.artifact-controls.v1` before a plan is saved.
+It generates six trials each of ordinary seated activity, comfortable blinking,
+gentle jaw movement without clenching and gentle seated head movement. Instructions
+say not to perform the mental task; jaw/head cues say to stop if uncomfortable.
+These are independently designed artifact challenges, not validated gesture or
+cognitive tests. Ordinary seated activity is a narrow baseline, not a substitute
+for prolonged natural daily activity exposure.
+
+The same 24-trial seeded shuffle, maximum run length, cue timing, readiness,
+participant report, operator review, rest intervals and persistence/recovery path
+apply. Plan JSON includes `controlProtocol` for control plans; existing mental-task
+plans retain their serialization. Evidence records carry their distinct protocol
+ID. Each accepted control trial exports label `neutral` and its explicit control
+condition. The dataset exporter rejects any control-plan recording selected for
+training. Run these datasets using controls-only evaluation; they cannot measure
+task recall. Uncertain or missed trials remain excluded through the existing rules.
+
+Offline tests check balance and deterministic recovery, real JSONL evidence export,
+canonical window extraction and training rejection. No audio was played and no
+headset/participant experiment was performed during implementation. Physical cue
+and artifact response qualification remains required.
+
+Validation: 135 tests, one optional skip, zero failures; macOS, iOS and visionOS
+builds passed. Interactive controls and physical cue timing remain unqualified.

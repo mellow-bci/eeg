@@ -4,6 +4,7 @@ import EEGCore
 struct TrialCaptureView: View {
     @ObservedObject var model: AcquisitionModel
     @ObservedObject var cues: TrialCueController
+    @State private var controls = false
     @State private var participant = ""
     @State private var session = ""
     @State private var ready = false
@@ -13,11 +14,13 @@ struct TrialCaptureView: View {
     @State private var error: String?
     var body: some View {
         Panel(title: "Planned research session") {
-            Text("Save a balanced 24-trial order before the first cue. Each trial requires fresh readiness, a report and review. Dataset export and physiological qualification remain pending.").foregroundStyle(.secondary)
+            Text("Save a balanced 24-trial order before the first cue. Each trial requires fresh readiness, a report and review. Only reviewed trials can be exported. Physiological qualification remains pending.").foregroundStyle(.secondary)
             TextField("Participant pseudonym", text: $participant).disabled(model.trialPlan != nil || model.savingTrialPlan)
             TextField("Independent session ID", text: $session).disabled(model.trialPlan != nil || model.savingTrialPlan)
+            Toggle("Artifact-control evaluation session",isOn:$controls).disabled(model.trialPlan != nil || model.savingTrialPlan)
+            Text(controls ? "Six trials each: ordinary seated activity, blinking, gentle jaw movement and gentle head movement. Evaluation only; these are not mental commands." : "Twelve neutral and twelve silent-subtraction trials.").font(.caption)
             Button("Save session plan") {
-                do { try model.commitTrialPlan(participantID: participant,sessionID: session);error=nil }
+                do { try model.commitTrialPlan(participantID: participant,sessionID: session,controls:controls);error=nil }
                 catch { self.error=error.localizedDescription }
             }.disabled(!model.recording || model.trialPlan != nil || model.savingTrialPlan)
             if model.savingTrialPlan {ProgressView("Saving session plan")}

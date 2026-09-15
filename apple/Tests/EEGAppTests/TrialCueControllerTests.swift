@@ -56,7 +56,7 @@ final class TrialCueControllerTests: XCTestCase {
         XCTAssertEqual(acquisition.completions.count,1)
         acquisition.complete()
         XCTAssertEqual(speech.utterances.count,2)
-        XCTAssertTrue(speech.utterances.last!.speechString.contains("Starting number"))
+        XCTAssertTrue(speech.utterances.last!.speechString.contains("Begin when this instruction ends."))
         controller.stop()
     }
     func testStopInvalidatesLateStartAcknowledgement() async throws {
@@ -67,7 +67,7 @@ final class TrialCueControllerTests: XCTestCase {
         controller.stop()
         acquisition.complete()
         XCTAssertEqual(speech.utterances.count,2)
-        XCTAssertFalse(speech.utterances.contains {$0.speechString.contains("Starting number")})
+        XCTAssertFalse(speech.utterances.contains {$0.speechString.contains("Begin when this instruction ends.")})
         XCTAssertFalse(controller.checkCompleted)
         XCTAssertTrue(acquisition.completions.isEmpty)
     }
@@ -78,7 +78,7 @@ final class TrialCueControllerTests: XCTestCase {
         controller.start(try planned(),ready:true,heard:true)
         acquisition.complete()
         acquisition.complete(.failure(EEGRecordingError.invalidData))
-        XCTAssertFalse(speech.utterances.contains {$0.speechString.contains("Starting number")})
+        XCTAssertFalse(speech.utterances.contains {$0.speechString.contains("Begin when this instruction ends.")})
         XCTAssertTrue(speech.utterances.last!.speechString.contains("trial has stopped"))
         XCTAssertFalse(controller.checkCompleted)
     }
@@ -90,7 +90,7 @@ final class TrialCueControllerTests: XCTestCase {
         acquisition.complete()
         acquisition.transportStable=false
         acquisition.complete()
-        XCTAssertFalse(speech.utterances.contains {$0.speechString.contains("Starting number")})
+        XCTAssertFalse(speech.utterances.contains {$0.speechString.contains("Begin when this instruction ends.")})
         XCTAssertTrue(speech.utterances.last!.speechString.contains("trial has stopped"))
     }
     func testOldSpeechCallbackAfterStopIsIgnored() async throws {

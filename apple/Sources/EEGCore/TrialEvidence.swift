@@ -4,7 +4,7 @@ import Foundation
 /// The controller supplies actual playback callbacks and recording-clock times.
 /// This type does not play audio, acquire EEG, infer compliance or enable commands.
 public struct EEGTrialEvidence: Encodable, Sendable {
-    public enum Condition: String, Encodable, Sendable { case neutral, silentSerialSubtraction = "silent_serial_subtraction" }
+    public enum Condition: String, Encodable, Sendable { case neutral, silentSerialSubtraction = "silent_serial_subtraction", ordinaryActivity = "ordinary_activity", blinkControl = "blink_control", jawControl = "jaw_control", headMovementControl = "head_movement_control" }
     public enum Phase: String, Encodable, Sendable {
         case planned, cueRequested, cuePlaying, conditionActive, endRequested, endPlaying, awaitingReport, reported, reviewed, interrupted
     }
@@ -27,7 +27,8 @@ public struct EEGTrialEvidence: Encodable, Sendable {
     public static let maximumSpeechDuration = 30.0
     public let timingPolicy = "eeg.cue-timing.v1"
     public let schema = "eeg.trial-evidence.v1"
-    public let protocolID = "eeg.silent-subtraction-neutral.v1"
+    public let protocolID: String
+    public var isControl: Bool { requestedCondition != .neutral && requestedCondition != .silentSerialSubtraction }
     public let timeBasis = "recorded_receipt_seconds"
     public let id: String, sessionID: String, participantID: String
     public let requestedCondition: Condition
@@ -47,6 +48,7 @@ public struct EEGTrialEvidence: Encodable, Sendable {
               (100...999).contains(startingNumber) else { throw Failure.invalidIdentity }
         self.id = id; self.sessionID = sessionID; self.participantID = participantID
         requestedCondition = condition; self.startingNumber = startingNumber
+        protocolID = condition == .neutral || condition == .silentSerialSubtraction ? "eeg.silent-subtraction-neutral.v1" : "eeg.artifact-controls.v1"
     }
     public var conditionDeadline: Double? { cueCompletedAt.map { $0 + 20 } }
     private func checkTime(_ at: Double) throws {
@@ -119,8 +121,8 @@ public struct EEGTrialEvidence: Encodable, Sendable {
     }
     public func datasetTrial() throws -> DatasetTrial {
         guard phase == .reviewed, accepted, let cue = cueCompletedAt else { throw Failure.notAccepted }
-        return DatasetTrial(id: id, label: requestedCondition.rawValue, start: cue + 5, end: cue + 17,
-            accepted: true, label_verified: true, condition: requestedCondition == .neutral ? "cued_neutral" : "cued_task",
+        return DatasetTrial(id: id, label: isControl ? "neutral" : requestedCondition.rawValue, start: cue + 5, end: cue + 17,
+            accepted: true, label_verified: true, condition: isControl ? requestedCondition.rawValue : (requestedCondition == .neutral ? "cued_neutral" : "cued_task"),
             shadow_enabled: true, cue_completed_at: cue)
     }
 }

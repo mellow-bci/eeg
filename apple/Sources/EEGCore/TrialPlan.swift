@@ -4,14 +4,17 @@ import Foundation
 public struct EEGTrialPlan: Encodable, Sendable {
     public let schema = "eeg.trial-plan.v1"
     public let algorithm = "splitmix64-fisher-yates-rejection-v1"
+    public let controlProtocol: String?
     public let seed: String
     public let trials: [EEGTrialEvidence]
-    public init(sessionID: String, participantID: String, seed: UInt64) throws {
+    public init(sessionID: String, participantID: String, seed: UInt64, controls: Bool = false) throws {
+        controlProtocol = controls ? "eeg.artifact-controls.v1" : nil
         var rng = Generator(state: seed)
         var conditions = [EEGTrialEvidence.Condition]()
         for _ in 0..<10000 {
-            var proposal = Array(repeating: EEGTrialEvidence.Condition.neutral, count: 12)
-                + Array(repeating: EEGTrialEvidence.Condition.silentSerialSubtraction, count: 12)
+            var proposal: [EEGTrialEvidence.Condition] = controls
+                ? [.ordinaryActivity, .blinkControl, .jawControl, .headMovementControl].flatMap { Array(repeating:$0,count:6) }
+                : Array(repeating:.neutral,count:12) + Array(repeating:.silentSerialSubtraction,count:12)
             for i in stride(from: proposal.count-1, through: 1, by: -1) {
                 proposal.swapAt(i, rng.bounded(i+1))
             }
@@ -32,7 +35,7 @@ public struct EEGTrialPlan: Encodable, Sendable {
               let seed=value["seed"] as? String,let number=UInt64(seed),
               let trials=value["trials"] as? [[String:Any]],let first=trials.first,
               let session=first["sessionID"] as? String,let participant=first["participantID"] as? String else { throw EEGTrialEvidence.Failure.invalidTransition }
-        let plan=try EEGTrialPlan(sessionID:session,participantID:participant,seed:number)
+        let plan=try EEGTrialPlan(sessionID:session,participantID:participant,seed:number,controls:value["controlProtocol"] as? String == "eeg.artifact-controls.v1")
         let expected=try JSONSerialization.jsonObject(with:JSONEncoder().encode(plan))
         guard try JSONSerialization.data(withJSONObject:expected,options:[.sortedKeys]) == JSONSerialization.data(withJSONObject:value,options:[.sortedKeys]) else { throw EEGTrialEvidence.Failure.invalidTransition }
         return plan

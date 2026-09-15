@@ -59,10 +59,16 @@ final class TrialCueController: NSObject, ObservableObject, AVSpeechSynthesizerD
                 guard case .success=result else {self.stop(reason:"trial_start_save_failed");return}
                 self.transition({try $0.requestCue(at:$1,participantReady:ready,audioCheckHeard:heard,
                     transportStable:acquisition.transportStable,recordingActive:acquisition.recording)}) {
-                    let task=planned.requestedCondition == .neutral
-                        ? "Do not subtract. Remain comfortably seated with eyes open."
-                        : "Silently subtract three repeatedly. Keep your eyes open and do not speak or deliberately move."
-                    self.speak("Starting number \(planned.startingNumber). \(task) Begin when this instruction ends.",purpose:.instruction)
+                    let task: String
+                    switch planned.requestedCondition {
+                    case .neutral: task = "Do not subtract. Remain comfortably seated with eyes open."
+                    case .silentSerialSubtraction: task = "Starting number \(planned.startingNumber). Silently subtract three repeatedly. Keep your eyes open and do not speak or deliberately move."
+                    case .ordinaryActivity: task = "Remain seated with eyes open. Look around naturally and breathe normally. Do not perform the mental task."
+                    case .blinkControl: task = "Remain seated and blink comfortably several times. Do not perform the mental task."
+                    case .jawControl: task = "Gently open and close your jaw a few times without clenching. Stop if uncomfortable. Do not perform the mental task."
+                    case .headMovementControl: task = "Gently turn your head a little left and right while seated. Stop if uncomfortable. Do not perform the mental task."
+                    }
+                    self.speak("\(task) Begin when this instruction ends.",purpose:.instruction)
                 }
             }
         } catch {stop(reason:"trial_start_rejected")}

@@ -262,9 +262,9 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     /// Uses exactly the receipt clock used by the decoder, not wall-clock time.
     var recordingClock: Double { ProcessInfo.processInfo.systemUptime-origin }
-    func commitTrialPlan(participantID: String, sessionID: String) throws {
+    func commitTrialPlan(participantID: String, sessionID: String, controls: Bool = false) throws {
         guard recording,!savingTrialPlan,trialPlan == nil,trial == nil,let store else { throw EEGTrialEvidence.Failure.invalidTransition }
-        let plan = try EEGTrialPlan(sessionID: sessionID,participantID: participantID,seed: UInt64.random(in: .min ... .max))
+        let plan = try EEGTrialPlan(sessionID: sessionID,participantID: participantID,seed: UInt64.random(in: .min ... .max),controls:controls)
         let json = String(decoding: try JSONEncoder().encode(plan),as: UTF8.self)
         savingTrialPlan=true
         let generation=store.generation

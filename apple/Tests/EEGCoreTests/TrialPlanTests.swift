@@ -14,6 +14,19 @@ final class TrialPlanTests: XCTestCase {
             for i in 3..<24 { XCTAssertFalse((1...3).allSatisfy { plan.trials[i].requestedCondition == plan.trials[i-$0].requestedCondition }) }
         }
     }
+    func testControlPlanRecoversAndKeepsConditionsSeparate() throws {
+        for seed in [UInt64(0),42,999] {
+            let plan = try EEGTrialPlan(sessionID:"controls",participantID:"synthetic",seed:seed,controls:true)
+            XCTAssertEqual(plan.trials.count,24)
+            XCTAssertEqual(plan.controlProtocol,"eeg.artifact-controls.v1")
+            for condition in [EEGTrialEvidence.Condition.ordinaryActivity,.blinkControl,.jawControl,.headMovementControl] {
+                XCTAssertEqual(plan.trials.filter { $0.requestedCondition == condition }.count,6)
+            }
+            let recovered = try EEGTrialPlan.recover(JSONEncoder().encode(plan))
+            XCTAssertEqual(recovered.trials.map(\.requestedCondition),plan.trials.map(\.requestedCondition))
+            XCTAssertTrue(recovered.trials.allSatisfy { $0.isControl && $0.protocolID == "eeg.artifact-controls.v1" })
+        }
+    }
     func testEnforcesTerminalEvidenceRestBlocksAndCompletion() throws {
         let plan = try EEGTrialPlan(sessionID:"session",participantID:"synthetic",seed:42)
         XCTAssertEqual(try plan.next(after:nil,started:0,at:0).id,plan.trials[0].id)

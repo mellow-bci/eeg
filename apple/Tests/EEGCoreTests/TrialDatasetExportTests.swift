@@ -2,11 +2,13 @@ import XCTest
 @testable import EEGCore
 
 final class TrialDatasetExportTests: XCTestCase {
-    func testRecoveredManifestUsesCanonicalExtractionAndPinsSource() throws {
+    func testRecoveredManifestUsesCanonicalExtractionAndPinsSource() throws { try checkExport(controls:false) }
+    func testControlsExportForEvaluationButCannotTrain() throws { try checkExport(controls:true) }
+    private func checkExport(controls:Bool) throws {
         let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at:root) }
         let store=try EEGRecordingStore(directory:root),file=try store.start()
-        let plan=try EEGTrialPlan(sessionID:"session",participantID:"synthetic",seed:42)
+        let plan=try EEGTrialPlan(sessionID:"session",participantID:"synthetic",seed:42,controls:controls)
         try store.appendEvent(kind:"trial_plan",fields:["json":String(decoding:try JSONEncoder().encode(plan),as:UTF8.self)])
         try store.appendEvent(kind:"device_metadata",fields:["81072f44-9f3d-11e3-a9dc-0002a5d5c51b":"018000102010"])
         try store.appendEvent(kind:"transport_status",fields:["status":"stable"])
@@ -38,6 +40,12 @@ final class TrialDatasetExportTests: XCTestCase {
         XCTAssertEqual(dataset.participantID,"synthetic")
         XCTAssertEqual(dataset.evaluation.count,6)
         XCTAssertTrue(dataset.records.isEmpty)
+        if controls {
+            XCTAssertTrue(dataset.evaluation.allSatisfy { $0.label == "neutral" && $0.condition == plan.trials[0].requestedCondition.rawValue })
+            XCTAssertThrowsError(try EEGTrialDatasetExport.manifest(sources:[.init(recording:file,split:.train,independenceDeclaration:"synthetic")],store:store)) { error in
+                guard case EEGTrialDatasetExport.Failure.controlTraining = error else { return XCTFail("Unexpected: \(error)") }
+            }
+        }
         XCTAssertThrowsError(try EEGTrialDatasetExport.manifest(sources:[source,source],store:store))
         XCTAssertThrowsError(try EEGTrialDatasetExport.manifest(sources:[.init(recording:file,split:.train,independenceDeclaration:" ")],store:store))
         let original=try String(contentsOf:file)

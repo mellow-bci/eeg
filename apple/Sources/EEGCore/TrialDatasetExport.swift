@@ -11,7 +11,7 @@ public enum EEGTrialDatasetExport {
             self.recording=recording;self.split=split;self.independenceDeclaration=independenceDeclaration
         }
     }
-    public enum Failure: Error { case missingDeclaration, noAcceptedTrials, participantMismatch, noUsableWindows }
+    public enum Failure: Error { case controlTraining, missingDeclaration, noAcceptedTrials, participantMismatch, noUsableWindows }
     public static func manifest(sources: [Source], store: EEGRecordingStore) throws -> Data {
         guard !sources.isEmpty else { throw Failure.noAcceptedTrials }
         var participant: String?,sessions: [[String:Any]]=[]
@@ -21,6 +21,7 @@ public enum EEGTrialDatasetExport {
             guard let first=recovered.trials.first else { throw Failure.noAcceptedTrials }
             if let participant,participant != first.participantID { throw Failure.participantMismatch }
             participant=first.participantID
+            guard source.split != .train || !recovered.trials.contains(where: { $0.isControl }) else { throw Failure.controlTraining }
             let accepted=try recovered.trials.filter { $0.phase == .reviewed && $0.accepted }.map {
                 try JSONSerialization.jsonObject(with:JSONEncoder().encode($0.datasetTrial()))
             }
