@@ -716,3 +716,19 @@ Targeted validation: Python mental-processing regressions and native labeled-
 evaluation tests, including explicit null/present receipt lineage and malformed
 re-signed Python profiles. This does not validate participant intent or model
 selection independence in any real experiment.
+
+
+## Neutral versus rejected inference display
+
+Live and replay views now label windows explicitly as an experimental candidate,
+a neutral prediction, or rejected with no prediction. The shared window result
+provides this interpretation: a candidate takes precedence; neutral requires the
+exact neutral reason with no candidate; every other no-candidate result is a
+rejection. Thus persistence warm-up, artifact rejection and invalid windows do
+not appear to be neutral predictions. Replay also shows separate neutral and
+rejected totals. Both views retain diagnostic reasons and disabled command status.
+This is a display classification, not an additional detector or confidence claim;
+recording and inference algorithms are unchanged.
+
+Validation: seven replay/live consistency tests passed; macOS, iOS and visionOS
+builds passed. Interactive layout and hardware observation remain pending.

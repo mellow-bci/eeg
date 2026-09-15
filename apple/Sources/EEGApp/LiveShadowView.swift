@@ -41,7 +41,8 @@ struct LiveShadowView: View {
             Text(model.shadowStatus)
             if let row=model.shadowResult {
                 LabeledContent("Window",value:String(row.ordinal))
-                LabeledContent("Experimental candidate",value:row.candidate ?? "None")
+                LabeledContent("Interpretation",value:row.interpretationLabel)
+                Text("No reliable command · system control disabled").font(.caption)
                 Text(row.reasons.joined(separator:", ")).font(.caption)
             }
             if let failure { Text(failure).foregroundStyle(.red) }

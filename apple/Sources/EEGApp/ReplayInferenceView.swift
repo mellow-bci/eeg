@@ -67,6 +67,8 @@ struct ReplayInferenceView: View {
             if let report {
                 LabeledContent("Analyzed windows", value: String(report.windows.count))
                 LabeledContent("Experimental candidates", value: String(report.windows.filter { $0.candidate != nil }.count))
+                LabeledContent("Neutral predictions", value: String(report.windows.filter { $0.interpretation == .neutral }.count))
+                LabeledContent("Rejected windows", value: String(report.windows.filter { $0.interpretation == .rejected }.count))
                 Text("No reliable command · system control disabled").font(.headline)
                 Text("Recording SHA-256: \(report.recordingSHA256)").font(.caption.monospaced()).textSelection(.enabled)
                 Text("EEG content SHA-256: \(report.eegContentSHA256)").font(.caption.monospaced()).textSelection(.enabled)
@@ -76,7 +78,7 @@ struct ReplayInferenceView: View {
                         Text("\(row.ordinal + 1)").monospacedDigit().frame(width: 45, alignment: .trailing)
                         Text(row.reasons.joined(separator: ", "))
                         Spacer()
-                        if let candidate = row.candidate { Text("Experimental: \(candidate)") }
+                        Text(row.interpretationLabel)
                     }.font(.caption)
                 }
                 if report.windows.count > 100 { Text("Showing the first 100 windows; totals include all analyzed windows.").font(.caption) }

@@ -1,6 +1,12 @@
 import Foundation
 
 public struct EEGWindowInferenceResult: Sendable, Equatable {
+    public enum Interpretation: String, Sendable { case experimentalCandidate, neutral, rejected }
+    /// Display classification only; no interpretation enables command output.
+    public var interpretation: Interpretation {
+        if candidate != nil { return .experimentalCandidate }
+        return reasons == ["neutral"] ? .neutral : .rejected
+    }
     public let ordinal: Int
     public let reasons: [String]
     public let candidate: String?
