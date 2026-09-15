@@ -323,11 +323,11 @@
         ]
       },
       "body_evidence": "Selected bounded body evidence now exists: docs/MENTAL_REFERENCE_TRACE.md and evidence/mental-command-reference/manifest.json establish named feature-selection/PCA/canonical/Gaussian-density/posterior call sites and neutral-training state. Complete raw-to-feature path, numeric settings and vendor-trained state remain unresolved.",
-      "missing_parameters_assets_dependencies": "Prospective independently acquired task/neutral sessions, behavioral/artifact controls, ordinary-activity exposure, cross-session performance and native cue/label workflow qualification. External native file picker remains unresolved. Vendor weights/settings are neither required nor imported.",
-      "current_implementation": "Python processing/mental.py and the native EEGCore implement train-only scaling/feature ranking, PCA, diagonal Gaussian classification including neutral, score/distance rejection and persistence. Native profile creation and integrity-checked local storage, finalized-recording dataset loading, held-out labeled evaluation, exposure/cue metrics and provenance receipts now exist. EEGEvaluate uses the same native receipt/evaluation entry point as the app. Output remains experimental and system control disabled. This is an independent design, not a recovered vendor algorithm.",
+      "missing_parameters_assets_dependencies": "Live native shadow inference using the same validated window path, bounded processing/I/O scheduling, prospective independent task/neutral sessions, artifact controls and ordinary-activity exposure. Cue audibility, interactive source selection/export and native hardware lifecycle remain unqualified. Vendor weights/settings are neither required nor imported.",
+      "current_implementation": "Python processing/mental.py and the native EEGCore implement train-only scaling/feature ranking, PCA, diagonal Gaussian classification including neutral, score/distance rejection and persistence. Native profile creation and integrity-checked local storage, finalized-recording dataset loading, held-out labeled evaluation, exposure/cue metrics and provenance receipts now exist. EEGEvaluate uses the same native receipt/evaluation entry point as the app. Output remains experimental and system control disabled. This is an independent design, not a recovered vendor algorithm. Native planned speech trials, persisted/recovered transition evidence, balanced seeded order, rest/timing gates and source-pinned dataset building now feed native training and held-out evaluation. Acquisition still has no live profile-inference consumer; current native model inference is offline/replay only.",
       "target_component": "One mental-processing service and versioned profile contract, consumed by the native Calibration workspace. Offline Python processing.workflow is the first research implementation, not a second user-facing application.",
       "acceptance_gate": "Synthetic numerical/state/profile tests plus real prospective whole-session evaluation with independently verified task labels, no content reuse, artifact controls, neutral exposure and uncertainty. Native port must match fixed reference vectors before physical integration; outputs stay disabled.",
-      "delivery_notes": "Saved-profile inspection and controls-only scope were exercised in the native app using a temporary synthetic fixture. Full native cue/training/evaluation UI and prospective physiology remain unqualified. CI run 34908821255 passed at code revision 3fe3c9b: Python/native tests, native-profile Python loading and native CLI end-to-end comparison. This proves software checks only.",
+      "delivery_notes": "Saved-profile inspection and controls-only scope were exercised in the native app using a temporary synthetic fixture. Full native cue/training/evaluation UI and prospective physiology remain unqualified. CI run 34908821255 passed at code revision 3fe3c9b: Python/native tests, native-profile Python loading and native CLI end-to-end comparison. This proves software checks only. Current audit is docs/NATIVE_WORKFLOW_AUDIT.md; builds do not prove cue playback or live physiology.",
       "vendor_equivalence_claimed": false,
       "native_hardware_validated": false,
       "software_evidence": [
@@ -340,7 +340,15 @@
         "apple/Tests/EEGCoreTests/TrainingDataTests.swift",
         "apple/Tests/EEGCoreTests/LabeledEvaluationTests.swift",
         "tools/check_native_evaluation_cli.py",
-        "docs/NATIVE_APP.md"
+        "docs/NATIVE_APP.md",
+        "apple/Sources/EEGCore/TrialEvidence.swift",
+        "apple/Sources/EEGCore/TrialEvidenceRecovery.swift",
+        "apple/Sources/EEGCore/TrialPlan.swift",
+        "apple/Sources/EEGCore/TrialDatasetExport.swift",
+        "apple/Sources/EEGApp/TrialCueController.swift",
+        "apple/Sources/EEGApp/DatasetBuilderView.swift",
+        "apple/Tests/EEGCoreTests/TrialDatasetExportTests.swift",
+        "docs/NATIVE_TRIAL_CONTROLS.md"
       ]
     },
     {
@@ -476,12 +484,18 @@
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
       "missing_parameters_assets_dependencies": "Native durability/failure-status qualification, indexed library and prolonged recording tests.",
-      "current_implementation": "Native append-only JSONL raw/sample/event records, completion/schema validation, library review, bounded replay/CSV export and analysis. Shared reads detect size/timestamp or named-inode changes and reject provisional results. Python archive and RecordingLibrary also exist; cue markers and reference Parquet recovery remain research evidence.",
+      "current_implementation": "Native append-only JSONL raw/sample/event records, completion/schema validation, library review, bounded replay/CSV export and analysis. Shared reads detect size/timestamp or named-inode changes and reject provisional results. Python archive and RecordingLibrary also exist; cue markers and reference Parquet recovery remain research evidence. Trial transitions and plans are recorded and recovered with shared revision checks; aborted writers omit completion. Failed summary writes/flushes attempt rollback and expose uncertainty if rollback fails.",
       "target_component": "One recording service owns acquisition, metadata, markers, library index and completion/failure state.",
       "acceptance_gate": "Disk failure/crash recovery, exclusive private writes, schema/count validation, corruption reporting and complete export round trips.",
       "delivery_notes": "Core implemented; long-session durability/indexing qualification pending.",
       "vendor_equivalence_claimed": false,
-      "native_hardware_validated": false
+      "native_hardware_validated": false,
+      "software_evidence": [
+        "apple/Sources/EEGCore/RecordingStore.swift",
+        "apple/Sources/EEGCore/RecordingOutput.swift",
+        "apple/Tests/EEGCoreTests/RecordingCompletionTests.swift",
+        "apple/Tests/EEGCoreTests/TrialRecoveryTests.swift"
+      ]
     },
     {
       "id": "capability-14",
@@ -715,5 +729,6 @@
   ],
   "implementation_priority": "Independent mental-command contract/windows/features/profile training/neutral inference/evaluation first; ocular calibration is a separate research track, not a substitute.",
   "status_evidence_notes": "Tested mental/spectral/profile entries refer to tests/test_mental_processing.py and tests/test_processing_contract.py software invariants, not a fitted participant or hardware-qualified neural classifier. Shadow episode/exposure/latency calculations are covered by tests/test_shadow_evaluation.py and integrated synthetic workflow tests; real ordinary-activity and physiological validation remain open.",
-  "availability_policy": "docs/PRODUCT_CAPABILITY_POLICY.md: all independently implemented capabilities available without subscription tiers or artificial recording/export/training limits; actual resource, authorization and validation constraints remain explicit."
+  "availability_policy": "docs/PRODUCT_CAPABILITY_POLICY.md: all independently implemented capabilities available without subscription tiers or artificial recording/export/training limits; actual resource, authorization and validation constraints remain explicit.",
+  "native_workflow_audit": "docs/NATIVE_WORKFLOW_AUDIT.md"
 }
