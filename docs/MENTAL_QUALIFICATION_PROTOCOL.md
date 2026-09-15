@@ -211,12 +211,12 @@ never permute correlated individual samples. Report trial/session uncertainty an
 limitations of only three test sessions. Passing point estimates alone does not satisfy
 ordinary-activity exposure, artifact-control or neural-origin claims. The native CLI supports optional whole-session exploratory resampling, with explicit
 unavailable/degenerate outcomes; this is not validated confidence coverage. See
-[SESSION_RESAMPLING.md](SESSION_RESAMPLING.md). End-to-end grouped permutation analysis remains unimplemented. A native
-conditional schedule-counting primitive now respects the actual balanced,
-maximum-run-three plan; see [TRIAL_PLAN_ASSOCIATION.md](TRIAL_PLAN_ASSOCIATION.md).
-It is not yet connected to source-pinned trial evidence or evaluation receipts,
-and does not establish exchangeability. Retain predictions for that reviewed
-analysis rather than inventing its result.
+[SESSION_RESAMPLING.md](SESSION_RESAMPLING.md). The optional native per-session conditional schedule comparison now respects
+v1's balanced maximum-run-three assignment space and binds canonical outcomes to
+source-pinned complete reviewed plans. See [TRIAL_PLAN_ASSOCIATION.md](TRIAL_PLAN_ASSOCIATION.md).
+It reports unavailable evidence explicitly. Its exchangeability assumptions,
+between-session combination and physiological interpretation remain unvalidated;
+it is not a qualified significance test or permission to enable controls.
 
 There is **no automatic pass to neural origin or output control**. Outcomes are:
 
@@ -308,15 +308,15 @@ observations using full persistence evidence contained in the scored interval, p
 armed usable coverage. See [NATIVE_TRIAL_OUTCOMES.md](NATIVE_TRIAL_OUTCOMES.md) for
 exact definitions and the distinction from episode-onset latency. Optional
 exploratory session resampling is separately documented; neither it nor
-these counts supplies grouped permutation analysis or qualifies a real participant
-model. The Python CLI is unchanged.
+these counts alone supplies a qualified grouped permutation analysis or validates a real participant
+model. The optional conditional schedule comparison is documented separately above. The Python CLI is unchanged.
 
 ### Native trivial comparator
 
 The native evaluation receipt now includes the always-neutral comparator required
 above, with pooled/per-session window metrics and cued-trial observations. See
 [ALWAYS_NEUTRAL_BASELINE.md](ALWAYS_NEUTRAL_BASELINE.md) for denominators, null
-outcomes and limits. It does not supply the outstanding grouped permutation test
+outcomes and limits. The comparator alone does not supply the conditional schedule analysis
 or a physiological acceptance decision.
 
 ### Implementation audit (2026-09-15)

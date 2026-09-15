@@ -254,7 +254,7 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertEqual(receipt.data, try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile).data)
         let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
         XCTAssertEqual(object["controls_only"] as? Bool, true)
-        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-11")
+        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-12")
         let confusion = object["confusion"] as! [String: [String: Any]]
         XCTAssertEqual(confusion.values.reduce(0) { $0 + ($1["actual_windows"] as! Int) }, report.predictions.count)
         let sessionConfusion = object["session_confusion"] as! [String: [String: [String: Any]]]

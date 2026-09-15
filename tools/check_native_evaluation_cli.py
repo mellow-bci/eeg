@@ -23,6 +23,18 @@ with tempfile.TemporaryDirectory(prefix="eeg-native-cli-") as temporary:
     assert result.stdout == (fixture / "expected.json").read_bytes(), "CLI differs from canonical evaluator"
     receipt = json.loads(result.stdout)
     assert receipt["minimum_windows_per_class"] == 10
+    assert receipt["trial_association"] is None
+    association = subprocess.run(arguments + ["--trial-association-minimum-eligible-fraction", "0.8"], capture_output=True, timeout=120)
+    assert association.returncode == 0, association.stderr.decode()
+    checked = json.loads(association.stdout)
+    assert checked["predictions"] == receipt["predictions"]
+    assert set(checked["trial_association"]) == {"c", "d"}
+    for row in checked["trial_association"].values():
+        assert row["status"] == "unavailable" and row["reason"] == "unsupportedClasses"
+        assert "result" not in row
+    for invalid in ("0", "-0.1", "1.1", "nan", "inf", "bad"):
+        failed = subprocess.run(arguments + ["--trial-association-minimum-eligible-fraction", invalid], capture_output=True, timeout=120)
+        assert failed.returncode == 2 and not failed.stdout and failed.stderr
     relaxed = subprocess.run(arguments + ["--minimum-windows-per-class", "1"], capture_output=True, timeout=120)
     assert relaxed.returncode == 0, relaxed.stderr.decode()
     relaxed_receipt = json.loads(relaxed.stdout)

@@ -13,8 +13,9 @@ public struct EEGRecordingInfo: Identifiable, Sendable {
     public init(url:URL,sampleCount:Int,complete:Bool,corrupt:Bool) {self.url=url;self.sampleCount=sampleCount;self.complete=complete;self.corrupt=corrupt}
 }
 
-public enum EEGRecordingError: Error, LocalizedError {
+public enum EEGRecordingError: Error, LocalizedError, Equatable {
     case invalidPath, alreadyRecording, notRecording, invalidData, unavailableUnits, lineTooLarge, sourceChanged, invalidClockEvidence
+    case missingTrialPlan(fileSHA256: String)
     public var errorDescription: String? {
         switch self {
         case .invalidPath: return "Recording path is not a regular private recording file."
@@ -24,6 +25,7 @@ public enum EEGRecordingError: Error, LocalizedError {
         case .unavailableUnits: return "Calibrated microvolts are unavailable in this recording."
         case .lineTooLarge: return "Recording event exceeds the supported size."
         case .sourceChanged: return "Recording changed during reading. Retry with a completed, unchanged source."
+        case .missingTrialPlan: return "Recording contains no native trial plan."
         case .invalidClockEvidence: return "Recording clock evidence is malformed, repeated or appears after samples. Preserve the source; an absolute timeline cannot be selected automatically."
         }
     }
@@ -162,7 +164,8 @@ public final class EEGRecordingStore {
             history[trial.id]=trial
         }
         try validation.finish()
-        guard validation.summarized, let plan else { throw EEGRecordingError.invalidData }
+        guard validation.summarized else { throw EEGRecordingError.invalidData }
+        guard let plan else { throw EEGRecordingError.missingTrialPlan(fileSHA256: hash) }
         return TrialRecordingEvidence(plan:plan,trials:order.compactMap { history[$0] },fileSHA256:hash)
     }
 

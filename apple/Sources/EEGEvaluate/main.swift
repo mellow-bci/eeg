@@ -3,12 +3,14 @@ import Darwin
 import EEGCore
 
 let usage = """
-Usage: EEGEvaluate --manifest FILE --profile FILE --recordings DIRECTORY [--controls-only] [--minimum-windows-per-class N] [--resamples N [--resampling-seed N] [--central-mass FRACTION]]
+Usage: EEGEvaluate --manifest FILE --profile FILE --recordings DIRECTORY [--controls-only] [--minimum-windows-per-class N] [--trial-association-minimum-eligible-fraction FRACTION] [--resamples N [--resampling-seed N] [--central-mass FRACTION]]
 
 Evaluates finalized local recordings through the native EEGCore pipeline.
 Writes a complete eeg.native-evaluation.v1 JSON receipt to stdout only on success.
 Diagnostics go to stderr. Exit 2 means invalid arguments; exit 1 means evaluation failed.
 Optional resampling is exploratory, not validated confidence coverage.
+Optional trial association counts permitted schedules; exchangeability remains unverified.
+Its exposure fraction must be greater than zero and at most one.
 No acquisition, cloud service or system-control output is enabled.
 """
 
@@ -20,7 +22,7 @@ func arguments(_ args: [String]) throws -> ([String: String], Bool) {
         if key == "--controls-only" {
             guard !controls else { throw ArgumentFailure.invalid }; controls = true; i += 1
         } else {
-            guard ["--manifest", "--profile", "--recordings", "--resamples", "--resampling-seed", "--central-mass", "--minimum-windows-per-class"].contains(key), values[key] == nil,
+            guard ["--manifest", "--profile", "--recordings", "--resamples", "--resampling-seed", "--central-mass", "--minimum-windows-per-class", "--trial-association-minimum-eligible-fraction"].contains(key), values[key] == nil,
                   i + 1 < args.count, !args[i + 1].isEmpty, !args[i + 1].hasPrefix("--") else { throw ArgumentFailure.invalid }
             values[key] = args[i + 1]; i += 2
         }
@@ -50,6 +52,12 @@ do {
     if let raw = options["--minimum-windows-per-class"] {
         guard let value = Int(raw), value > 0 else { throw ArgumentFailure.invalid }; minimum = value
     } else { minimum = 10 }
+    let associationFraction: Double?
+    if let raw = options["--trial-association-minimum-eligible-fraction"] {
+        guard let value = Double(raw) else { throw ArgumentFailure.invalid }
+        do { try EEGTrialPlanAssociation.validateMinimumEligibleFraction(value) } catch { throw ArgumentFailure.invalid }
+        associationFraction = value
+    } else { associationFraction = nil }
     var resampling: EEGSessionResampling.Options?
     if let count = options["--resamples"] {
         guard let iterations = Int(count) else { throw ArgumentFailure.invalid }
@@ -70,7 +78,7 @@ do {
     let manifest = try readManifest(URL(fileURLWithPath: options["--manifest"]!))
     let profile = try EEGProfileStore.readDocument(URL(fileURLWithPath: options["--profile"]!))
     let artifact = try EEGEvaluationArtifact.run(manifest: manifest,
-        store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls, minimumWindowsPerClass: minimum, resampling: resampling)
+        store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls, minimumWindowsPerClass: minimum, resampling: resampling, trialAssociationMinimumEligibleFraction: associationFraction)
     try FileHandle.standardOutput.write(contentsOf: artifact.data)
 } catch ArgumentFailure.invalid {
     try? FileHandle.standardError.write(contentsOf: Data((usage + "\n").utf8)); exit(2)

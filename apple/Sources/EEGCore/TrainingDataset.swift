@@ -8,6 +8,7 @@ public struct EEGTrainingDataset: Sendable {
         public let eegSHA256: String
         public let usableWindows: Int
         public let rejectedWindows: Int
+        public internal(set) var recordingName: String? = nil
     }
     public struct EvaluationWindow: Sendable {
         public let input: EEGInferenceWindow
@@ -127,7 +128,7 @@ public struct EEGTrainingDataset: Sendable {
                     recording_content_sha256: eegHash, values: values)
             }
             summaries.append(SessionSummary(id: session.id, split: session.split, fileSHA256: fileHash,
-                eegSHA256: eegHash, usableWindows: usable, rejectedWindows: rejected))
+                eegSHA256: eegHash, usableWindows: usable, rejectedWindows: rejected, recordingName: session.recording))
         }
         return EEGTrainingDataset(evaluation: evaluation, participantID: manifest.participant_id, records: training, sessions: summaries)
     }

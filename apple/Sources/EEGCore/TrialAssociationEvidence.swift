@@ -7,9 +7,58 @@ extension EEGTrialPlanAssociation {
         public let eligibleFractionsByTrialID: [String: Double]
         public let association: Result
     }
-    public enum EvidenceFailure: Error {
+    public enum EvidenceFailure: String, Error {
         case invalidExposureSetting, sourceMismatch, unsupportedClasses, incompleteReviewedPlan
         case trialMismatch, invalidExposure, insufficientExposure
+    }
+
+    public static func validateMinimumEligibleFraction(_ fraction: Double) throws {
+        guard fraction.isFinite, fraction > 0, fraction <= 1 else { throw EvidenceFailure.invalidExposureSetting }
+    }
+    public struct Assessment: Encodable, Sendable {
+        public let status: String
+        public let reason: String?
+        public let expectedSourceFileSHA256: String
+        public let minimumEligibleFraction: Double
+        public let result: SourceResult?
+        public var explanation: String {
+            switch reason {
+            case "missing_native_trial_plan": return "No native trial plan was recorded."
+            case "unsupportedClasses": return "Requires neutral and silent serial subtraction classes."
+            case "incompleteReviewedPlan": return "All 24 planned trials must be completed, accepted and reviewed."
+            case "trialMismatch": return "Evaluated trials do not match the recorded plan and cue timing."
+            case "invalidExposure": return "Trial exposure or candidate counts are inconsistent."
+            case "insufficientExposure": return "At least one trial falls below the selected usable-exposure threshold."
+            default: return result == nil ? "Required comparison evidence is unavailable." : "Conditional association only; exchangeability is unverified."
+            }
+        }
+    }
+    static func assess(store: EEGRecordingStore, dataset: EEGTrainingDataset, report: EEGLabeledEvaluation,
+                       minimumEligibleFraction: Double) throws -> [String: Assessment] {
+        try validateMinimumEligibleFraction(minimumEligibleFraction)
+        var assessments = [String: Assessment]()
+        for session in dataset.sessions where session.split == "evaluation" {
+            try Task.checkCancellation()
+            guard let name = session.recordingName else { throw EvidenceFailure.sourceMismatch }
+            var result: SourceResult?, reason: String?
+            do {
+                result = try run(recording: store.directory.appendingPathComponent(name), store: store,
+                    expectedFileSHA256: session.fileSHA256, participantID: dataset.participantID,
+                    sessionID: session.id, classes: Array(report.metrics.keys),
+                    trials: report.trials.filter { $0.sessionID == session.id }, minimumEligibleFraction: minimumEligibleFraction)
+            } catch EEGRecordingError.missingTrialPlan(let hash) {
+                guard hash == session.fileSHA256 else { throw EvidenceFailure.sourceMismatch }
+                reason = "missing_native_trial_plan"
+            } catch let failure as EvidenceFailure {
+                // Stale/mismatched sources cannot publish an evaluation receipt.
+                if failure == .sourceMismatch { throw failure }
+                reason = failure.rawValue
+            }
+            assessments[session.id] = Assessment(status: result == nil ? "unavailable" : "conditional_only_exchangeability_unverified",
+                reason: reason, expectedSourceFileSHA256: session.fileSHA256,
+                minimumEligibleFraction: minimumEligibleFraction, result: result)
+        }
+        return assessments
     }
 
     /// Internal adapter for canonical evaluator outputs, not arbitrary caller-
@@ -19,8 +68,7 @@ extension EEGTrialPlanAssociation {
                     participantID: String, sessionID: String, classes: [String],
                     trials: [EEGTrialTiming], minimumEligibleFraction: Double) throws -> SourceResult {
         try Task.checkCancellation()
-        guard minimumEligibleFraction.isFinite, minimumEligibleFraction > 0,
-              minimumEligibleFraction <= 1 else { throw EvidenceFailure.invalidExposureSetting }
+        try validateMinimumEligibleFraction(minimumEligibleFraction)
         guard classes.count == 2, Set(classes) == Set(["neutral", "silent_serial_subtraction"]) else {
             throw EvidenceFailure.unsupportedClasses
         }

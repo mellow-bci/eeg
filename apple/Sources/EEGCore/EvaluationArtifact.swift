@@ -7,18 +7,23 @@ public struct EEGEvaluationArtifact: Sendable {
     public let report: EEGLabeledEvaluation
     public let data: Data
     public let trainingSourceAudit: EEGTrainingSourceAudit
+    public let trialAssociation: [String: EEGTrialPlanAssociation.Assessment]?
     public let sessionResampling: [String: EEGSessionResampling.Result]?
     public static func run(manifest: Data, store: EEGRecordingStore, profile: EEGMentalProfile,
-                           controlsOnly: Bool = false, minimumWindowsPerClass: Int = 10, resampling: EEGSessionResampling.Options? = nil) throws -> EEGEvaluationArtifact {
+                           controlsOnly: Bool = false, minimumWindowsPerClass: Int = 10, resampling: EEGSessionResampling.Options? = nil, trialAssociationMinimumEligibleFraction: Double? = nil) throws -> EEGEvaluationArtifact {
+        if let fraction = trialAssociationMinimumEligibleFraction { try EEGTrialPlanAssociation.validateMinimumEligibleFraction(fraction) }
         try resampling?.validate()
         guard minimumWindowsPerClass > 0 else { throw EEGLabeledEvaluation.Failure.invalidMinimumWindows }
         let dataset = try EEGTrainingDataset.load(manifest, store: store, settings: profile.settings)
         let report = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset, controlsOnly: controlsOnly, minimumWindowsPerClass: minimumWindowsPerClass)
-        return try make(report: report, dataset: dataset, manifest: manifest, profile: profile, resampling: resampling)
+        let association = try trialAssociationMinimumEligibleFraction.map {
+            try EEGTrialPlanAssociation.assess(store: store, dataset: dataset, report: report, minimumEligibleFraction: $0)
+        }
+        return try make(report: report, dataset: dataset, manifest: manifest, profile: profile, resampling: resampling, trialAssociation: association)
     }
     // Internal so production callers cannot attach an unrelated manifest to results.
     static func make(report: EEGLabeledEvaluation, dataset: EEGTrainingDataset, manifest: Data,
-                     profile: EEGMentalProfile, resampling: EEGSessionResampling.Options? = nil) throws -> EEGEvaluationArtifact {
+                     profile: EEGMentalProfile, resampling: EEGSessionResampling.Options? = nil, trialAssociation: [String: EEGTrialPlanAssociation.Assessment]? = nil) throws -> EEGEvaluationArtifact {
         try resampling?.validate()
         let trainingSourceAudit = try EEGTrainingSourceAudit.run(profile: profile, sessions: dataset.sessions)
         var sourceAuditObject = try JSONSerialization.jsonObject(with: JSONEncoder().encode(trainingSourceAudit)) as! [String: Any]
@@ -93,7 +98,7 @@ public struct EEGEvaluationArtifact: Sendable {
             })
         }
         let object: [String: Any] = [
-            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-11",
+            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-12",
             "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
             "minimum_windows_per_class": report.minimumWindowsPerClass,
@@ -101,6 +106,7 @@ public struct EEGEvaluationArtifact: Sendable {
             "system_control_enabled": false, "hardware_validated": false,
             "manifest_base64": manifest.base64EncodedString(),
             "manifest_sha256": SHA256.hash(data: manifest).map { String(format: "%02x", $0) }.joined(),
+            "trial_association": try trialAssociation.map { try JSONSerialization.jsonObject(with: JSONEncoder().encode($0)) } ?? NSNull(),
             "session_resampling": try sessionResampling.map { try JSONSerialization.jsonObject(with: JSONEncoder().encode($0)) } ?? NSNull(),
             "always_neutral_baseline": ["metrics": report.alwaysNeutralMetrics.mapValues(metricObject),
                 "session_metrics": report.sessionAlwaysNeutralMetrics.mapValues { $0.mapValues(metricObject) },
@@ -115,6 +121,7 @@ public struct EEGEvaluationArtifact: Sendable {
             "control_conditions_without_eligible_exposure": report.controlConditionsWithoutEligibleExposure,
             "trials": trials, "conditions": conditions, "session_conditions": sessionConditions, "rejection_fraction": report.rejectionFraction,
             "definitions": [
+                "trial_association": "optional conditional whole-trial schedule comparison; source-pinned recovered complete reviewed v1 plans, exact scored intervals and caller-selected exposure threshold; unavailable sessions carry no result; maximum-run-three balanced assignments only; exchangeability, neural origin and physiological validity remain unverified",
                 "time_axis": "recorded receipt-time seconds; window end is the last sample receipt",
                 "detector_timing": "nonnegative receipt times; overlapping or reordered windows within the current session/continuity are rejected and reset persistence; forward gaps over 0.05 seconds restart persistence",
                 "always_neutral_baseline": "signal-free comparator predicts neutral for every evaluated window, including detector-rejected/unarmed windows; same labels and denominators, pooled and per session; cued-trial candidate observations are zero for task detection and neutral false positives, retaining unavailable cue evidence as null rates; not a trained model, significance test, qualification or control policy",
@@ -144,6 +151,6 @@ public struct EEGEvaluationArtifact: Sendable {
                 "Parent lineage does not audit historical model-selection or evaluation reuse."]
         ]
         let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys, .prettyPrinted])
-        return EEGEvaluationArtifact(report: report, data: data, trainingSourceAudit: trainingSourceAudit, sessionResampling: sessionResampling)
+        return EEGEvaluationArtifact(report: report, data: data, trainingSourceAudit: trainingSourceAudit, trialAssociation: trialAssociation, sessionResampling: sessionResampling)
     }
 }

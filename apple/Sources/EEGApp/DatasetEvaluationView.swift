@@ -9,6 +9,8 @@ struct DatasetEvaluationView: View {
     @EnvironmentObject private var model: AcquisitionModel
     @State private var controlsOnly = false
     @State private var minimumWindows = "10"
+    @State private var associationEnabled = false
+    @State private var associationPercent = "80"
     @State private var resamplingEnabled = false
     @State private var resamplingIterations = "10000"
     @State private var resamplingSeed = "0"
@@ -32,6 +34,16 @@ struct DatasetEvaluationView: View {
                 TextField("Minimum windows per class", text: $minimumWindows).labelsHidden().accessibilityLabel("Minimum windows per class")
             }.disabled(running)
             Text("A data-count requirement, not proof of adequate physiological evidence. Rejected windows count toward it.").font(.caption)
+            DisclosureGroup("Conditional trial-schedule comparison") {
+                Toggle("Include trial-schedule comparison", isOn: $associationEnabled)
+                if associationEnabled {
+                    LabeledContent("Minimum eligible exposure (%)") {
+                        TextField("Minimum eligible exposure", text: $associationPercent).labelsHidden()
+                            .accessibilityLabel("Minimum eligible exposure percentage per trial")
+                    }
+                    Text("Requires every trial in a complete reviewed native plan. Freeze this threshold before viewing results. Schedule association does not establish neural origin or valid randomization.").font(.caption)
+                }
+            }.disabled(running)
             DisclosureGroup("Exploratory session resampling") {
                 Toggle("Include session resampling range", isOn: $resamplingEnabled)
                 if resamplingEnabled {
@@ -65,6 +77,23 @@ struct DatasetEvaluationView: View {
                     exportData = artifact.data; exporting = true
                 }
                 if let exportMessage { Text(exportMessage).font(.caption) }
+                if let associations = artifact?.trialAssociation {
+                    DisclosureGroup("Trial-schedule comparison results — conditional") {
+                        ForEach(associations.keys.sorted(), id: \.self) { session in
+                            let assessment = associations[session]!
+                            Text("Session: " + session).font(.headline)
+                            if let value = assessment.result {
+                                LabeledContent("At least observed / permitted schedules",
+                                    value: "\(value.association.atLeastObservedSchedules) / \(value.association.admissibleSchedules)")
+                                LabeledContent("Minimum eligible exposure", value: percent(value.minimumEligibleFraction))
+                                Text("Conditional association only; exchangeability unverified.").font(.caption)
+                            } else {
+                                Text("Unavailable: " + assessment.explanation)
+                            }
+                        }
+                        Text("No automatic significance, physiological qualification or system-control decision.").font(.caption)
+                    }
+                }
                 if let resampling = artifact?.sessionResampling {
                     DisclosureGroup("Session resampling results — exploratory") {
                         ForEach(resampling.keys.sorted(), id: \.self) { label in
@@ -164,6 +193,8 @@ struct DatasetEvaluationView: View {
         }
         .onDisappear { evaluationWorker?.cancel() }
         .onChange(of: minimumWindows) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
+        .onChange(of: associationEnabled) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
+        .onChange(of: associationPercent) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
         .onChange(of: resamplingEnabled) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
         .onChange(of: resamplingIterations) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
         .onChange(of: resamplingSeed) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
@@ -230,6 +261,13 @@ struct DatasetEvaluationView: View {
         guard let minimum = Int(minimumWindows), minimum > 0 else {
             failure = "Minimum windows per class must be a positive integer."; return
         }
+        let associationFraction: Double?
+        if associationEnabled {
+            guard let percent = Double(associationPercent), percent.isFinite, percent > 0, percent <= 100 else {
+                failure = "Minimum eligible exposure must be greater than zero and at most 100 percent."; return
+            }
+            associationFraction = percent / 100
+        } else { associationFraction = nil }
         let resampling: EEGSessionResampling.Options?
         do {
             if resamplingEnabled {
@@ -245,7 +283,7 @@ struct DatasetEvaluationView: View {
         let worker = Task.detached(priority: .utility) {
             Result {
                 try Task.checkCancellation()
-                let result = try EEGEvaluationArtifact.run(manifest: load(), store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls, minimumWindowsPerClass: minimum, resampling: resampling)
+                let result = try EEGEvaluationArtifact.run(manifest: load(), store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls, minimumWindowsPerClass: minimum, resampling: resampling, trialAssociationMinimumEligibleFraction: associationFraction)
                 try Task.checkCancellation()
                 return result
             }
