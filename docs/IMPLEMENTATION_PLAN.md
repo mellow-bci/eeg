@@ -177,3 +177,22 @@ Unit tests cover ordered publication, interruption idempotence, sink failure,
 retry rejection and invalid transitions. Native audible cue scheduling, fresh
 readiness controls, trial review UI and manifest generation remain pending.
 No physiological trial was performed by this change.
+
+## Completion-write failure handling
+
+The recording writer now saves its byte offset before appending a completion
+summary. A summary write or synchronization failure attempts to truncate back to
+that boundary and synchronize, preserving prior measurements without a success
+marker. If rollback also fails, `EEGRecordingCompletionFailure` exposes both
+errors and explicitly reports uncertain completion. A close error after successful
+summary synchronization remains an error; it does not undo already-synchronized
+bytes. Forced kill, filesystem failure and power loss are still qualification gates.
+
+An internal output interface wraps the same securely opened local FileHandle.
+Tests substitute a wrapper around a real temporary file to inject a partial
+summary write, a summary flush failure, and rollback failure. No production mock
+acquisition or alternate sample source was introduced. Tests verify prior event
+retention, incomplete/noncorrupt status after successful rollback, rejected
+analysis and explicit uncertainty when rollback fails. If storage prevents all
+rollback writes, on-disk completion may remain ambiguous; the returned error is
+not a guarantee that a future reader can detect that failure independently.

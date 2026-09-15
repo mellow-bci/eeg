@@ -34,7 +34,8 @@ public final class EEGRecordingStore {
     public enum Units: String { case adc, microvolts }
     public let directory: URL
     private let lock = NSLock()
-    private var writer: FileHandle?
+    private var writer: EEGRecordingOutput?
+    var outputFactory: (FileHandle) -> EEGRecordingOutput = { EEGFileRecordingOutput($0) }
     private var recordingID: String?
     private var trialEvidence: [String: EEGTrialEvidence] = [:]
     private var count = 0
@@ -57,7 +58,7 @@ public final class EEGRecordingStore {
         lock.lock(); defer { lock.unlock() }
         guard writer == nil else { throw EEGRecordingError.alreadyRecording }
         let url = directory.appendingPathComponent(UUID().uuidString.lowercased() + ".jsonl")
-        let handle = try Self.open(url, writing: true)
+        let handle = outputFactory(try Self.open(url, writing: true))
         writer = handle; count = 0; recordingID = url.lastPathComponent; trialEvidence = [:]
         do {
             try writeEvent(["kind": "stream_start", "schema": "eeg-native-v1", "time": ISO8601DateFormatter().string(from: Date())])
@@ -72,7 +73,7 @@ public final class EEGRecordingStore {
         var data = try encoder.encode(SampleEvent(kind: "eeg_sample", sample: sample))
         guard data.count < Self.maximumLine else { throw EEGRecordingError.lineTooLarge }
         data.append(0x0a)
-        do { try handle.write(contentsOf: data); count += 1 }
+        do { try handle.write(data); count += 1 }
         catch { abortLocked(); throw error }
     }
 
@@ -207,9 +208,19 @@ public final class EEGRecordingStore {
     public func finish() throws {
         lock.lock(); defer { lock.unlock() }
         guard let handle = writer else { throw EEGRecordingError.notRecording }
-        defer { writer = nil; try? handle.close() }
-        try writeEvent(["kind": "summary", "samples": count])
-        try handle.synchronize()
+        defer { writer = nil; recordingID = nil; try? handle.close() }
+        let boundary = try handle.offset()
+        do {
+            try writeEvent(["kind": "summary", "samples": count])
+            try handle.synchronize()
+        } catch {
+            // Remove even a partially written completion marker. Rollback can
+            // itself fail on damaged/unavailable storage; preserve both errors.
+            let original=error
+            do { try handle.truncate(at:boundary);try handle.synchronize() }
+            catch { throw EEGRecordingCompletionFailure(original:String(describing:original),rollback:String(describing:error)) }
+            throw original
+        }
         try handle.close()
     }
 
@@ -218,7 +229,7 @@ public final class EEGRecordingStore {
         var data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
         guard data.count < Self.maximumLine else { throw EEGRecordingError.lineTooLarge }
         data.append(0x0a)
-        try handle.write(contentsOf: data)
+        try handle.write(data)
     }
 
     public func inventory() throws -> [EEGRecordingInfo] {
@@ -359,5 +370,13 @@ public final class EEGRecordingStore {
             throw EEGRecordingError.sourceChanged
         }
         return digest.finalize().map { String(format: "%02x", $0) }.joined()
+    }
+}
+
+public struct EEGRecordingCompletionFailure: Error, LocalizedError {
+    public let original: String
+    public let rollback: String
+    public var errorDescription: String? {
+        "Recording completion and rollback both failed. Completion status is uncertain; do not use this file for analysis. Write: \(original). Rollback: \(rollback)."
     }
 }
