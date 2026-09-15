@@ -92,3 +92,34 @@ Install reader tools in a separate venv from `requirements-edf-qualification.txt
 if the example environment is unavailable. They are not app runtime dependencies.
 The probe asserts numeric/notice preservation and reports datetime qualification
 separately; a successful process exit alone does not mean full timing qualification.
+
+## Timestamp discrepancy localized
+
+The follow-up probe now inspects **every** native EDF timekeeping record with
+independent decimal arithmetic. All 263 record intervals across both files equal
+exactly 1/128 second. First TAL onsets are `0.00999999` and `0.01781249` seconds.
+A temporary fixture with only the second onset altered to `0.99999999` was rejected
+by this interval check. Neither the native writer nor any library was patched.
+
+The tagged [PyEDFlib v0.1.42 C header](https://github.com/holgern/pyedflib/blob/v0.1.42/pyedflib/_extensions/c/edflib.h)
+specifies 100-nanosecond start-offset ticks (10,000,000 per second).
+Its [Cython property](https://github.com/holgern/pyedflib/blob/v0.1.42/pyedflib/_extensions/_pyedflib.pyx)
+returns the header value directly. The installed
+[datetime helper](https://github.com/holgern/pyedflib/blob/v0.1.42/pyedflib/edfreader.py)
+divides that value by 100 to obtain microseconds, whereas the documented units
+require division by 10.
+
+Observed raw offsets are 99999 and 178124 ticks: exactly the TAL values converted
+to whole 100-nanosecond ticks. Converting those documented units to a separate
+diagnostic datetime matches both fixture starts within one microsecond. This
+localizes the observed discrepancy to the tested convenience conversion, rather
+than evidence of incorrect EDF timekeeping. The original public helper results
+remain in the report; they are not replaced by corrected results.
+
+The report distinguishes `all_start_times_qualified: false` (public helpers) from
+`all_low_level_starts_qualified: true` (edfio plus PyEDFlib raw ticks with explicit
+unit conversion). The probe now asserts the latter in addition to sample checks.
+This qualifies this synthetic subset and these reader paths only. Users relying
+on the affected helper would still obtain incorrect fractional starts. Marker
+translation, physical timing accuracy, hardware exchange and app export remain
+unqualified; no app capability was enabled by this finding.
