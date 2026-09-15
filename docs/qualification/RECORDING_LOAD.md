@@ -50,3 +50,26 @@ Both runs had zero discarded inputs and failed writes. This is a ten-second
 workload per rate on one host, with no concurrent Bluetooth or inference load.
 It establishes short-run storage behavior only. No acceptance threshold for
 scientific real-time operation or long-duration reliability is inferred.
+
+
+## 2026-09-15 one-minute run per rate
+
+Source: `f919df95f7b78775fc08e18e99fe5c41c36036f4` (only capability-matrix
+text was edited during execution). Release Swift test on the same macOS 26.6.2,
+28-logical-processor host. One selected test passed with zero failures in 121.332
+seconds. Raw report: [recording-load-60s-20260915.json](recording-load-60s-20260915.json).
+Reproduction uses the command above with `EEG_RECORDING_LOAD_SECONDS=60` and a
+fresh report destination.
+
+| Requested rate | Samples compared | Admission p99 | Finish/drain | Peak pending inputs | Maximum write |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 128/sec | 7,680 | 0.0884 ms | 0.431 ms | 28 | 102.797 ms |
+| 512/sec synthetic stress | 30,720 | 0.0801 ms | 0.997 ms | 48 | 45.312 ms |
+
+All 76,800 admitted inputs (samples plus synthetic events) were written with zero
+discarded inputs or failed writes. Full finalized replay compared all sample
+indices, counters, receipt timestamps, ADC words and electrode values. The queue
+absorbed a roughly 103 ms write delay in this run; low admission percentiles do
+not imply bounded disk latency. Producer lateness p99 was 3.850 ms and 0.925 ms,
+respectively. No RSS, Bluetooth or concurrent classifier measurement was made.
+One minute per rate still does not qualify long-session or crash reliability.

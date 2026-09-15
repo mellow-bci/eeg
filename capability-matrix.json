@@ -460,7 +460,7 @@
       "id": "capability-13",
       "capability": "Sessions, recordings and markers \u00b7 Collect/Review",
       "status": "tested",
-      "status_scope": "Local JSONL/reference subset; long-run native pending",
+      "status_scope": "Local JSONL/reference and one-minute-per-rate synthetic host load tested; prolonged native hardware qualification pending",
       "symbol_evidence": {
         "readable_names_and_links": "[ConnectedHeadset::addMarkerRequest](../archive/current-state/local-app-analysis/all-symbols.txt#L5059), [newDataForParquet](../archive/current-state/local-app-analysis/all-symbols.txt#L5062), [initParquetSubscription](../archive/current-state/local-app-analysis/all-symbols.txt#L5069), [RecordStorageApiHandler](../archive/current-state/local-app-analysis/all-symbols.txt#L2368)",
         "references": [
@@ -484,7 +484,7 @@
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
       "missing_parameters_assets_dependencies": "Native durability/failure-status qualification, indexed library and prolonged recording tests.",
-      "current_implementation": "Native append-only JSONL raw/sample/event records, completion/schema validation, library review, bounded replay/CSV export and analysis. Shared reads detect size/timestamp or named-inode changes and reject provisional results. Python archive and RecordingLibrary also exist; cue markers and reference Parquet recovery remain research evidence. Trial transitions and plans are recorded and recovered with shared revision checks; aborted writers omit completion. Failed summary writes/flushes attempt rollback and expose uncertainty if rollback fails. Native acquisition uses a bounded serial recording queue for high-rate writes; control and trial writes remain synchronous ordered barriers. Offline queue tests cover order, overload, disk failure, incomplete abort and restart; physical throughput is unqualified.",
+      "current_implementation": "Native append-only JSONL raw/sample/event records, completion/schema validation, library review, bounded replay/CSV export and analysis. Shared reads detect size/timestamp or named-inode changes and reject provisional results. Python archive and RecordingLibrary also exist; cue markers and reference Parquet recovery remain research evidence. Trial transitions and plans are recorded and recovered with shared revision checks; aborted writers omit completion. Failed summary writes/flushes attempt rollback and expose uncertainty if rollback fails. Native acquisition uses a bounded serial recording queue for high-rate writes; operational events and acknowledged trial revisions share that queue. Trial state publishes only after persistence acknowledgement; late or failed acknowledgements cannot advance cues. Finalization runs off the UI queue, although orderly application shutdown can still wait for disk operations. Offline queue tests cover order, overload, disk failure, incomplete abort and restart; physical throughput is unqualified.",
       "target_component": "One recording service owns acquisition, metadata, markers, library index and completion/failure state.",
       "acceptance_gate": "Disk failure/crash recovery, exclusive private writes, schema/count validation, corruption reporting and complete export round trips.",
       "delivery_notes": "Core implemented; long-session durability/indexing qualification pending.",
@@ -496,7 +496,11 @@
         "apple/Sources/EEGCore/QueuedRecordingStore.swift",
         "apple/Tests/EEGCoreTests/QueuedRecordingTests.swift",
         "apple/Tests/EEGCoreTests/RecordingCompletionTests.swift",
-        "apple/Tests/EEGCoreTests/TrialRecoveryTests.swift"
+        "apple/Tests/EEGCoreTests/TrialRecoveryTests.swift",
+        "apple/Tests/EEGCoreTests/RecordingLoadQualificationTests.swift",
+        "apple/Tests/EEGAppTests/AcquisitionInterruptionTests.swift",
+        "docs/qualification/RECORDING_LOAD.md",
+        "docs/qualification/recording-load-60s-20260915.json"
       ]
     },
     {
