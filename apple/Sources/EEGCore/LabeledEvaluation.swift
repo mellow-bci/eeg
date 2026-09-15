@@ -2,7 +2,9 @@ import Foundation
 
 public struct EEGLabeledEvaluation: Sendable {
     public struct Metric: Sendable {
-        public let truePositive: Int, falsePositive: Int, falseNegative: Int
+        public let truePositive: Int, falsePositive: Int, falseNegative: Int, rejectedWindows: Int
+        public var actualWindows: Int { truePositive + falseNegative }
+        public var rejectionFraction: Double? { actualWindows > 0 ? Double(rejectedWindows) / Double(actualWindows) : nil }
         public var precision: Double? { truePositive + falsePositive > 0 ? Double(truePositive) / Double(truePositive + falsePositive) : nil }
         public var recall: Double? { truePositive + falseNegative > 0 ? Double(truePositive) / Double(truePositive + falseNegative) : nil }
     }
@@ -15,12 +17,13 @@ public struct EEGLabeledEvaluation: Sendable {
     public var sessionMetrics: [String: [String: Metric]] {
         Dictionary(grouping: predictions, by: \.sessionID).mapValues { Self.summarize($0,classes:Array(metrics.keys)) }
     }
-    private static func summarize(_ predictions: [Prediction], classes: [String]) -> [String: Metric] {
+    static func summarize(_ predictions: [Prediction], classes: [String]) -> [String: Metric] {
         var result = [String: Metric]()
         for label in classes {
             result[label] = Metric(truePositive: predictions.filter { $0.actual == label && $0.predictedLabel == label }.count,
                 falsePositive: predictions.filter { $0.actual != label && $0.predictedLabel == label }.count,
-                falseNegative: predictions.filter { $0.actual == label && $0.predictedLabel != label }.count)
+                falseNegative: predictions.filter { $0.actual == label && $0.predictedLabel != label }.count,
+                rejectedWindows: predictions.filter { $0.actual == label && $0.predictedLabel == nil }.count)
         }
         return result
     }

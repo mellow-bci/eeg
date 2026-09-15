@@ -46,6 +46,7 @@ struct DatasetEvaluationView: View {
                         Text(label).font(.headline)
                         Text("TP \(metric.truePositive) · FP \(metric.falsePositive) · FN \(metric.falseNegative)").monospacedDigit()
                         Text("Precision: \(percent(metric.precision)) · Recall: \(percent(metric.recall))")
+                        Text("Rejected: \(metric.rejectedWindows) / \(metric.actualWindows) · \(percent(metric.rejectionFraction))").monospacedDigit()
                     }.accessibilityElement(children: .combine)
                 }
                 ForEach(report.conditions.keys.sorted(), id: \.self) { condition in
@@ -61,7 +62,7 @@ struct DatasetEvaluationView: View {
                             let metrics = metricsBySession[session] ?? [:]
                             ForEach(metrics.keys.sorted(),id: \.self) { label in
                                 let metric = metrics[label]!
-                                Text("\(label): precision \(percent(metric.precision)) · recall \(percent(metric.recall)) · TP \(metric.truePositive) / FP \(metric.falsePositive) / FN \(metric.falseNegative)").font(.caption).monospacedDigit()
+                                Text("\(label): precision \(percent(metric.precision)) · recall \(percent(metric.recall)) · TP \(metric.truePositive) / FP \(metric.falsePositive) / FN \(metric.falseNegative) · rejected \(metric.rejectedWindows) / \(metric.actualWindows) (\(percent(metric.rejectionFraction)))").font(.caption).monospacedDigit()
                             }
                             ForEach(report.sessionConditions[session]!.keys.sorted(), id: \.self) { condition in
                                 exposureSummary(condition: condition, exposure: report.sessionConditions[session]![condition]!)

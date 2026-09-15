@@ -49,8 +49,10 @@ with tempfile.TemporaryDirectory(prefix="eeg-native-cli-") as temporary:
                         for values in receipt["session_conditions"].values())
             assert math.isclose(pooled[field], total, rel_tol=1e-12, abs_tol=1e-12), (condition, field)
     assert set(receipt["session_metrics"]) == {"c", "d"}
-    for session, metrics in receipt["session_metrics"].items():
-        rows = [r for r in receipt["predictions"] if r["session_id"] == session]
+    groups = [(receipt["metrics"], receipt["predictions"])] + [
+        (metrics, [r for r in receipt["predictions"] if r["session_id"] == session])
+        for session, metrics in receipt["session_metrics"].items()]
+    for metrics, rows in groups:
         for label, metric in metrics.items():
             tp = sum(r["actual_label"] == label and r["predicted_label"] == label for r in rows)
             fp = sum(r["actual_label"] != label and r["predicted_label"] == label for r in rows)
@@ -58,6 +60,11 @@ with tempfile.TemporaryDirectory(prefix="eeg-native-cli-") as temporary:
             assert (metric["true_positive"], metric["false_positive"], metric["false_negative"]) == (tp, fp, fn)
             assert metric["precision"] == (tp / (tp + fp) if tp + fp else None)
             assert metric["recall"] == (tp / (tp + fn) if tp + fn else None)
+            actual = sum(r["actual_label"] == label for r in rows)
+            rejected = sum(r["actual_label"] == label and r["predicted_label"] is None for r in rows)
+            assert metric["actual_windows"] == actual
+            assert metric["rejected_windows"] == rejected
+            assert metric["rejection_fraction"] == (rejected / actual if actual else None)
     for args, status in [([str(executable), "--unknown"], 2),
                          (arguments + ["--controls-only"], 1),
                          (arguments + ["--manifest", "duplicate"], 2)]:

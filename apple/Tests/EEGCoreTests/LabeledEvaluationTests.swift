@@ -3,6 +3,23 @@ import XCTest
 @testable import EEGCore
 
 final class LabeledEvaluationTests: XCTestCase {
+    func testClassRejectionDistinguishesWrongLabelNeutralAndMissingClass() throws {
+        let pairs:[(String,String?)] = [("task",nil),("task","neutral"),("task","task"),("neutral","neutral")]
+        let predictions = pairs.enumerated().map { index,pair in
+            EEGLabeledEvaluation.Prediction(windowID:String(index),sessionID:"synthetic",trialID:"trial",
+                actual:pair.0,predictedLabel:pair.1,reason:"test",inputUsable:true)
+        }
+        let metrics = EEGLabeledEvaluation.summarize(predictions,classes:["neutral","task","absent"])
+        let task = try XCTUnwrap(metrics["task"])
+        XCTAssertEqual(task.actualWindows,3)
+        XCTAssertEqual(task.falseNegative,2)
+        XCTAssertEqual(task.rejectedWindows,1)
+        XCTAssertEqual(task.rejectionFraction,1.0/3.0)
+        XCTAssertEqual(metrics["neutral"]?.rejectedWindows,0)
+        XCTAssertEqual(metrics["neutral"]?.rejectionFraction,0)
+        XCTAssertEqual(metrics["absent"]?.actualWindows,0)
+        XCTAssertNil(metrics["absent"]?.rejectionFraction)
+    }
     private func file(_ name: String) throws -> Data {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         return try Data(contentsOf: root.appendingPathComponent("Fixtures/spectrum/" + name))
@@ -119,6 +136,10 @@ final class LabeledEvaluationTests: XCTestCase {
         else { XCTAssertTrue(object["parent_profile_id"] is NSNull) }
         let metrics = object["metrics"] as! [String: [String: Any]]
         XCTAssertTrue(metrics["task"]!["recall"] is NSNull)
+        XCTAssertTrue(metrics["task"]!["rejection_fraction"] is NSNull)
+        XCTAssertEqual(metrics["task"]!["actual_windows"] as? Int,0)
+        XCTAssertEqual(metrics["neutral"]!["rejected_windows"] as? Int,10)
+        XCTAssertEqual(metrics["neutral"]!["rejection_fraction"] as? Double,1)
         let predictions = object["predictions"] as! [[String: Any]]
         for (serialized, expected) in zip(predictions, report.predictions) {
             if let label = expected.predictedLabel { XCTAssertEqual(serialized["predicted_label"] as? String, label) }

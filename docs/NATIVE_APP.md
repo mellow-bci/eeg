@@ -750,3 +750,21 @@ also retains source checks, exact canonical receipt comparison and failure check
 
 Validation: end-to-end CLI qualification passed; macOS, iOS and visionOS builds
 passed. Interactive metrics layout and real-session performance remain unqualified.
+
+### Class-specific rejection reporting (2026-09-15)
+
+Evaluation now displays actual-window counts, rejected-window counts and rejection
+fractions for each actual class, both pooled and by session. The same fields are
+included under receipt `metrics` and `session_metrics`. A rejection is a null
+prediction, including unusable input, disabled shadow inference, and classifier
+abstention. An explicit neutral prediction is not rejection. A wrong non-null
+label remains a false negative for the actual class but is not counted as a
+rejection. Rejections remain in the recall denominator. Missing classes have
+zero actual windows and a null rejection fraction, rather than a misleading 0%.
+These are window statistics, not independent-trial or physiological accuracy.
+
+Validation: six LabeledEvaluationTests cover this distinction and existing
+Cortex-independent Python fixture agreement. The CLI verifier independently
+recomputes pooled and per-session class rejection counts and ratios from the
+exported predictions of two synthetic held-out recording sessions. Native builds
+cover macOS and iOS/visionOS simulators; this is not headset qualification.

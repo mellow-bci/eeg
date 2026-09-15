@@ -27,7 +27,8 @@ public struct EEGEvaluationArtifact: Sendable {
         }
         func metricObject(_ metric: EEGLabeledEvaluation.Metric) -> [String: Any] {
             ["true_positive": metric.truePositive, "false_positive": metric.falsePositive,
-             "false_negative": metric.falseNegative, "precision": nullable(metric.precision), "recall": nullable(metric.recall)]
+             "false_negative": metric.falseNegative, "actual_windows": metric.actualWindows,
+             "rejected_windows": metric.rejectedWindows, "rejection_fraction": nullable(metric.rejectionFraction), "precision": nullable(metric.precision), "recall": nullable(metric.recall)]
         }
         let metrics = report.metrics.mapValues(metricObject)
         let sessionMetrics = report.sessionMetrics.mapValues { $0.mapValues(metricObject) }
@@ -67,6 +68,7 @@ public struct EEGEvaluationArtifact: Sendable {
             "definitions": [
                 "time_axis": "recorded receipt-time seconds; window end is the last sample receipt",
                 "prediction": "experimental candidate or explicit neutral; null is rejection, not neutral",
+                "class_rejection": "null predictions divided by windows of the actual class; includes unarmed and unusable windows; null rate when the class is absent",
                 "latency": "recorded cue completion to candidate input availability, not mental onset or live response",
                 "poisson_bound": "one-sided 95% upper bound; assumes constant independent event rate; unavailable for carry-ins or zero eligible exposure",
                 "control_coverage": "lists required artifact-control conditions with zero eligible exposure; an empty list does not establish adequate duration or qualification",
