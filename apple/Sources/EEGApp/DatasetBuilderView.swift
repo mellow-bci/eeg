@@ -16,7 +16,7 @@ struct DatasetBuilderView: View {
     @State private var failure: String?
     var body: some View {
         Panel(title: "Build a dataset from reviewed recordings") {
-            Text("Choose independent recordings and assign each to training or evaluation before fitting. Only planned, reviewed trials are included. Changing a selection clears the prepared dataset.").foregroundStyle(.secondary)
+            Text("Choose independent recordings and assign each to training or evaluation before fitting. Only planned, reviewed trials are included. Preparation uses saved Processing settings, including the training-window limit. Changing a selection clears the prepared dataset.").foregroundStyle(.secondary)
             if recordings.isEmpty { Text("No finalized recordings available.") }
             ForEach(recordings) { info in
                 VStack(alignment: .leading, spacing: 8) {
@@ -65,7 +65,10 @@ struct DatasetBuilderView: View {
         invalidate();running=true
         Task { @MainActor in
             let result=await Task.detached(priority:.utility) {
-                Result { try EEGTrialDatasetExport.manifest(sources:sources,store:EEGRecordingStore(directory:directory)) }
+                Result {
+                    let settings = try ProcessingSettingsStore(directory: directory.deletingLastPathComponent()).load()
+                    return try EEGTrialDatasetExport.manifest(sources:sources,store:EEGRecordingStore(directory:directory),settings:settings)
+                }
             }.value
             running=false
             switch result {

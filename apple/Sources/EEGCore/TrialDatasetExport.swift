@@ -12,7 +12,9 @@ public enum EEGTrialDatasetExport {
         }
     }
     public enum Failure: Error { case controlTraining, missingDeclaration, noAcceptedTrials, participantMismatch, noUsableWindows }
-    public static func manifest(sources: [Source], store: EEGRecordingStore) throws -> Data {
+    public static func manifest(sources: [Source], store: EEGRecordingStore,
+                                settings: ProcessingSettings = ProcessingSettings()) throws -> Data {
+        try settings.validate()
         guard !sources.isEmpty else { throw Failure.noAcceptedTrials }
         var participant: String?,sessions: [[String:Any]]=[]
         for source in sources {
@@ -35,7 +37,7 @@ public enum EEGTrialDatasetExport {
         let data=try JSONSerialization.data(withJSONObject:["schema":"eeg.dataset.v1","participant_id":participant!,"sessions":sessions],options:[.sortedKeys,.prettyPrinted])
         // One extraction path: checks hashes again, window coverage, overlapping
         // intervals, session identity and duplicate EEG content before returning.
-        let dataset=try EEGTrainingDataset.load(data,store:store)
+        let dataset=try EEGTrainingDataset.load(data,store:store,settings:settings)
         guard dataset.sessions.allSatisfy({ $0.usableWindows > 0 }) else { throw Failure.noUsableWindows }
         return data
     }

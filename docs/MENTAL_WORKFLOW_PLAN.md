@@ -25,3 +25,8 @@ rule, reset semantics and synthetic validation boundaries.
 Native training now supports cooperative cancellation through fitting and the
 profile publication boundary; see [TRAINING_CANCELLATION.md](TRAINING_CANCELLATION.md).
 This improves the training lifecycle without changing the physiological gates.
+
+The native reviewed-recording builder now validates with the same saved
+Processing settings source used by training. See
+[DATASET_PREPARATION_SETTINGS.md](DATASET_PREPARATION_SETTINGS.md) for resource-limit
+semantics and the distinction between preparation and freezing a fitted profile.

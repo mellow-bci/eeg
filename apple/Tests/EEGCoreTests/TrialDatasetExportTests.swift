@@ -52,6 +52,21 @@ final class TrialDatasetExportTests: XCTestCase {
         try store.finish()
         let source=EEGTrialDatasetExport.Source(recording:file,split:.evaluation,independenceDeclaration:"Synthetic test fixture only")
         let data=try EEGTrialDatasetExport.manifest(sources:[source],store:store)
+        if !controls {
+            let trainingSource = EEGTrialDatasetExport.Source(recording:file,split:.train,independenceDeclaration:"Synthetic fixture")
+            var limited = ProcessingSettings(); limited.maxTrainingWindows = 1
+            XCTAssertThrowsError(try EEGTrialDatasetExport.manifest(sources:[trainingSource],store:store,settings:limited)) { error in
+                guard case EEGTrainingData.Failure.resourceLimit = error else { return XCTFail("Unexpected error: \(error)") }
+            }
+            limited.maxTrainingWindows = 100
+            let prepared = try EEGTrialDatasetExport.manifest(sources:[trainingSource],store:store,settings:limited)
+            let extracted = try EEGTrainingDataset.load(prepared,store:store,settings:limited)
+            XCTAssertGreaterThan(extracted.records.count,1)
+            XCTAssertLessThanOrEqual(extracted.records.count,100)
+            // Limits apply to fitting input, not held-out control exposure.
+            limited.maxTrainingWindows = 1
+            XCTAssertEqual(try EEGTrialDatasetExport.manifest(sources:[source],store:store,settings:limited),data)
+        }
         let dataset=try EEGTrainingDataset.load(data,store:store)
         XCTAssertEqual(dataset.participantID,"synthetic")
         XCTAssertEqual(dataset.evaluation.count,6)
