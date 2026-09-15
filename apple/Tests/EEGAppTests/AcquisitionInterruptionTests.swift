@@ -1,5 +1,6 @@
 import XCTest
 import EEGCore
+import CoreBluetooth
 @testable import EEGApp
 
 @MainActor
@@ -51,6 +52,30 @@ final class AcquisitionInterruptionTests:XCTestCase {
         XCTAssertEqual(recovered.reviewReason,"operator_stopped")
         XCTAssertEqual(rows.last?["kind"] as? String,"summary")
         XCTAssertTrue(model.events.contains {$0.contains("Recording finalized")})
+    }
+    func testUnavailableBluetoothStatesStopAndPersistInterruption() async throws {
+        let states: [(CBManagerState,String)] = [(.poweredOff,"bluetooth_powered_off"),(.unauthorized,"bluetooth_unauthorized"),(.unsupported,"bluetooth_unsupported"),(.resetting,"bluetooth_resetting"),(.unknown,"bluetooth_unknown")]
+        for (state,reason) in states {
+            let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            defer {try? FileManager.default.removeItem(at:directory)}
+            let model=AcquisitionModel(storageDirectory:directory)
+            model.ready=true;model.transportStable=true;model.startRecording()
+            try model.commitTrialPlan(participantID:"synthetic",sessionID:"radio-state")
+            try await waitUntil {model.trialPlan != nil}
+            let planned=try model.nextPlannedTrial()
+            try await withCheckedThrowingContinuation { (continuation:CheckedContinuation<Void,Error>) in
+                do {try model.submitTrialBegin(planned) {continuation.resume(with:$0)}}
+                catch {continuation.resume(throwing:error)}
+            }
+            model.handleBluetoothState(state)
+            XCTAssertFalse(model.ready);XCTAssertFalse(model.transportStable);XCTAssertFalse(model.recording)
+            try await waitUntil {!model.finalizingRecording && !model.savingTrialRevision}
+            XCTAssertEqual(model.trial?.phase,.interrupted)
+            XCTAssertEqual(model.trial?.reviewReason,reason)
+            let files=try FileManager.default.contentsOfDirectory(at:directory,includingPropertiesForKeys:nil).filter {$0.pathExtension=="jsonl"}
+            let trials=try EEGRecordingStore(directory:directory).recoveredTrials(recording:XCTUnwrap(files.first))
+            XCTAssertEqual(trials.first?.reviewReason,reason)
+        }
     }
     func testStopDuringPendingStartCannotFinalizeOrPublishStart() async throws {
         let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

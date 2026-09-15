@@ -610,3 +610,22 @@ an internal dependency, not a user-selectable simulated acquisition mode.
 
 Validation: 129 tests executed, one opt-in qualification skipped, zero failures.
 Native macOS, iOS and visionOS builds passed.
+
+
+## Unavailable Bluetooth state handling
+
+The central-manager delegate now passes its state to one internal handler.
+Permission loss, unsupported radio, resetting and powered-off states all use the
+existing disconnect/interruption/finalization path with distinct recorded reasons.
+Unknown state also stops an already-ready or recording session; initial unknown
+state still permits the pending initial scan request to wait for powered-on.
+No alternative acquisition path or simulated radio mode is exposed in the app.
+
+`AcquisitionInterruptionTests` exercises all five unavailable states with an
+acknowledged trial and the real queued recording store. It checks immediate loss
+of readiness/stability/recording and recovered interruption reasons after drain.
+All three targeted tests passed. The test sets synthetic readiness but never
+creates a CBCentralManager or plays audio. Real radio transitions, peripheral
+callback ordering, restart and reconnection remain hardware qualification gates.
+
+Native macOS, iOS and visionOS builds passed for this change.

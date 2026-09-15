@@ -88,13 +88,20 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
             }
         }
     }
-    func centralManagerDidUpdateState(_ central:CBCentralManager) {
-        switch central.state {
+    func centralManagerDidUpdateState(_ central:CBCentralManager) { handleBluetoothState(central.state) }
+    // Shared delegate path; directly exercisable without creating a radio manager.
+    func handleBluetoothState(_ state:CBManagerState) {
+        switch state {
         case .poweredOn:phase="Ready to scan";if scanning { beginScan() }
-        case .unauthorized:scanning=false;phase="Bluetooth permission required";message="Allow EEG to use Bluetooth in System Settings → Privacy & Security."
-        case .poweredOff:disconnect();phase="Bluetooth off";scanning=false
-        case .unsupported:phase="Bluetooth unavailable"
-        default:phase="Checking Bluetooth"
+        case .unauthorized:
+            disconnect(reason:"bluetooth_unauthorized");phase="Bluetooth permission required"
+            message="Allow EEG to use Bluetooth in System Settings → Privacy & Security."
+        case .poweredOff:disconnect(reason:"bluetooth_powered_off");phase="Bluetooth off"
+        case .unsupported:disconnect(reason:"bluetooth_unsupported");phase="Bluetooth unavailable"
+        case .resetting:disconnect(reason:"bluetooth_resetting");phase="Bluetooth resetting"
+        default:
+            if ready || recording { disconnect(reason:"bluetooth_unknown") }
+            phase="Checking Bluetooth"
         }
     }
     func scan() {
@@ -222,7 +229,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         message="Recording aborted after a storage failure: "+error.localizedDescription
     }
     private func fail(_ error:Error) { message=error.localizedDescription;event(error.localizedDescription);disconnect() }
-    func disconnect() { connectionTimer?.invalidate();scanTimer?.invalidate();central?.stopScan();scanning=false;configuring=false;setTransport(false,reason:"disconnect_requested");if recording { stopRecording() };if let p=peripheral { central?.cancelPeripheralConnection(p) };ready=false;transportStable=false }
+    func disconnect(reason:String = "disconnect_requested") { connectionTimer?.invalidate();scanTimer?.invalidate();central?.stopScan();scanning=false;configuring=false;setTransport(false,reason:reason);if recording { stopRecording() };if let p=peripheral { central?.cancelPeripheralConnection(p) };ready=false;transportStable=false }
     func startRecording() {
         guard ready,!recording,!finalizingRecording,!playback,fileOperation==nil,let store=store else { return }
         do {
