@@ -157,3 +157,19 @@ new selection. Training/evaluation remain explicitly initiated operations.
 The core end-to-end manifest-builder change passed CI at `f3228df`:
 https://github.com/autonomy-cloud/eeg/actions/runs/34911210527 . This is software
 regression evidence, not interactive UI, acoustic or physiological qualification.
+
+## Shared cue timing policy
+
+Evidence now records `timingPolicy: eeg.cue-timing.v1`. The core transition model
+and live watchdog share the 0.5-second maximum end-cue delay and 30-second speech
+request-to-completion limit. Both end-cue request and playback-start handling must
+fall within the end tolerance. Instruction start/completion and end completion
+are checked even if a timer callback was delayed. A late transition fails without
+advancing the evidence state; the live controller interrupts that trial.
+
+Older snapshots/plans without this policy field are rejected by strict recovery
+rather than silently gaining the new assurance. Their original raw EEG remains
+readable. These are independent operational gates, not measured acoustic timing:
+callback handling may lag actual sound, and physical playback still needs testing.
+Boundary regression tests exercise late requests, late starts, late completions
+and the exact permitted endpoints. No physiological or acoustic trial was run.

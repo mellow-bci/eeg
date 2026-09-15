@@ -55,7 +55,7 @@ final class TrialCueController: NSObject, ObservableObject, AVSpeechSynthesizerD
                 let now = acquisition.recordingClock
                 if now >= deadline {
                     // Independent operational tolerance, not a recovered Cortex parameter.
-                    guard now-deadline <= 0.5 else { stop(reason: "end_cue_timer_late");return }
+                    guard now-deadline <= EEGTrialEvidence.maximumEndCueDelay else { stop(reason: "end_cue_timer_late");return }
                     do {
                         try acquisition.transitionTrial { try $0.requestEndCue(at: $1) }
                         speak("Stop the task. Please report whether you followed the instruction.", purpose: .end)
@@ -64,7 +64,7 @@ final class TrialCueController: NSObject, ObservableObject, AVSpeechSynthesizerD
                 return
             }
         }
-        if ProcessInfo.processInfo.systemUptime-requestedAt > 30 { stop(reason: "speech_callback_timeout") }
+        if ProcessInfo.processInfo.systemUptime-requestedAt > EEGTrialEvidence.maximumSpeechDuration { stop(reason: "speech_callback_timeout") }
     }
     func stop(reason: String = "participant_stopped") {
         let wasStop = purpose == .stop

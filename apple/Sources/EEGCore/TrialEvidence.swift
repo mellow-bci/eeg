@@ -23,6 +23,9 @@ public struct EEGTrialEvidence: Encodable, Sendable {
         public let shadow_enabled: Bool
         public let cue_completed_at: Double
     }
+    public static let maximumEndCueDelay = 0.5
+    public static let maximumSpeechDuration = 30.0
+    public let timingPolicy = "eeg.cue-timing.v1"
     public let schema = "eeg.trial-evidence.v1"
     public let protocolID = "eeg.silent-subtraction-neutral.v1"
     public let timeBasis = "recorded_receipt_seconds"
@@ -62,27 +65,34 @@ public struct EEGTrialEvidence: Encodable, Sendable {
     }
     public mutating func cueStarted(at: Double) throws {
         guard phase == .cueRequested else { throw Failure.invalidTransition }
-        try checkTime(at); event("cue_playback_started", at: at); phase = .cuePlaying
+        try checkTime(at)
+        guard let request=events.first(where: { $0.kind == "cue_requested" }),at-request.at <= Self.maximumSpeechDuration else { throw Failure.invalidTime }
+        event("cue_playback_started", at: at); phase = .cuePlaying
     }
     public mutating func cueCompleted(at: Double) throws {
         guard phase == .cuePlaying else { throw Failure.invalidTransition }
         try checkTime(at)
+        guard let request=events.first(where: { $0.kind == "cue_requested" }),at-request.at <= Self.maximumSpeechDuration else { throw Failure.invalidTime }
         guard (at + 20).isFinite, at + 5 > at, at + 17 > at + 5 else { throw Failure.invalidTime }
         cueCompletedAt = at; event("cue_playback_completed", at: at); phase = .conditionActive
     }
     public mutating func requestEndCue(at: Double) throws {
         guard phase == .conditionActive, let deadline = conditionDeadline else { throw Failure.invalidTransition }
         try checkTime(at)
-        guard at >= deadline else { throw Failure.invalidTime }
+        guard at >= deadline,at-deadline <= Self.maximumEndCueDelay else { throw Failure.invalidTime }
         event("end_cue_requested", at: at); phase = .endRequested
     }
     public mutating func endCueStarted(at: Double) throws {
         guard phase == .endRequested else { throw Failure.invalidTransition }
-        try checkTime(at); event("end_cue_playback_started", at: at); phase = .endPlaying
+        try checkTime(at)
+        guard let deadline=conditionDeadline,at-deadline <= Self.maximumEndCueDelay else { throw Failure.invalidTime }
+        event("end_cue_playback_started", at: at); phase = .endPlaying
     }
     public mutating func endCueCompleted(at: Double) throws {
         guard phase == .endPlaying else { throw Failure.invalidTransition }
-        try checkTime(at); event("end_cue_playback_completed", at: at); phase = .awaitingReport
+        try checkTime(at)
+        guard let request=events.first(where: { $0.kind == "end_cue_requested" }),at-request.at <= Self.maximumSpeechDuration else { throw Failure.invalidTime }
+        event("end_cue_playback_completed", at: at); phase = .awaitingReport
     }
     public mutating func report(_ report: ParticipantReport, at: Double, observedBehavior: String = "unknown") throws {
         guard phase == .awaitingReport else { throw Failure.invalidTransition }

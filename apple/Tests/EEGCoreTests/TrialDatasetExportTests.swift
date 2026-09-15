@@ -18,13 +18,13 @@ final class TrialDatasetExportTests: XCTestCase {
             case 256: try trial.cueStarted(at:at)
             case 384: try trial.cueCompleted(at:at)
             case 2944: try trial.requestEndCue(at:at)
-            case 3072: try trial.endCueStarted(at:at)
+            case 2957: try trial.endCueStarted(at:at)
             case 3200: try trial.endCueCompleted(at:at)
             case 3328: try trial.report(.attempted,at:at)
             case 3456: try trial.review(accept:true,reviewer:"synthetic operator",reason:"reported",at:at)
             default: break
             }
-            if [128,256,384,2944,3072,3200,3328,3456].contains(i) { try store.appendTrialEvidence(trial) }
+            if [128,256,384,2944,2957,3200,3328,3456].contains(i) { try store.appendTrialEvidence(trial) }
             let word=UInt16(31200+Int(50*sin(at*2*Double.pi*10)))
             try store.append(sample:EEGSample(index:i,counter:i%128,receivedAt:at,continuous:true,
                 adcWords:Array(repeating:word,count:15),

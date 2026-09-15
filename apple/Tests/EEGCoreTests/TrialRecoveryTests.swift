@@ -11,7 +11,7 @@ final class TrialRecoveryTests: XCTestCase {
         XCTAssertEqual(try EEGTrialEvidence.recover(encoder.encode(trial)).phase,.planned)
         try trial.requestCue(at:1,participantReady:true,audioCheckHeard:true,transportStable:true,recordingActive:true)
         try trial.cueStarted(at:2);try trial.cueCompleted(at:3)
-        try trial.requestEndCue(at:23);try trial.endCueStarted(at:24);try trial.endCueCompleted(at:25)
+        try trial.requestEndCue(at:23);try trial.endCueStarted(at:23.1);try trial.endCueCompleted(at:25)
         try trial.report(.attempted,at:26);try trial.review(accept:true,reviewer:"operator",reason:"reported condition",at:27)
         XCTAssertEqual(try EEGTrialEvidence.recover(encoder.encode(trial)).datasetTrial().start,8)
         var object=try JSONSerialization.jsonObject(with:encoder.encode(trial)) as! [String:Any]

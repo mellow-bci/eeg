@@ -14,6 +14,22 @@ final class TrialEvidenceTests: XCTestCase {
         try value.requestEndCue(at: 24); try value.endCueStarted(at: 24.1); try value.endCueCompleted(at: 25)
         return value
     }
+    func testLateCallbacksCannotYieldCompletedEvidence() throws {
+        var value=try trial()
+        try value.requestCue(at:1,participantReady:true,audioCheckHeard:true,transportStable:true,recordingActive:true)
+        XCTAssertThrowsError(try value.cueStarted(at:31.001))
+        try value.cueStarted(at:2)
+        XCTAssertThrowsError(try value.cueCompleted(at:31.001))
+        try value.cueCompleted(at:4)
+        XCTAssertThrowsError(try value.requestEndCue(at:24.501))
+        try value.requestEndCue(at:24)
+        XCTAssertThrowsError(try value.endCueStarted(at:24.501))
+        try value.endCueStarted(at:24.5)
+        XCTAssertThrowsError(try value.endCueCompleted(at:54.001))
+        try value.endCueCompleted(at:54)
+        XCTAssertEqual(value.phase,.awaitingReport)
+        XCTAssertThrowsError(try value.datasetTrial())
+    }
     func testOnlyExplicitReviewedAttemptBecomesDatasetTrial() throws {
         var value = try completeCues()
         XCTAssertThrowsError(try value.datasetTrial())
