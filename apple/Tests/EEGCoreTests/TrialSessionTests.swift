@@ -80,4 +80,20 @@ final class TrialSessionTests: XCTestCase {
         XCTAssertThrowsError(try session.acknowledge(revision,result:.success(())))
     }
 
+    func testSpeechObservationTimesSurviveDeferredAcknowledgement() throws {
+        let session=EEGTrialSession {_ in}
+        try session.begin(planned())
+        try session.transition(at:1) {try $0.requestCue(at:$1,participantReady:true,audioCheckHeard:true,transportStable:true,recordingActive:true)}
+        let start=try session.prepareTransition(at:2) {try $0.cueStarted(at:$1)}
+        XCTAssertThrowsError(try session.prepareTransition(at:3) {try $0.cueCompleted(at:$1)})
+        XCTAssertEqual(session.trial?.phase,.cueRequested)
+        try session.acknowledge(start,result:.success(()))
+        let finish=try session.prepareTransition(at:4) {try $0.cueCompleted(at:$1)}
+        XCTAssertNil(session.trial?.cueCompletedAt)
+        try session.acknowledge(finish,result:.success(()))
+        XCTAssertEqual(session.trial?.cueCompletedAt,4)
+        XCTAssertEqual(session.trial?.conditionDeadline,24)
+        XCTAssertEqual(session.trial?.events.map(\.at),[1,2,4])
+    }
+
 }

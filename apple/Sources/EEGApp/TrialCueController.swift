@@ -2,118 +2,137 @@ import SwiftUI
 import AVFAudio
 import EEGCore
 
-/// Native speech callbacks are timing observations, not proof the user heard audio.
+/// Native speech callbacks are observations, not proof that audio was heard.
 final class TrialCueController: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
-    @Published var status = "Idle"
-    @Published var checkCompleted = false
-    @Published var busy = false
-    private weak var acquisition: AcquisitionModel?
-    private let speech = AVSpeechSynthesizer()
-    private var utterance: AVSpeechUtterance?
-    private enum Purpose { case check, instruction, end, stop }
-    private var purpose: Purpose = .check
-    private var requestedAt = 0.0
-    private var timer: Timer?
-    init(acquisition: AcquisitionModel) {
-        self.acquisition = acquisition
-        super.init(); speech.delegate = self
-    }
-    deinit { timer?.invalidate() }
+    @Published var status="Idle"
+    @Published var checkCompleted=false
+    @Published var busy=false
+    private weak var acquisition:AcquisitionModel?
+    private let speech=AVSpeechSynthesizer()
+    private var utterance:AVSpeechUtterance?
+    private enum Purpose {case check,instruction,end,stop}
+    private var purpose:Purpose = .check
+    private var requestedAt=0.0
+    private var timer:Timer?
+    private var runID=UUID()
+    private var waiting=false
+    init(acquisition:AcquisitionModel) {self.acquisition=acquisition;super.init();speech.delegate=self}
+    deinit {timer?.invalidate()}
     func audioCheck() {
-        guard !busy else { return }
-        checkCompleted = false
-        speak("EEG audio check. Keep your eyes open. You can stop the trial at any time.", purpose: .check)
+        guard !busy else {return}
+        runID=UUID();checkCompleted=false
+        speak("EEG audio check. Keep your eyes open. You can stop the trial at any time.",purpose:.check)
     }
-    func start(_ planned: EEGTrialEvidence, ready: Bool, heard: Bool) {
-        guard !busy,checkCompleted,ready,heard,let acquisition else { return }
+    func start(_ planned:EEGTrialEvidence,ready:Bool,heard:Bool) {
+        guard !busy,checkCompleted,ready,heard,let acquisition else {return}
+        runID=UUID();let run=runID
+        checkCompleted=false;busy=true;waiting=true;purpose = .instruction
+        status="Saving trial start";monitor()
         do {
-            try acquisition.beginTrial(planned)
-            try acquisition.transitionTrial { try $0.requestCue(at: $1, participantReady: ready, audioCheckHeard: heard, transportStable: acquisition.transportStable, recordingActive: acquisition.recording) }
-            checkCompleted = false
-            let task = planned.requestedCondition == .neutral
-                ? "Do not subtract. Remain comfortably seated with eyes open."
-                : "Silently subtract three repeatedly. Keep your eyes open and do not speak or deliberately move."
-            speak("Starting number \(planned.startingNumber). \(task) Begin when this instruction ends.", purpose: .instruction)
-        } catch { status = "Cannot start: " + error.localizedDescription }
+            try acquisition.submitTrialBegin(planned) { [weak self] result in
+                guard let self,self.runID==run else {return}
+                self.waiting=false
+                guard case .success=result else {self.stop(reason:"trial_start_save_failed");return}
+                self.transition({try $0.requestCue(at:$1,participantReady:ready,audioCheckHeard:heard,
+                    transportStable:acquisition.transportStable,recordingActive:acquisition.recording)}) {
+                    let task=planned.requestedCondition == .neutral
+                        ? "Do not subtract. Remain comfortably seated with eyes open."
+                        : "Silently subtract three repeatedly. Keep your eyes open and do not speak or deliberately move."
+                    self.speak("Starting number \(planned.startingNumber). \(task) Begin when this instruction ends.",purpose:.instruction)
+                }
+            }
+        } catch {stop(reason:"trial_start_rejected")}
     }
-    private func speak(_ text: String, purpose: Purpose) {
-        self.purpose = purpose; busy = true; status = text
-        let value = AVSpeechUtterance(string: text)
-        value.voice = AVSpeechSynthesisVoice(language: "en-US")
-        utterance = value; requestedAt = ProcessInfo.processInfo.systemUptime
+    private func monitor() {
+        requestedAt=ProcessInfo.processInfo.systemUptime
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in self?.tick() }
-        speech.speak(value)
+        timer=Timer.scheduledTimer(withTimeInterval:0.1,repeats:true) { [weak self] _ in self?.tick() }
+    }
+    private func speak(_ text:String,purpose:Purpose) {
+        self.purpose=purpose;busy=true;status=text
+        let value=AVSpeechUtterance(string:text);value.voice=AVSpeechSynthesisVoice(language:"en-US")
+        utterance=value;monitor();speech.speak(value)
+    }
+    private func transition(_ change:(inout EEGTrialEvidence,Double)throws->Void,
+                            at:Double?=nil,then:@escaping()->Void) {
+        guard let acquisition else {stop(reason:"acquisition_unavailable");return}
+        let run=runID;waiting=true;status="Saving trial evidence";requestedAt=ProcessInfo.processInfo.systemUptime
+        do {
+            try acquisition.submitTrialTransition(change,at:at) { [weak self] result in
+                guard let self,self.runID==run else {return}
+                self.waiting=false
+                guard case .success=result,acquisition.recording,acquisition.transportStable else {
+                    self.stop(reason:"trial_transition_save_failed");return
+                }
+                then()
+            }
+        } catch {stop(reason:"trial_transition_rejected")}
     }
     private func tick() {
-        guard let acquisition else { stop(reason: "acquisition_unavailable");return }
+        guard let acquisition else {stop(reason:"acquisition_unavailable");return}
         if purpose == .instruction || purpose == .end {
             if acquisition.trial?.phase == .interrupted || !acquisition.recording || !acquisition.transportStable {
-                stop(reason: "acquisition_interrupted");return
+                stop(reason:"acquisition_interrupted");return
             }
-            if let deadline = acquisition.trial?.conditionDeadline, acquisition.trial?.phase == .conditionActive {
-                let now = acquisition.recordingClock
-                if now >= deadline {
-                    // Independent operational tolerance, not a recovered Cortex parameter.
-                    guard now-deadline <= EEGTrialEvidence.maximumEndCueDelay else { stop(reason: "end_cue_timer_late");return }
-                    do {
-                        try acquisition.transitionTrial { try $0.requestEndCue(at: $1) }
-                        speak("Stop the task. Please report whether you followed the instruction.", purpose: .end)
-                    } catch { stop(reason: "end_cue_transition_failed") }
+            if let deadline=acquisition.trial?.conditionDeadline,acquisition.trial?.phase == .conditionActive {
+                let now=acquisition.recordingClock
+                if now>=deadline {
+                    guard now-deadline<=EEGTrialEvidence.maximumEndCueDelay else {stop(reason:"end_cue_timer_late");return}
+                    if !waiting {
+                        transition({try $0.requestEndCue(at:$1)}) {
+                            self.speak("Stop the task. Please report whether you followed the instruction.",purpose:.end)
+                        }
+                    }
                 }
                 return
             }
         }
-        if ProcessInfo.processInfo.systemUptime-requestedAt > EEGTrialEvidence.maximumSpeechDuration { stop(reason: "speech_callback_timeout") }
+        if ProcessInfo.processInfo.systemUptime-requestedAt>EEGTrialEvidence.maximumSpeechDuration {stop(reason:"speech_or_storage_timeout")}
     }
-    func stop(reason: String = "participant_stopped") {
-        let wasStop = purpose == .stop
-        timer?.invalidate();timer=nil;utterance=nil
-        speech.stopSpeaking(at: .immediate)
-        if let acquisition,let trial=acquisition.trial,trial.phase != .reviewed,trial.phase != .interrupted {
-            try? acquisition.transitionTrial { try $0.interrupt(reason: reason, at: $1) }
-        }
-        busy=false;checkCompleted=false;status="Stopped: " + reason
-        if !wasStop { speak("The trial has stopped. Stop the task and rest.", purpose: .stop) }
-        // Visible status is authoritative if the output route cannot play speech.
+    func stop(reason:String="participant_stopped") {
+        let wasStop=purpose == .stop
+        runID=UUID();waiting=false;timer?.invalidate();timer=nil;utterance=nil
+        speech.stopSpeaking(at:.immediate)
+        acquisition?.cancelTrial(reason:reason)
+        busy=false;checkCompleted=false;status="Stopped: "+reason
+        if !wasStop {speak("The trial has stopped. Stop the task and rest.",purpose:.stop)}
     }
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart value: AVSpeechUtterance) {
+    func speechSynthesizer(_ synthesizer:AVSpeechSynthesizer,didStart value:AVSpeechUtterance) {
+        let observed=ProcessInfo.processInfo.systemUptime
         DispatchQueue.main.async { [weak self] in
-            guard let self,self.utterance === value else { return }
-            do {
-                if self.purpose == .instruction { try self.acquisition?.transitionTrial { try $0.cueStarted(at: $1) } }
-                if self.purpose == .end { try self.acquisition?.transitionTrial { try $0.endCueStarted(at: $1) } }
-            } catch { self.stop(reason: "speech_start_transition_failed") }
+            guard let self,self.utterance === value,let acquisition=self.acquisition else {return}
+            let at=acquisition.trialObservationTime(uptime:observed)
+            if self.purpose == .instruction {self.transition({try $0.cueStarted(at:$1)},at:at) {}}
+            if self.purpose == .end {self.transition({try $0.endCueStarted(at:$1)},at:at) {}}
         }
     }
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish value: AVSpeechUtterance) {
+    func speechSynthesizer(_ synthesizer:AVSpeechSynthesizer,didFinish value:AVSpeechUtterance) {
+        let observed=ProcessInfo.processInfo.systemUptime
         DispatchQueue.main.async { [weak self] in
-            guard let self,self.utterance === value else { return }
-            do {
-                switch self.purpose {
-                case .check: self.checkCompleted=true;self.busy=false;self.status="Audio check finished. Confirm whether you heard it.";self.timer?.invalidate()
-                case .instruction:
-                    try self.acquisition?.transitionTrial { try $0.cueCompleted(at: $1) }
-                    self.status="Condition period — wait for the spoken end cue."
-                case .end:
-                    try self.acquisition?.transitionTrial { try $0.endCueCompleted(at: $1) }
+            guard let self,self.utterance === value,let acquisition=self.acquisition else {return}
+            let at=acquisition.trialObservationTime(uptime:observed)
+            self.utterance=nil
+            switch self.purpose {
+            case .check:
+                self.checkCompleted=true;self.busy=false;self.status="Audio check finished. Confirm whether you heard it.";self.timer?.invalidate()
+            case .instruction:
+                self.transition({try $0.cueCompleted(at:$1)},at:at) {self.status="Condition period — wait for the spoken end cue."}
+            case .end:
+                self.transition({try $0.endCueCompleted(at:$1)},at:at) {
                     self.busy=false;self.status="Awaiting your report";self.timer?.invalidate()
-                case .stop: self.busy=false;self.status="Trial stopped. New readiness and audio check required.";self.timer?.invalidate()
                 }
-                self.utterance=nil
-            } catch { self.stop(reason: "speech_completion_transition_failed") }
+            case .stop: self.busy=false;self.status="Trial stopped. New readiness and audio check required.";self.timer?.invalidate()
+            }
         }
     }
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel value: AVSpeechUtterance) {
+    func speechSynthesizer(_ synthesizer:AVSpeechSynthesizer,didCancel value:AVSpeechUtterance) {
         DispatchQueue.main.async { [weak self] in
-            guard let self,self.utterance === value else { return }
-            self.stop(reason: "speech_cancelled")
+            guard let self,self.utterance === value else {return};self.stop(reason:"speech_cancelled")
         }
     }
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didPause value: AVSpeechUtterance) {
+    func speechSynthesizer(_ synthesizer:AVSpeechSynthesizer,didPause value:AVSpeechUtterance) {
         DispatchQueue.main.async { [weak self] in
-            guard let self,self.utterance === value else { return }
-            self.stop(reason: "speech_paused")
+            guard let self,self.utterance === value else {return};self.stop(reason:"speech_paused")
         }
     }
 }

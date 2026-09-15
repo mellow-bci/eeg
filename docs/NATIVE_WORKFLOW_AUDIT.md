@@ -491,3 +491,35 @@ implementation. No physiological experiment or live cue was run for this change.
 Validation: 116 tests, one opt-in test skipped, zero failures; macOS, iOS and
 visionOS builds passed. Report/review interaction is build-checked, with state
 semantics tested offline; it has not yet been exercised in a live hardware trial.
+
+## Queued start and speech transitions
+
+Trial start, cue request, speech-start/completion and end-cue transitions now use
+the same prepared revision and acknowledged queue operation as report/review.
+The synchronous begin/transition methods were removed from AcquisitionModel.
+Speech is launched only from the matching successful continuation while recording
+and transport remain usable. A controller run token invalidates pending
+continuations on stop. The initial pending revision is now included in acquisition
+interruption handling even before any trial has been published.
+
+Delegate callbacks capture monotonic uptime before main-queue dispatch; conversion
+to recording receipt time occurs on the acquisition executor. Those observation
+times are supplied to revision preparation and survive delayed acknowledgement.
+Overlapping pending revisions reject rather than being reordered or assigned
+fabricated times. End-cue timing bounds still apply; excessive storage delay can
+invalidate and abort a trial. The pending wait has a timeout and is monitored for
+transport/recording loss. These are operational safeguards, not evidence of actual
+audio-route timing.
+
+Stop/cancel still uses the existing synchronous interruption sink when no save is
+pending, and orderly app termination retains its wait. Those paths remain
+potential storage stalls. If a save is pending, interruption invalidates its token
+and aborts the uncertain recording. No exact Cortex behavior is claimed.
+
+An additional state test prepares speech observations with withheld acknowledgement,
+checks overlap rejection, then verifies exact observation times and the derived
+condition deadline. Native builds pass on macOS, iOS and visionOS. Controller
+speech, cancellation and timing behavior still require an actual audio/hardware
+qualification; no sound or participant experiment was initiated here.
+
+Full suite: 117 tests, one opt-in qualification skipped, zero failures.

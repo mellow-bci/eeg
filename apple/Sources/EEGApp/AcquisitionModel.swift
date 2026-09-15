@@ -288,37 +288,41 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
             throw NSError(domain: "EEGTrialPlan",code:1,userInfo:[NSLocalizedDescriptionKey:"Rest before the next trial: at least 10 seconds after review or interruption, or 60 seconds after each block of eight."])
         }
     }
-    func beginTrial(_ planned: EEGTrialEvidence) throws {
-        guard recording,ready,transportStable,!playback,let trialSession else { throw EEGTrialEvidence.Failure.readinessMissing }
-        let expected = try nextPlannedTrial()
-        guard planned.id == expected.id,planned.sessionID == expected.sessionID,
-              planned.participantID == expected.participantID,planned.requestedCondition == expected.requestedCondition,
-              planned.startingNumber == expected.startingNumber else { throw EEGTrialEvidence.Failure.invalidTransition }
-        do { try trialSession.begin(planned);trial=trialSession.trial;trialsStarted+=1 }
-        catch { if trialSession.persistenceFailure != nil { storageFailed(error) };throw error }
+    func submitTrialBegin(_ planned:EEGTrialEvidence,completion:@escaping(Result<Void,Error>)->Void) throws {
+        guard recording,ready,transportStable,!playback,let trialSession else {throw EEGTrialEvidence.Failure.readinessMissing}
+        let expected=try nextPlannedTrial()
+        guard planned.id==expected.id,planned.sessionID==expected.sessionID,
+              planned.participantID==expected.participantID,planned.requestedCondition==expected.requestedCondition,
+              planned.startingNumber==expected.startingNumber else {throw EEGTrialEvidence.Failure.invalidTransition}
+        try persistTrialRevision(trialSession.prepareBegin(planned)) { [weak self] result in
+            if case .success=result {self?.trialsStarted+=1}
+            completion(result)
+        }
     }
-    func transitionTrial(_ change: (inout EEGTrialEvidence, Double) throws -> Void) throws {
-        guard recording,let trialSession else { throw EEGRecordingError.notRecording }
-        do { try trialSession.transition(at: recordingClock,change);trial=trialSession.trial }
-        catch { trial=trialSession.trial;if trialSession.persistenceFailure != nil { storageFailed(error) };throw error }
+    func trialObservationTime(uptime:Double)->Double {uptime-origin}
+    func submitTrialTransition(_ change:(inout EEGTrialEvidence,Double)throws->Void,
+                               at:Double?=nil,completion:((Result<Void,Error>)->Void)?=nil) throws {
+        guard recording,let trialSession else {throw EEGRecordingError.notRecording}
+        try persistTrialRevision(trialSession.prepareTransition(at:at ?? recordingClock,change),completion:completion)
     }
-    /// Report/review observations retain their submission timestamp while storage
-    /// proceeds. The last acknowledged revision stays visible until completion.
-    func submitTrialTransition(_ change:(inout EEGTrialEvidence,Double)throws->Void) throws {
-        guard recording,let trialSession,let store else {throw EEGRecordingError.notRecording}
-        let revision=try trialSession.prepareTransition(at:recordingClock,change)
+    private func persistTrialRevision(_ revision:EEGTrialSession.Revision,
+                                      completion:((Result<Void,Error>)->Void)?) throws {
+        guard let trialSession,let store else {throw EEGRecordingError.notRecording}
         let generation=store.generation
         savingTrialRevision=true
         do {
             try store.enqueueTrialEvidence(revision.evidence) { [weak self,weak trialSession] result in
                 DispatchQueue.main.async {
                     guard let self,let trialSession,self.trialSession === trialSession,
-                          self.store?.generation==generation else {return}
+                          self.store?.generation==generation else {completion?(.failure(EEGRecordingError.notRecording));return}
                     self.savingTrialRevision=false
                     do {try trialSession.acknowledge(revision,result:result)}
-                    catch EEGTrialSession.Failure.staleAcknowledgement {return}
-                    catch {if self.recording {self.storageFailed(error)}}
-                    self.trial=trialSession.trial
+                    catch EEGTrialSession.Failure.staleAcknowledgement {completion?(.failure(EEGTrialSession.Failure.staleAcknowledgement));return}
+                    catch {
+                        if self.recording {self.storageFailed(error)}
+                        self.trial=trialSession.trial;completion?(.failure(error));return
+                    }
+                    self.trial=trialSession.trial;completion?(.success(()))
                 }
             }
         } catch {
@@ -327,8 +331,9 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
             trial=trialSession.trial;storageFailed(error);throw error
         }
     }
+    func cancelTrial(reason:String) {interruptTrial(reason:reason)}
     private func interruptTrial(reason: String) {
-        guard let trialSession,trialSession.active else { return }
+        guard let trialSession,trialSession.active || trialSession.pending != nil else { return }
         do { try trialSession.interrupt(reason: reason,at: recordingClock) }
         catch {
             // Do not recurse through storageFailed: a failed interruption has
