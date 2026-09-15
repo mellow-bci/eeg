@@ -136,3 +136,23 @@ A suspended-worker test fills the byte budget below the count budget, verifies
 rejection/generation invalidation, drains stale work, and verifies accounting
 recovery and oversize rejection. This is deterministic offline evidence, not a
 hardware throughput or memory benchmark.
+
+## Application processing-limit settings
+
+The profile's live inference panel now exposes persistent pending-input and
+event-byte limits under Processing limits. Positive integer validation blocks
+invalid values; fields lock during a run. Restore defaults returns 512 inputs
+and 4,194,304 event bytes. Each `shadow_start` stores the selected limits, so
+later analysis need not infer them from current preferences. Large values can
+increase retained data and latency; no claim of an optimal hardware setting is
+made. The per-event parser limit remains 4 MiB.
+
+Startup admission rejection (for example, a byte budget too small for device
+metadata) stops the candidate consumer and rejects inference startup without
+aborting the raw recording. Actual recording-write failure retains the existing
+storage-failure path. This corrects the former shared catch that incorrectly
+classified initial queue rejection as a recording storage failure.
+
+Native platform compilation verifies the view and call sites. Interactive
+settings persistence, startup behavior under a physical stream and accessibility
+remain unqualified until exercised in the application.

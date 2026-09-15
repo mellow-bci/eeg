@@ -263,11 +263,13 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         }
         trial=trialSession.trial
     }
-    func startShadow(profile: EEGMentalProfile, sessionID: String, participantConfirmed: Bool) throws {
+    func startShadow(profile: EEGMentalProfile, sessionID: String, participantConfirmed: Bool,
+                     maximumPendingInputs: Int, maximumPendingEventBytes: Int) throws {
         guard participantConfirmed,recording,ready,transportStable,!playback,!shadowActive,let store else { throw EEGTrialEvidence.Failure.readinessMissing }
         guard !profile.trainingSessions.contains(sessionID) else { throw EEGReplayInference.Failure.trainingRecording }
         let token=UUID();shadowToken=token
-        let consumer=try EEGLiveInference(profile:profile,participantID:profile.participantID,sessionID:sessionID) { [weak self] output in
+        let consumer=try EEGLiveInference(profile:profile,participantID:profile.participantID,sessionID:sessionID,
+            maximumPendingInputs:maximumPendingInputs,maximumPendingEventBytes:maximumPendingEventBytes) { [weak self] output in
             DispatchQueue.main.async {
                 guard let self,self.shadowToken == token,self.shadowActive,
                       self.shadow?.generation == output.generation else { return }
@@ -290,13 +292,18 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
                 } catch { self.storageFailed(error) }
             }
         }
+        // Admission failure is an inference configuration error, not a storage failure.
+        do {
+            let device=metadata.mapValues { $0.map { String(format:"%02x",$0) }.joined() }.merging(["kind":"device_metadata"]) { _,new in new }
+            guard consumer.submit(.event(try JSONSerialization.data(withJSONObject:device))),
+                  consumer.submit(.event(try JSONSerialization.data(withJSONObject:["kind":"transport_status","status":"stable"]))) else { throw EEGLiveInference.Failure.invalidCapacity }
+        } catch { consumer.stop();throw error }
         do {
             try store.appendEvent(kind:"shadow_start",fields:["profile_id":profile.id,"participant_id":profile.participantID,
                 "session_id":sessionID,"feature_config_id":EEGMentalFeatures.configurationID,"shadow_run_id":token.uuidString,
+                "maximum_pending_inputs":String(maximumPendingInputs),
+                "maximum_pending_event_bytes":String(maximumPendingEventBytes),
                 "system_control_enabled":"false","receivedAt":String(recordingClock)])
-            let device=metadata.mapValues { $0.map { String(format:"%02x",$0) }.joined() }.merging(["kind":"device_metadata"]) { _,new in new }
-            guard consumer.submit(.event(try JSONSerialization.data(withJSONObject:device))),
-                  consumer.submit(.event(try JSONSerialization.data(withJSONObject:["kind":"transport_status","status":"stable"]))) else { throw EEGRecordingError.invalidData }
             shadow=consumer;shadowActive=true;shadowResult=nil;shadowStatus="Waiting for validated windows"
         } catch { consumer.stop();storageFailed(error);throw error }
     }
