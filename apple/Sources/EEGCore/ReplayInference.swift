@@ -2,11 +2,7 @@ import Foundation
 
 /// Offline diagnostics only. Neither candidates nor score values authorize actions.
 public struct EEGReplayInferenceReport: Sendable {
-    public struct Window: Sendable {
-        public let ordinal: Int
-        public let reasons: [String]
-        public let candidate: String?
-    }
+    public typealias Window = EEGWindowInferenceResult
     public let profileID: String
     public let recordingSHA256: String
     public let eegContentSHA256: String
@@ -39,33 +35,13 @@ public enum EEGReplayInference {
         guard maximumWindows > 0 else { throw Failure.invalidLimit }
         guard participantID == profile.participantID, !sessionID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw Failure.invalidIdentity }
         guard !profile.trainingSessions.contains(sessionID) else { throw Failure.trainingRecording }
-        var detector = try profile.makeDetector()
+        var processor = try EEGWindowInference(profile:profile,participantID:participantID,sessionID:sessionID)
         var rows = [EEGReplayInferenceReport.Window]()
         var fingerprint = EEGRecordingFingerprint()
         let digest = try store.analysisWindows(recording: recording) { window in
             for sample in window.samples { try fingerprint.append(sample) }
             guard rows.count < maximumWindows else { throw Failure.windowLimitExceeded }
-            if !window.valid {
-                detector.reset()
-                rows.append(.init(ordinal: window.ordinal, reasons: window.reasons, candidate: nil))
-                return
-            }
-            let features: EEGMentalFeatures
-            do { features = try EEGMentalFeatures.extract(samples: window.samples) }
-            catch {
-                detector.reset()
-                rows.append(.init(ordinal: window.ordinal, reasons: ["feature_extraction_rejected"], candidate: nil))
-                return
-            }
-            let input = EEGInferenceWindow(values: features.values, feature_config_id: EEGMentalFeatures.configurationID,
-                artifact_flags: features.artifactFlags, usable: features.usable, participant_id: participantID,
-                session_id: sessionID, continuity_id: "segment-\(window.segment!)",
-                window_id: "\(sessionID):\(window.ordinal)", start: window.samples.first!.receivedAt,
-                end: window.samples.last!.receivedAt)
-            let proposal = detector.infer(input)
-            rows.append(.init(ordinal: window.ordinal,
-                reasons: features.artifactFlags.isEmpty ? [proposal.reason] : features.artifactFlags,
-                candidate: proposal.experimentalCandidate))
+            rows.append(processor.process(window))
         }
         // Content check happens after the same read that generated the windows.
         // Renaming a training recording cannot turn it into a held-out recording.

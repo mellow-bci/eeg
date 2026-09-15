@@ -37,3 +37,19 @@ it does not redefine completion as the pieces implemented below.
 CI passed at `0a6750e` (run 34911644557). The `b0f6d90` run 34911834013 was still
 in progress when inspected. Local `b0f6d90` validation recorded 93 passing tests
 and three successful native builds; none establishes live physiological accuracy.
+
+## Shared window processing implemented
+
+`EEGWindowInference` now owns the sequential analysis-window → spectral features
+→ detector step, and `EEGReplayInference` delegates to it. Rejected windows reset
+detector state; malformed window structure rejects explicitly. Results retain
+ordinal, reasons and experimental candidate and explicitly disable control.
+Replay still validates the complete source and excludes exact training content
+before releasing its report. The shared step itself does not assert held-out
+status: that remains a host-level whole-recording check.
+
+A native regression compares shared sequential processing with the replay report
+on the same finalized synthetic recording, checks identity rejection and malformed
+window handling. Existing numerical/detector tests remain in the suite. A bounded
+live consumer and acquisition/UI integration are still required; extracting this
+component does not mean live inference is running.

@@ -40,6 +40,23 @@ final class ReplayInferenceTests: XCTestCase {
         XCTAssertThrowsError(try EEGReplayInference.run(store: store, recording: url, profile: profile, participantID: "other", sessionID: "held-out"))
         XCTAssertThrowsError(try EEGReplayInference.run(store: store, recording: url, profile: profile, participantID: "participant", sessionID: "train-a"))
     }
+    func testSharedWindowProcessorMatchesReplayAndRejectsMalformedWindow() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at:directory) }
+        let store=try EEGRecordingStore(directory:directory),url=try recording(store)
+        let profile=try EEGMentalProfile.load(data:profileData())
+        var processor=try EEGWindowInference(profile:profile,participantID:"participant",sessionID:"held-out")
+        var rows: [EEGWindowInferenceResult]=[]
+        try store.analysisWindows(recording:url) { rows.append(processor.process($0)) }
+        let replay=try EEGReplayInference.run(store:store,recording:url,profile:profile,participantID:"participant",sessionID:"held-out")
+        XCTAssertEqual(rows,replay.windows)
+        let malformed=processor.process(EEGAnalysisWindow(samples:[],ordinal:2,segment:nil,reasons:[]))
+        XCTAssertNil(malformed.candidate);XCTAssertEqual(malformed.reasons,["invalid_analysis_window"])
+        let interrupted=processor.process(EEGAnalysisWindow(samples:[],ordinal:3,segment:nil,reasons:["transport_unstable"]))
+        XCTAssertEqual(interrupted.reasons,["transport_unstable"])
+        XCTAssertFalse(interrupted.systemControlEnabled);XCTAssertEqual(interrupted.status,"no_reliable_command")
+        XCTAssertThrowsError(try EEGWindowInference(profile:profile,participantID:"other",sessionID:"held-out"))
+    }
     func testRenamedTrainingContentRejected() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }
