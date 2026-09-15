@@ -822,3 +822,28 @@ collision preservation, corrupt cleanup, symlink rejection, and actual trial
 journal recovery through import. All native platform builds pass. The JSONL picker
 and interactive archive roundtrip remain to be qualified. No hardware capture,
 physiological validation or new inference path was introduced.
+
+## 2026-09-15 — Interactive native archive qualification
+
+On macOS, imported `synthetic-archive-qualification.jsonl` through the actual Open
+panel. The recording library showed 5,120 samples, Finalized, with Recorded source
+and replay of 1,280 samples. Exporting this entry through the actual Save panel
+produced a byte-identical file. Source, library copy and exported file were each
+3,885,490 bytes, SHA-256
+`b1a432f207ac7b706b66dcd8b26deba538c36fc0bd4925a0d4be72e702ed7de5`.
+The fixture contains synthetic sample/metadata events, not physiological data or
+a trial journal; journal preservation is covered separately by store tests.
+
+The first import-button attempts showed no dialog. After restart with temporary
+presentation logging, the panel opened and import succeeded. That initial
+nonresponse was not causally diagnosed; no claim of a picker reliability fix is
+made. Diagnostic logging was removed. The Save panel then exposed a real duplicate
+`.jsonl.jsonl` suggestion. Specifying the JSONL content type instead of generic data
+and keeping the extension visible fixed the suggestion; the uninstrumented build
+was exercised through successful Save, and the on-disk basename was correct.
+
+macOS build passed. The change is in the macOS save-panel branch only. Test-only
+library data was hash-checked and moved to `/tmp/eeg-archive-ui-20260915` after
+quitting; the two original user recordings were untouched. No Bluetooth, audio,
+profile training or system-control action was started. iOS/visionOS interactive
+archive handling remains unqualified.

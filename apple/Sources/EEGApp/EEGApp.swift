@@ -264,7 +264,7 @@ struct LibraryView: View {
         let units = exportUnits, format = exportFormat
         let suffix = format == .native ? ".jsonl" : "-" + units.rawValue + ".csv"
         #if os(macOS)
-        let panel = NSSavePanel(); panel.allowedContentTypes = format == .native ? [.data] : [.commaSeparatedText]; panel.nameFieldStringValue = info.url.deletingPathExtension().lastPathComponent + suffix
+        let panel = NSSavePanel(); panel.allowedContentTypes = format == .native ? [UTType(filenameExtension: "jsonl") ?? .data] : [.commaSeparatedText]; panel.isExtensionHidden = false; panel.nameFieldStringValue = info.url.deletingPathExtension().lastPathComponent + suffix
         if panel.runModal() == .OK, let url = panel.url { model.export(info, to: url, format: format, units: units) }
         #else
         shareURL = nil
