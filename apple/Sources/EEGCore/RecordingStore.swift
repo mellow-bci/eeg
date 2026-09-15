@@ -267,6 +267,14 @@ public final class EEGRecordingStore {
     /// Well-formed incomplete recordings remain incomplete; no summary is added.
     public func exportNative(recording: URL, to destination: URL) throws {
         try validate(recording)
+        _ = try Self.copyNative(recording: recording, to: destination)
+    }
+    /// Import preserves the archive identity and refuses to overwrite a local file.
+    public func importNative(_ source: URL) throws -> EEGRecordingInfo {
+        guard source.isFileURL, source.pathExtension == "jsonl", source.lastPathComponent != ".jsonl" else { throw EEGRecordingError.invalidPath }
+        return try Self.copyNative(recording: source, to: directory.appendingPathComponent(source.lastPathComponent))
+    }
+    private static func copyNative(recording: URL, to destination: URL) throws -> EEGRecordingInfo {
         let output = try Self.open(destination, writing: true)
         var succeeded = false
         defer { try? output.close(); if !succeeded { try? FileManager.default.removeItem(at: destination) } }
@@ -278,6 +286,7 @@ public final class EEGRecordingStore {
         }
         try validation.finish()
         try output.synchronize(); try output.close(); succeeded = true
+        return EEGRecordingInfo(url: destination, sampleCount: validation.samples, complete: validation.summarized, corrupt: false)
     }
 
     /// Destination is created exclusively with 0600 permissions. Any failed export is removed.

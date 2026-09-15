@@ -81,6 +81,30 @@ final class RecordingStoreTests: XCTestCase {
             XCTAssertEqual(try Data(contentsOf: destination), try Data(contentsOf: file))
         }
     }
+    func testNativeImportPreservesIdentityStatusAndRefusesCollision() throws {
+        let source = try EEGRecordingStore(directory:root.appendingPathComponent("source"))
+        let target = try EEGRecordingStore(directory:root.appendingPathComponent("target"))
+        for complete in [false,true] {
+            let file = try source.start()
+            try source.append(sample:sample(0))
+            if complete {try source.finish()} else {source.abort()}
+            let result = try target.importNative(file)
+            XCTAssertEqual(result.name,file.lastPathComponent)
+            XCTAssertEqual(result.sampleCount,1)
+            XCTAssertEqual(result.complete,complete)
+            XCTAssertEqual(try Data(contentsOf:result.url),try Data(contentsOf:file))
+            XCTAssertThrowsError(try target.importNative(file))
+            XCTAssertEqual(try Data(contentsOf:result.url),try Data(contentsOf:file))
+            if !complete {XCTAssertThrowsError(try target.analysisWindows(recording:result.url) {_ in})}
+        }
+        let corrupt = source.directory.appendingPathComponent("corrupt.jsonl")
+        try Data("broken\n".utf8).write(to:corrupt)
+        XCTAssertThrowsError(try target.importNative(corrupt))
+        XCTAssertFalse(FileManager.default.fileExists(atPath:target.directory.appendingPathComponent(corrupt.lastPathComponent).path))
+        let alias = source.directory.appendingPathComponent("alias.jsonl")
+        try FileManager.default.createSymbolicLink(at:alias,withDestinationURL:corrupt)
+        XCTAssertThrowsError(try target.importNative(alias))
+    }
     func testNativeExportRetainsRecoverableTrialJournal() throws {
         let store = try EEGRecordingStore(directory: root)
         let file = try store.start()
@@ -93,7 +117,7 @@ final class RecordingStoreTests: XCTestCase {
         try store.finish()
         let exported = try EEGRecordingStore(directory:root.appendingPathComponent("archive"))
         let destination = exported.directory.appendingPathComponent(file.lastPathComponent)
-        try store.exportNative(recording:file,to:destination)
+        _ = try exported.importNative(file)
         XCTAssertEqual(try Data(contentsOf:file),try Data(contentsOf:destination))
         let restored = try exported.recoveredTrials(recording:destination)
         XCTAssertEqual(restored.count,1)

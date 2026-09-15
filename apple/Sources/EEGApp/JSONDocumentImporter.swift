@@ -8,6 +8,7 @@ import AppKit
 /// schema/size/provenance validator; picking a file does not accept its contents.
 private struct EEGJSONDocumentImporter: ViewModifier {
     @Binding var isPresented: Bool
+    let allowedContentTypes: [UTType]
     let completion: (Result<URL,Error>)->Void
     #if os(macOS)
     @State private var panel: NSOpenPanel?
@@ -20,7 +21,7 @@ private struct EEGJSONDocumentImporter: ViewModifier {
             }
             .onDisappear {panel?.cancel(nil);panel=nil;isPresented=false}
         #else
-        content.fileImporter(isPresented:$isPresented,allowedContentTypes:[.json],onCompletion:completion)
+        content.fileImporter(isPresented:$isPresented,allowedContentTypes:allowedContentTypes,onCompletion:completion)
         #endif
     }
     #if os(macOS)
@@ -28,7 +29,7 @@ private struct EEGJSONDocumentImporter: ViewModifier {
         guard panel == nil else {return}
         let next=NSOpenPanel()
         next.canChooseFiles=true;next.canChooseDirectories=false
-        next.allowsMultipleSelection=false;next.allowedContentTypes=[.json]
+        next.allowsMultipleSelection=false;next.allowedContentTypes=allowedContentTypes
         panel=next
         next.begin { response in
             panel=nil;isPresented=false
@@ -39,7 +40,7 @@ private struct EEGJSONDocumentImporter: ViewModifier {
 }
 
 extension View {
-    func eegJSONImporter(isPresented:Binding<Bool>,completion:@escaping (Result<URL,Error>)->Void) -> some View {
-        modifier(EEGJSONDocumentImporter(isPresented:isPresented,completion:completion))
+    func eegJSONImporter(isPresented:Binding<Bool>,allowedContentTypes:[UTType] = [.json],completion:@escaping (Result<URL,Error>)->Void) -> some View {
+        modifier(EEGJSONDocumentImporter(isPresented:isPresented,allowedContentTypes:allowedContentTypes,completion:completion))
     }
 }

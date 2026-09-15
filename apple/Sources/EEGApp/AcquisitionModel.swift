@@ -481,6 +481,31 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         guard recording,!text.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty else { return }
         do { try store?.enqueueEvent(kind:"annotation",fields:["text":String(text.prefix(1000)),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]);event("Marker queued: "+text) } catch { storageFailed(error) }
     }
+    /// A single document entry point with explicit format-specific validation.
+    func importCapture(_ url: URL) {
+        if url.pathExtension == "jsonl" { importNativeRecording(url) }
+        else { importRawCapture(url) }
+    }
+    private func importNativeRecording(_ url: URL) {
+        guard !recording,!finalizingRecording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before importing.";return}
+        guard url.isFileURL else {message="Import requires a local recording file.";return}
+        fileOperation="Importing native recording"
+        let scoped=url.startAccessingSecurityScopedResource(), directory=self.directory
+        fileQueue.async { [weak self] in
+            let result=Result {try EEGRecordingStore(directory:directory).importNative(url)}
+            if scoped {url.stopAccessingSecurityScopedResource()}
+            DispatchQueue.main.async {
+                guard let self else {return}
+                self.fileOperation=nil
+                switch result {
+                case .success(let info):
+                    self.event("Imported native recording: \(info.sampleCount) samples; \(info.complete ? "finalized" : "incomplete").")
+                    self.refreshRecordings();self.replay(info)
+                case .failure(let error):self.message=error.localizedDescription;self.refreshRecordings()
+                }
+            }
+        }
+    }
     /// Import work is isolated from main-thread interaction and Bluetooth callbacks.
     func importRawCapture(_ url:URL) {
         guard !recording,!finalizingRecording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before importing.";return}

@@ -799,3 +799,26 @@ and actual recovery of an interrupted trial journal from an exported copy in a
 separate store. macOS/iOS/visionOS builds pass. Interactive picker/share-sheet
 qualification remains outstanding. Export does not constitute a new native import
 workflow; use the existing recording-store contract for reproduction.
+
+## 2026-09-15 — Native archive restoration
+
+The existing Import recording action now accepts native `.jsonl` as well as raw
+BLE `.json`. A single document adapter supplies the selected file; the model
+routes native archives to the recording store and raw captures to the existing
+hardware decoder. Native import/export share `copyNative`, preserving bytes and
+filename, checking stream structure and source stability, and creating private
+exclusive output. Native restoration does not decode or reserialize samples.
+
+Imported status derives from the preserved summary, not an assumed success state.
+Incomplete captures remain reviewable but cannot enter finalized analysis. File
+collisions fail without overwriting either recording. Mobile security-scoped
+access remains active through the asynchronous import. Imported recordings are
+shown in the existing recording library/replay path. Restored trial evidence is
+validated by the existing recovery consumer; stream import alone does not certify
+its labels or journal acceptance.
+
+Thirteen RecordingStoreTests pass: complete/incomplete restoration, byte identity,
+collision preservation, corrupt cleanup, symlink rejection, and actual trial
+journal recovery through import. All native platform builds pass. The JSONL picker
+and interactive archive roundtrip remain to be qualified. No hardware capture,
+physiological validation or new inference path was introduced.

@@ -76,8 +76,8 @@ struct WorkspaceView: View {
             .navigationTitle((selection ?? .live).rawValue)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
-                    Button { importing = true } label: { Label("Import capture", systemImage: "square.and.arrow.down") }
-                        .disabled(model.ready || model.recording || model.finalizingRecording || model.fileOperation != nil).help("Import a raw BLE capture JSON")
+                    Button { importing = true } label: { Label("Import recording", systemImage: "square.and.arrow.down") }
+                        .disabled(model.ready || model.recording || model.finalizingRecording || model.fileOperation != nil).help("Import a native JSONL recording or raw BLE capture JSON")
                     if model.ready {
                         Button { model.recording ? model.stopRecording() : model.startRecording() } label: {
                             Label(model.recording ? "Stop recording" : "Record", systemImage: model.recording ? "stop.circle.fill" : "record.circle")
@@ -94,8 +94,8 @@ struct WorkspaceView: View {
             .inspector(isPresented: $inspector) { SignalInspector().inspectorColumnWidth(min: 270, ideal: 310, max: 370) }
             #endif
         }
-        .eegJSONImporter(isPresented: $importing) { result in
-            do { model.importRawCapture(try result.get()) } catch { model.message = error.localizedDescription }
+        .eegJSONImporter(isPresented: $importing, allowedContentTypes: [.json, UTType(filenameExtension: "jsonl") ?? .data]) { result in
+            do { model.importCapture(try result.get()) } catch { model.message = error.localizedDescription }
         }
         .onChange(of: model.playback) { _, value in if value { selection = .recordings } }
         .alert("EEG", isPresented: Binding(get: { model.message != nil }, set: { if !$0 { model.message = nil } })) {
