@@ -53,7 +53,7 @@ public struct EEGEvaluationArtifact: Sendable {
         }
         let object: [String: Any] = [
             "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-2",
-            "profile_id": profile.id, "feature_config_id": EEGMentalFeatures.configurationID,
+            "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
             "participant_id": dataset.participantID, "controls_only": report.controlsOnly,
             "system_control_enabled": false, "hardware_validated": false,
@@ -74,7 +74,8 @@ public struct EEGEvaluationArtifact: Sendable {
                 "Control-only results do not measure task recall.",
                 "No physiological accuracy or safe system control is established.",
                 "Hashes detect changes; they do not authenticate authorship.",
-                "Source files are read as streams, not locked immutable snapshots."]
+                "Source files are read as streams, not locked immutable snapshots.",
+                "Training overlap checks cover this profile; parent lineage does not audit historical model-selection or evaluation reuse."]
         ]
         let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys, .prettyPrinted])
         return EEGEvaluationArtifact(report: report, data: data)

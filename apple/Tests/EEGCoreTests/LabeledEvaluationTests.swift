@@ -81,6 +81,20 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertThrowsError(try EEGLabeledEvaluation.run(profile: profile, dataset: full, controlsOnly: true))
     }
 
+    func testReceiptIncludesValidatedParentReference() throws {
+        let (_, dataset, _) = try fixture()
+        var object = try JSONSerialization.jsonObject(with:file("mental-profile.json")) as! [String:Any]
+        let parent = String(repeating:"a",count:64)
+        object["parent_profile_id"] = parent
+        object["profile_id"] = try ProfileCanonicalJSON.digest(PythonCompatibleJSON.encode(object))
+        let profile = try EEGMentalProfile.load(data:PythonCompatibleJSON.encode(object))
+        let report = try EEGLabeledEvaluation.run(profile:profile,dataset:dataset)
+        let receipt = try EEGEvaluationArtifact.make(report:report,dataset:dataset,manifest:Data("fixture".utf8),profile:profile)
+        let saved = try JSONSerialization.jsonObject(with:receipt.data) as! [String:Any]
+        XCTAssertEqual(saved["parent_profile_id"] as? String,parent)
+        XCTAssertEqual(saved["system_control_enabled"] as? Bool,false)
+    }
+
     func testReceiptKeepsUnavailableValuesAndRejectionsExplicit() throws {
         let (profile, full, _) = try fixture()
         let dataset = EEGTrainingDataset(evaluation: full.evaluation.filter { $0.label == "neutral" },
@@ -101,6 +115,8 @@ final class LabeledEvaluationTests: XCTestCase {
                 XCTAssertEqual(saved["episode_onsets"] as? Int,exposure.episodeOnsets)
             }
         }
+        if let parent = profile.parentProfileID { XCTAssertEqual(object["parent_profile_id"] as? String,parent) }
+        else { XCTAssertTrue(object["parent_profile_id"] is NSNull) }
         let metrics = object["metrics"] as! [String: [String: Any]]
         XCTAssertTrue(metrics["task"]!["recall"] is NSNull)
         let predictions = object["predictions"] as! [[String: Any]]

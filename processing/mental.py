@@ -16,7 +16,12 @@ DESIGN={'origin':'independent_design_not_recovered_cortex','feature_selection':'
 
 def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
 
+def _validate_parent(parent):
+    if parent is not None and (not isinstance(parent,str) or re.fullmatch(r'[0-9a-f]{64}',parent) is None):
+        raise ValueError('Parent profile ID must be a lowercase SHA256 or null')
+
 def train(records,participant_id,parent_profile=None,settings=None):
+    _validate_parent(parent_profile)
     settings=validate_settings(settings)
     design=dict(DESIGN,**{k:settings[k] for k in ALGORITHM_KEYS})
     if settings['max_training_windows'] is not None and len(records)>settings['max_training_windows']:
@@ -77,6 +82,8 @@ def validate_profile(profile):
     if profile.get('schema')!=SCHEMA or profile.get('feature_config_id')!=CONFIG_ID:raise ValueError('Unsupported profile or feature configuration')
     check=dict(profile);pid=check.pop('profile_id',None)
     if pid!=digest(check):raise ValueError('Profile integrity mismatch')
+    _validate_parent(profile.get('parent_profile_id'))
+    if profile.get('parent_profile_id') == pid:raise ValueError('Profile cannot reference itself as parent')
     if profile.get('system_control_enabled') is not False:raise ValueError('Control cannot be enabled by an experimental profile')
     settings=validate_settings(profile.get('processing_settings'))
     if profile.get('processing_settings')!=settings:raise ValueError('Complete processing settings snapshot required')

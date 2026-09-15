@@ -38,6 +38,24 @@ def resigned(profile):
     return result
 
 
+class ProfileLineageTests(unittest.TestCase):
+    def test_optional_parent_and_malformed_lineage(self):
+        rows = records()
+        profile = train(rows, 'participant')
+        validate_profile(profile)
+        child = train(rows, 'participant', parent_profile=profile['profile_id'])
+        validate_profile(child)
+        self.assertEqual(child['parent_profile_id'], profile['profile_id'])
+        self.assertNotEqual(child['profile_id'], profile['profile_id'])
+        for bad in ('invalid', 'A'*64, '', 42, True, [], {}):
+            with self.subTest(parent=bad):
+                with self.assertRaises(ValueError):
+                    train(rows, 'participant', parent_profile=bad)
+                changed = dict(child, parent_profile_id=bad)
+                with self.assertRaises(ValueError):
+                    validate_profile(resigned(changed))
+
+
 class FeatureTests(unittest.TestCase):
     def test_known_sine_power_and_input_unchanged(self):
         t=np.arange(256)/128

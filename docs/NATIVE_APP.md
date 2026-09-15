@@ -699,3 +699,20 @@ experimental and must be evaluated separately before any qualification claim.
 Validation: 132 tests, one optional skip, zero failures. Native macOS, iOS and
 visionOS builds passed. Interactive retraining and physiological validation remain
 pending; tests use synthetic training records.
+
+
+### Lineage and evaluation independence
+
+Python training/loading now applies the same optional lowercase SHA256 parent-ID
+validation as the native loader. Native evaluation receipts include the parent ID
+(or explicit null) to retain this context. A parent is not loaded automatically
+and its weights are not used during refitting. Current overlap checks cover the
+child's actual training sessions/content. They cannot establish that previous
+held-out results were never used to choose settings, tasks or a retraining dataset.
+Use a fresh final evaluation session after model selection; lineage alone does
+not certify an untouched test set. No historical validation status is inherited.
+
+Targeted validation: Python mental-processing regressions and native labeled-
+evaluation tests, including explicit null/present receipt lineage and malformed
+re-signed Python profiles. This does not validate participant intent or model
+selection independence in any real experiment.
