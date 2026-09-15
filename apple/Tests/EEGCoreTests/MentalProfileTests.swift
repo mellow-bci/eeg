@@ -31,6 +31,29 @@ final class MentalProfileTests: XCTestCase {
         let duplicate = text.replacingOccurrences(of: "{", with: "{\"schema\":\"eeg.mental-profile.v2\",", range: text.startIndex..<text.index(after: text.startIndex))
         XCTAssertThrowsError(try EEGMentalProfile.load(data: Data(duplicate.utf8)))
     }
+    func testResignedInconsistentTrainingRecipeRejected() throws {
+        for mode in 0..<4 {
+            let data = try resigned { object in
+                if mode < 2 {
+                    var components = object["components"] as! [[Double]]
+                    if mode == 0 { components[0] = components[0].map { $0 * 2 } }
+                    else { components[1] = components[0] }
+                    object["components"] = components
+                } else {
+                    var gaussians = object["gaussians"] as! [[String: Any]]
+                    if mode == 2 {
+                        var variance = gaussians[0]["variance"] as! [Double]
+                        variance[0] = 0.001
+                        gaussians[0]["variance"] = variance
+                    } else { gaussians[0]["distance_limit"] = 1.0 }
+                    object["gaussians"] = gaussians
+                }
+            }
+            XCTAssertThrowsError(try EEGMentalProfile.load(data: data)) { error in
+                guard case EEGMentalProfile.Failure.design = error else { return XCTFail("Unexpected: \(error)") }
+            }
+        }
+    }
     func testResignedUnsupportedDesignAndProvenanceRejected() throws {
         let changes: [(inout [String: Any]) -> Void] = [
             { $0["system_control_enabled"] = true },

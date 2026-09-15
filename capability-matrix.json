@@ -473,7 +473,7 @@
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
       "missing_parameters_assets_dependencies": "Prospective participant validation, actual native headset qualification, sustained concurrent processing and target-device memory/latency measurements. Vendor-trained models and their numeric semantics remain unknown and are not prerequisites for the independent design.",
-      "current_implementation": "Python processing/mental.py and native EEGCore implement the independently designed PCA/regularized diagonal-Gaussian pipeline. EEGMentalProfile validates v2 profile integrity, dimensions, provenance and disabled output; makeDetector constructs EEGExperimentalDetector. EEGReplayInference and EEGLiveInference consume the shared native window-inference path. Native profile training/save and held-out evaluation/export have been exercised interactively with synthetic recordings. No Cortex runtime, vendor TFLite weights or proprietary model assets are used.",
+      "current_implementation": "Python processing/mental.py and native EEGCore implement the independently designed PCA/regularized diagonal-Gaussian pipeline. EEGMentalProfile validates v2 profile integrity, dimensions, provenance and disabled output; makeDetector constructs EEGExperimentalDetector. EEGReplayInference and EEGLiveInference consume the shared native window-inference path. Native profile training/save and held-out evaluation/export have been exercised interactively with synthetic recordings. No Cortex runtime, vendor TFLite weights or proprietary model assets are used. Profile loaders also reject PCA bases inconsistent with orthonormality, variances below the declared floor and distance limits below the trainer minimum, even with recomputed checksums. This checks recipe consistency, not provenance or accuracy.",
       "target_component": "Model service accepts versioned independently owned models with input schema and bounded execution; runtime choice is implementation detail.",
       "acceptance_gate": "Golden inference vectors, corrupt/incompatible model rejection, reproducible preprocessing, memory/latency and rollback tests.",
       "delivery_notes": "Native runtime is implemented and software-tested; it is no longer pending. The macOS synthetic UI workflow is documented in docs/qualification/NATIVE_UI_WORKFLOW.md. These checks do not establish vendor algorithm equivalence, physiological accuracy or safe command output.",
@@ -488,7 +488,8 @@
         "apple/Tests/EEGCoreTests/MentalProfileTests.swift",
         "apple/Tests/EEGCoreTests/ProfileCreationTests.swift",
         "apple/Tests/EEGCoreTests/ReplayInferenceTests.swift",
-        "docs/qualification/NATIVE_UI_WORKFLOW.md"
+        "docs/qualification/NATIVE_UI_WORKFLOW.md",
+        "docs/PROFILE_RECIPE_VALIDATION.md"
       ]
     },
     {

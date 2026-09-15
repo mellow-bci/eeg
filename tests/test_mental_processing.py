@@ -39,6 +39,21 @@ def resigned(profile):
 
 
 class ProfileLineageTests(unittest.TestCase):
+    def test_resigned_inconsistent_training_recipe_rejected(self):
+        profile = train(records(), 'participant')
+        for mode in range(4):
+            changed = copy.deepcopy(profile)
+            if mode == 0:
+                changed['components'][0] = [2*x for x in changed['components'][0]]
+            elif mode == 1:
+                changed['components'][1] = list(changed['components'][0])
+            elif mode == 2:
+                changed['gaussians'][0]['variance'][0] = .001
+            else:
+                changed['gaussians'][0]['distance_limit'] = 1.0
+            with self.subTest(mode=mode), self.assertRaises(ValueError):
+                validate_profile(resigned(changed))
+
     def test_optional_parent_and_malformed_lineage(self):
         rows = records()
         profile = train(rows, 'participant')

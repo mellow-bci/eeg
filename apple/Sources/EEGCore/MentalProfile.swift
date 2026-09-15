@@ -50,6 +50,18 @@ public struct EEGMentalProfile: Sendable {
                 "margin_threshold":settings.marginThreshold, "persistence_windows":settings.persistenceWindows,
                 "parameters_physiologically_validated":false]) else { throw Failure.design }
         _ = try EEGMentalScoring.score(values: parameters.center, parameters: parameters)
+        // Consistency with the independent trainer's declared PCA/Gaussian recipe.
+        // The checksum alone cannot establish these invariants or training provenance.
+        for (i, row) in parameters.components.enumerated() {
+            for j in 0...i {
+                let dot = zip(row, parameters.components[j]).reduce(0.0) { $0 + $1.0 * $1.1 }
+                guard dot.isFinite, abs(dot - (i == j ? 1 : 0)) <= 1e-6 else { throw Failure.design }
+            }
+        }
+        guard parameters.gaussians.allSatisfy({ gaussian in
+            gaussian.variance.allSatisfy { $0 >= settings.varianceFloor } &&
+            gaussian.distance_limit >= 4 * Double(parameters.components.count)
+        }) else { throw Failure.design }
         return EEGMentalProfile(id: id, parentProfileID: decoded.parent_profile_id, participantID: decoded.participant_id, settings: settings,
                                 parameters: parameters, trainingSessions: sessions, trainingRecordingHashes: decoded.training_recording_hashes)
     }

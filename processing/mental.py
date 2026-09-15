@@ -125,7 +125,11 @@ def validate_profile(profile):
         raise ValueError('Invalid training records digest')
     dimensions=min(design['pca_components'],len(window_ids)-len(classes),len(selected))
     if dimensions<1:raise ValueError('Insufficient PCA dimensions')
-    array('pca_mean',(len(selected),));array('components',(dimensions,len(selected)))
+    array('pca_mean',(len(selected),));components=array('components',(dimensions,len(selected)))
+    with np.errstate(over='ignore', invalid='ignore'):
+        gram=components@components.T
+    if not np.isfinite(gram).all() or not np.allclose(gram,np.eye(dimensions),atol=1e-6,rtol=0):
+        raise ValueError('PCA components are not orthonormal')
     gaussians=profile.get('gaussians')
     if not isinstance(gaussians,list) or len(gaussians)!=len(classes):raise ValueError('Invalid Gaussian classes')
     for label,g in zip(classes,gaussians):
@@ -134,8 +138,8 @@ def validate_profile(profile):
             mean=np.asarray(g['mean'],dtype=float);variance=np.asarray(g['variance'],dtype=float)
             limit=g['distance_limit']
             if (mean.shape!=(dimensions,) or variance.shape!=(dimensions,) or
-                not np.isfinite(mean).all() or not np.isfinite(variance).all() or not (variance>0).all() or
-                type(limit) not in (int,float) or not math.isfinite(limit) or limit<=0):
+                not np.isfinite(mean).all() or not np.isfinite(variance).all() or not (variance>=design['variance_floor']).all() or
+                type(limit) not in (int,float) or not math.isfinite(limit) or limit<4*dimensions):
                 raise ValueError('Invalid Gaussian parameters')
         except (KeyError,TypeError) as exc:raise ValueError('Invalid Gaussian parameters') from exc
     return profile
