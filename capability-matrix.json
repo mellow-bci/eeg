@@ -562,7 +562,7 @@
       "id": "capability-14",
       "capability": "Native archive and CSV/EDF exchange \u00b7 Review",
       "status": "tested",
-      "status_scope": "Native JSONL and CSV subsets tested; macOS synthetic archive UI roundtrip checked; EDF pending",
+      "status_scope": "Native JSONL and CSV subsets tested; experimental EDF native numeric roundtrip tested; EDF timing/UI/hardware qualification incomplete",
       "symbol_evidence": {
         "readable_names_and_links": "[CsvExporter](../archive/current-state/local-app-analysis/all-symbols.txt#L2320), [EdfRecordExporter](../archive/current-state/local-app-analysis/all-symbols.txt#L2321), [validateSignalHeader](../archive/current-state/local-app-analysis/all-symbols.txt#L1619)",
         "references": [
@@ -582,10 +582,10 @@
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
       "missing_parameters_assets_dependencies": "EDF schema/units/annotation design and independent-reader qualification; iOS/visionOS interactive archive and CSV unit-picker qualification remain pending.",
-      "current_implementation": "Native byte-preserving JSONL archive export and ADC/microvolt CSV exporter share the recording service and file-operation path. Native archives preserve metadata, markers, trial evidence and incomplete status. UI exposes format and units; missing calibration rejects microvolt export. Native archive suggestion retains the JSONL filename. Python CSV tools also exist; no native EDF exporter. Candidate EDF+D receipt-layout preflight now inspects canonical samples, preserves tails/gap warnings and source/clock evidence, with exhaustive reversible ADC encoding tests; no EDF writer or reader interoperability is enabled. See docs/EDF_EXPORT_PLAN.md. Explicit nominal-128-Hz planning now separates sample-level continuity runs using canonical finalized records, retains clock/receipt provenance and all samples, rejects unstable transport, and enforces a configurable segment limit. This remains planning only; EDF export is disabled.",
+      "current_implementation": "Native byte-preserving JSONL and ADC/microvolt CSV export share the recording service. Experimental EEGEDFNominalExport now packages one nominal-128-Hz EDF+C per planned continuity run with original JSONL and hash/clock/source-identity provenance. All samples/tails are retained, ADC encoding is reversible, destinations are exclusive and failed-package cleanup is best effort. The app EDF option remains disabled. Native markers remain in original JSONL rather than being retimed into EDF. See docs/NATIVE_EDF_WRITER.md.",
       "target_component": "Import/export adapters attached to recording service; original raw recording retained.",
       "acceptance_gate": "Independent-reader round trips for channels, units, timestamps, annotations and incomplete recordings; reject silent scale changes.",
-      "delivery_notes": "Native and CSV implemented. A 5,120-sample synthetic macOS import/export roundtrip matched original bytes. Initial import-dialog nonresponse remains unexplained; do not infer universal picker reliability. Keep original filenames for journal recovery. EDF remains planned. Independent synthetic probe: edfio 0.4.16 and PyEDFlib 0.1.42 both fail the candidate zero-duration EDF+D layout; continuous sample controls pass. This candidate remains unavailable. See docs/qualification/edf-reader-probe-20260915.json.",
+      "delivery_notes": "Native and CSV implemented. A 5,120-sample synthetic macOS import/export roundtrip matched original bytes. Initial import-dialog nonresponse remains unexplained; do not infer universal picker reliability. Keep original filenames for journal recovery. EDF remains planned. Independent synthetic probe: edfio 0.4.16 and PyEDFlib 0.1.42 both fail the candidate zero-duration EDF+D layout; continuous sample controls pass. This candidate remains unavailable. See docs/qualification/edf-reader-probe-20260915.json. Actual native synthetic writer output now roundtrips all 263 samples across 14 channels and two segments exactly through both readers. Nominal rate/duration and notice pass. Public start datetime agrees in edfio but differs in PyEDFlib by -9 ms and -16.031 ms; timing qualification remains incomplete. See docs/qualification/native-edf-reader-20260915.json.",
       "vendor_equivalence_claimed": false,
       "native_hardware_validated": false,
       "software_evidence": [
@@ -595,7 +595,11 @@
         "docs/NATIVE_WORKFLOW_AUDIT.md",
         "apple/Sources/EEGCore/EDFNominalPlan.swift",
         "apple/Tests/EEGCoreTests/EDFNominalPlanTests.swift",
-        "docs/EDF_EXPORT_PLAN.md"
+        "docs/EDF_EXPORT_PLAN.md",
+        "apple/Sources/EEGCore/EDFNominalExport.swift",
+        "apple/Tests/EEGCoreTests/EDFNominalExportTests.swift",
+        "tools/qualify_native_edf.py",
+        "docs/NATIVE_EDF_WRITER.md"
       ]
     },
     {

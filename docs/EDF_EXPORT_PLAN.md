@@ -1,6 +1,6 @@
 # EDF exchange implementation and qualification plan
 
-Status: receipt-layout preflight and explicit nominal-time segmentation planning implemented and tested, 2026-09-15. No EDF writer/export is implemented or enabled. Native
+Status: experimental nominal-time native writer implemented, 2026-09-15; numeric synthetic roundtrips pass but reader timestamp discrepancy remains. App EDF export is disabled. Earlier checkpoints below retain their historical scope; see [native writer qualification](NATIVE_EDF_WRITER.md). Native
 JSONL remains the preservation format. This work stays inside EEGCore and the
 existing import/export UI, with no Cortex runtime dependency.
 
