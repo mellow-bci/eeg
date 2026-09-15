@@ -85,6 +85,15 @@ struct DatasetEvaluationView: View {
                     Text("No eligible control exposure: " + report.controlConditionsWithoutEligibleExposure.map { $0.replacingOccurrences(of:"_",with:" ") }.joined(separator:", ")).font(.callout)
                 }
                 Text("Control coverage indicates presence only. Adequate duration and real artifact-response validation are still required.").font(.caption).foregroundStyle(.secondary)
+                DisclosureGroup("Always-neutral baseline — window comparison") {
+                    Text("Predicts neutral without using EEG, including windows rejected by the detector. Class imbalance can make this baseline look accurate; it cannot detect tasks.").font(.caption)
+                    ForEach(report.alwaysNeutralMetrics.keys.sorted(), id: \.self) { label in
+                        let baseline = report.alwaysNeutralMetrics[label]!
+                        Text("\(label): detector recall \(percent(report.metrics[label]?.recall)) · baseline recall \(percent(baseline.recall))")
+                    }
+                    Text("For cued trials with available evidence, this baseline has zero task detections and zero neutral false-positive candidates. Missing cue evidence remains unavailable in the receipt.").font(.caption)
+                    Text("Window comparisons are descriptive. Correlated windows are not independent trials; this does not establish significance or physiological validity.").font(.caption)
+                }
                 LabeledContent("Evaluation windows", value: String(report.predictions.count))
                 LabeledContent("Rejected", value: report.rejectionFraction.formatted(.percent.precision(.fractionLength(1))))
                 ForEach(report.metrics.keys.sorted(), id: \.self) { label in

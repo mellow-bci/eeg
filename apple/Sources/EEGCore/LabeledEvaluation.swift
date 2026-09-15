@@ -17,6 +17,22 @@ public struct EEGLabeledEvaluation: Sendable {
     public var sessionMetrics: [String: [String: Metric]] {
         Dictionary(grouping: predictions, by: \.sessionID).mapValues { Self.summarize($0,classes:Array(metrics.keys)) }
     }
+    /// Signal-free comparator: predicts neutral for every evaluated window,
+    /// including windows rejected by the learned detector. It is not another model.
+    public var alwaysNeutralMetrics: [String: Metric] {
+        Self.summarize(Self.neutralBaseline(predictions), classes: Array(metrics.keys))
+    }
+    public var sessionAlwaysNeutralMetrics: [String: [String: Metric]] {
+        Dictionary(grouping: predictions, by: \.sessionID).mapValues {
+            Self.summarize(Self.neutralBaseline($0), classes: Array(metrics.keys))
+        }
+    }
+    static func neutralBaseline(_ predictions: [Prediction]) -> [Prediction] {
+        predictions.map { row in
+            Prediction(windowID: row.windowID, sessionID: row.sessionID, trialID: row.trialID,
+                actual: row.actual, predictedLabel: "neutral", reason: "always_neutral_baseline", inputUsable: row.inputUsable)
+        }
+    }
     /// Counts whole declared cued trials, never independent windows. These are
     /// descriptive observations with explicit unavailable evidence, not confidence bounds.
     public struct TrialMetric: Sendable {

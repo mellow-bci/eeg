@@ -37,6 +37,11 @@ public struct EEGEvaluationArtifact: Sendable {
              "false_negative": metric.falseNegative, "actual_windows": metric.actualWindows,
              "rejected_windows": metric.rejectedWindows, "rejection_fraction": nullable(metric.rejectionFraction), "precision": nullable(metric.precision), "recall": nullable(metric.recall)]
         }
+        func baselineTrialObject(_ metric: EEGLabeledEvaluation.TrialMetric) -> [String: Any] {
+            ["declared_trials": metric.declaredTrials, "scored_trials": metric.scoredTrials,
+             "unavailable_trials": metric.unavailableTrials, "candidate_observed_trials": 0,
+             "candidate_observation_fraction": metric.scoredTrials > 0 ? 0.0 as Any : NSNull()]
+        }
         let metrics = report.metrics.mapValues(metricObject)
         let sessionMetrics = report.sessionMetrics.mapValues { $0.mapValues(metricObject) }
         func trialMetricObject(_ metric: EEGLabeledEvaluation.TrialMetric) -> [String: Any] {
@@ -83,7 +88,7 @@ public struct EEGEvaluationArtifact: Sendable {
             })
         }
         let object: [String: Any] = [
-            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-8",
+            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-9",
             "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
             "participant_id": dataset.participantID, "controls_only": report.controlsOnly,
@@ -91,6 +96,10 @@ public struct EEGEvaluationArtifact: Sendable {
             "manifest_base64": manifest.base64EncodedString(),
             "manifest_sha256": SHA256.hash(data: manifest).map { String(format: "%02x", $0) }.joined(),
             "session_resampling": try sessionResampling.map { try JSONSerialization.jsonObject(with: JSONEncoder().encode($0)) } ?? NSNull(),
+            "always_neutral_baseline": ["metrics": report.alwaysNeutralMetrics.mapValues(metricObject),
+                "session_metrics": report.sessionAlwaysNeutralMetrics.mapValues { $0.mapValues(metricObject) },
+                "trial_metrics": report.trialMetrics.mapValues(baselineTrialObject),
+                "session_trial_metrics": report.sessionTrialMetrics.mapValues { $0.mapValues(baselineTrialObject) }],
             "trial_metrics": report.trialMetrics.mapValues(trialMetricObject),
             "session_trial_metrics": report.sessionTrialMetrics.mapValues { $0.mapValues(trialMetricObject) },
             "training_source_audit": sourceAuditObject,
@@ -100,6 +109,7 @@ public struct EEGEvaluationArtifact: Sendable {
             "definitions": [
                 "time_axis": "recorded receipt-time seconds; window end is the last sample receipt",
                 "detector_timing": "nonnegative receipt times; overlapping or reordered windows within the current session/continuity are rejected and reset persistence; forward gaps over 0.05 seconds restart persistence",
+                "always_neutral_baseline": "signal-free comparator predicts neutral for every evaluated window, including detector-rejected/unarmed windows; same labels and denominators, pooled and per session; cued-trial candidate observations are zero for task detection and neutral false positives, retaining unavailable cue evidence as null rates; not a trained model, significance test, qualification or control policy",
                 "prediction": "experimental candidate or explicit neutral; null is rejection, not neutral",
                 "training_source_audit": "whole-content hash coverage of profile training sources among current manifest training sources; missing sources leave historical excerpt reuse unchecked; all present is not physiological or independence qualification",
                 "dataset_excerpt_check": "canonical-counter-adc-blocks-v1: scans every sample offset against 256-sample blocks of earlier manifest sessions; exact bytes confirm rolling-hash candidates; covers samples emitted by analysisWindows; no independence proof",

@@ -20,11 +20,28 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertEqual(metrics["absent"]?.actualWindows,0)
         XCTAssertNil(metrics["absent"]?.rejectionFraction)
     }
+    func testAlwaysNeutralBaselineIncludesRejectedWindowsAndClassImbalance() {
+        let rows: [EEGLabeledEvaluation.Prediction] = ["neutral", "neutral", "neutral", "task"].enumerated().map { i, label in
+            .init(windowID: String(i), sessionID: "s", trialID: "t", actual: label,
+                predictedLabel: nil, reason: "rejected", inputUsable: false)
+        }
+        let baseline = EEGLabeledEvaluation.summarize(EEGLabeledEvaluation.neutralBaseline(rows), classes: ["neutral", "task", "absent"])
+        XCTAssertEqual(baseline["neutral"]?.truePositive, 3)
+        XCTAssertEqual(baseline["neutral"]?.falsePositive, 1)
+        XCTAssertEqual(baseline["neutral"]?.precision, 0.75)
+        XCTAssertEqual(baseline["neutral"]?.recall, 1)
+        XCTAssertEqual(baseline["task"]?.falseNegative, 1)
+        XCTAssertEqual(baseline["task"]?.recall, 0)
+        XCTAssertNil(baseline["task"]?.precision)
+        XCTAssertNil(baseline["absent"]?.recall)
+        XCTAssertTrue(baseline.values.allSatisfy { $0.rejectedWindows == 0 })
+        XCTAssertTrue(rows.allSatisfy { $0.predictedLabel == nil })
+    }
     private func file(_ name: String) throws -> Data {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         return try Data(contentsOf: root.appendingPathComponent("Fixtures/spectrum/" + name))
     }
-    private func fixture() throws -> (EEGMentalProfile, EEGTrainingDataset, [String: Any]) {
+    private func fixture(cueKnown: Bool = false) throws -> (EEGMentalProfile, EEGTrainingDataset, [String: Any]) {
         let profile = try EEGMentalProfile.load(data: file("mental-profile.json"))
         let object = try JSONSerialization.jsonObject(with: file("mental-evaluation.json")) as! [String: Any]
         let rows = object["records"] as! [[String: Any]]
@@ -32,11 +49,25 @@ final class LabeledEvaluationTests: XCTestCase {
             let input = try JSONDecoder().decode(EEGInferenceWindow.self, from: JSONSerialization.data(withJSONObject: row))
             return .init(input: input, label: row["label"] as! String, trialID: row["trial_id"] as! String,
                 condition: row["condition"] as! String, shadowEnabled: row["shadow_enabled"] as! Bool,
-                trialStart: row["trial_start"] as! Double, trialEnd: row["trial_end"] as! Double, cueCompletedAt: nil)
+                trialStart: row["trial_start"] as! Double, trialEnd: row["trial_end"] as! Double, cueCompletedAt: cueKnown ? 0 : nil)
         }
         let summary = EEGTrainingDataset.SessionSummary(id: "evaluation", split: "evaluation", fileSHA256: "unused",
             eegSHA256: rows[0]["recording_content_sha256"] as! String, usableWindows: 19, rejectedWindows: 1)
         return (profile, EEGTrainingDataset(evaluation: windows, participantID: profile.participantID, records: [], sessions: [summary]), object["expected"] as! [String: Any])
+    }
+    func testTrialBaselineZeroRequiresAvailableCueEvidence() throws {
+        let (profile, dataset, _) = try fixture(cueKnown: true)
+        let report = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset)
+        let artifact = try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: Data("fixture".utf8), profile: profile)
+        let json = try JSONSerialization.jsonObject(with: artifact.data) as! [String: Any]
+        let baseline = json["always_neutral_baseline"] as! [String: Any]
+        let trials = baseline["trial_metrics"] as! [String: [String: Any]]
+        XCTAssertFalse(trials.isEmpty)
+        for value in trials.values {
+            XCTAssertGreaterThan(value["scored_trials"] as! Int, 0)
+            XCTAssertEqual(value["candidate_observation_fraction"] as? Double, 0)
+            XCTAssertEqual(value["candidate_observed_trials"] as? Int, 0)
+        }
     }
     func testPredictionsAndMetricsMatchPythonIncludingRejection() throws {
         let (profile, dataset, expected) = try fixture()
@@ -115,6 +146,15 @@ final class LabeledEvaluationTests: XCTestCase {
         let report = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset)
         let artifact = try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: Data("fixture".utf8), profile: profile)
         let json = try JSONSerialization.jsonObject(with: artifact.data) as! [String: Any]
+        let baseline = json["always_neutral_baseline"] as! [String: Any]
+        let trials = baseline["trial_metrics"] as! [String: [String: Any]]
+        for value in trials.values {
+            XCTAssertEqual(value["candidate_observed_trials"] as? Int, 0)
+            XCTAssertTrue(value["candidate_observation_fraction"] is NSNull)
+        }
+        let bySession = baseline["session_metrics"] as! [String: Any]
+        XCTAssertEqual(Set(bySession.keys), Set(dataset.evaluation.map { $0.input.session_id }))
+        XCTAssertEqual(artifact.report.alwaysNeutralMetrics["task"]?.recall, 0)
         let audit = json["training_source_audit"] as! [String: Any]
         XCTAssertEqual(audit["status"] as? String, "training_sources_missing")
         XCTAssertEqual(audit["missing_training_sessions"] as? [String], profile.trainingSessions.sorted())
@@ -157,7 +197,7 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertEqual(receipt.data, try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile).data)
         let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
         XCTAssertEqual(object["controls_only"] as? Bool, true)
-        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-8")
+        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-9")
         let sessions = try XCTUnwrap(object["session_conditions"] as? [String: [String: [String: Any]]])
         XCTAssertEqual(Set(sessions.keys),Set(report.sessionConditions.keys))
         for (session, conditions) in report.sessionConditions {

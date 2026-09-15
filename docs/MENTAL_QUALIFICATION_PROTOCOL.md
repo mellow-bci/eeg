@@ -294,3 +294,11 @@ armed usable coverage. See [NATIVE_TRIAL_OUTCOMES.md](NATIVE_TRIAL_OUTCOMES.md) 
 exact definitions and the distinction from episode-onset latency. This does not
 supply the outstanding trial/session uncertainty or grouped permutation analysis,
 nor does it qualify any real participant model. The Python CLI is unchanged.
+
+### Native trivial comparator
+
+The native evaluation receipt now includes the always-neutral comparator required
+above, with pooled/per-session window metrics and cued-trial observations. See
+[ALWAYS_NEUTRAL_BASELINE.md](ALWAYS_NEUTRAL_BASELINE.md) for denominators, null
+outcomes and limits. It does not supply the outstanding grouped permutation test
+or a physiological acceptance decision.
