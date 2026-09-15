@@ -41,6 +41,13 @@ public enum EEGProfileCreation {
         return Artifact(data: data, profile: try EEGMentalProfile.load(data: data))
     }
 
+    /// Refit with explicit lineage. No previous weights or validation are inherited.
+    public static func retrain(_ records: [EEGTrainingRecord], participantID: String,
+                               parent: EEGMentalProfile, settings: ProcessingSettings) throws -> Artifact {
+        guard participantID == parent.participantID else { throw EEGLabeledEvaluation.Failure.participantMismatch }
+        return try train(records, participantID: participantID, settings: settings, parentProfileID: parent.id)
+    }
+
     /// Publishes a fully written private file without replacing an existing profile.
     public static func save(_ artifact: Artifact, to destination: URL) throws {
         _ = try EEGMentalProfile.load(data: artifact.data)

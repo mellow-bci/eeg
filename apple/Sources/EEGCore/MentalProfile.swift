@@ -4,13 +4,15 @@ import Foundation
 /// Only load(data:) exposes a validated instance. No experimental file can enable actions.
 public struct EEGMentalProfile: Sendable {
     public let id: String
+    public let parentProfileID: String?
     public let participantID: String
     public let settings: ProcessingSettings
     public let parameters: EEGMentalScoringParameters
     public let trainingSessions: [String]
     public let trainingRecordingHashes: [String: String]
-    private init(id: String, participantID: String, settings: ProcessingSettings,
+    private init(id: String, parentProfileID: String?, participantID: String, settings: ProcessingSettings,
                  parameters: EEGMentalScoringParameters, trainingSessions: [String], trainingRecordingHashes: [String: String]) {
+        self.parentProfileID = parentProfileID
         self.id = id; self.participantID = participantID; self.settings = settings
         self.parameters = parameters; self.trainingSessions = trainingSessions; self.trainingRecordingHashes = trainingRecordingHashes
     }
@@ -25,6 +27,7 @@ public struct EEGMentalProfile: Sendable {
               decoded.validation_status == "experimental_unvalidated", !decoded.system_control_enabled else { throw Failure.unsupported }
         let sessions = decoded.training_sessions, ids = decoded.training_window_ids
         func hash(_ s: String) -> Bool { s.count == 64 && s.utf8.allSatisfy { (48...57).contains($0) || (97...102).contains($0) } }
+        if let parent = decoded.parent_profile_id { guard hash(parent), parent != id else { throw Failure.provenance } }
         guard !decoded.participant_id.isEmpty, sessions.count >= 2, Set(sessions).count == sessions.count,
               sessions.allSatisfy({ !$0.isEmpty }), Set(sessions) == Set(decoded.training_recording_hashes.keys),
               Set(decoded.training_recording_hashes.values).count == sessions.count,
@@ -47,7 +50,7 @@ public struct EEGMentalProfile: Sendable {
                 "margin_threshold":settings.marginThreshold, "persistence_windows":settings.persistenceWindows,
                 "parameters_physiologically_validated":false]) else { throw Failure.design }
         _ = try EEGMentalScoring.score(values: parameters.center, parameters: parameters)
-        return EEGMentalProfile(id: id, participantID: decoded.participant_id, settings: settings,
+        return EEGMentalProfile(id: id, parentProfileID: decoded.parent_profile_id, participantID: decoded.participant_id, settings: settings,
                                 parameters: parameters, trainingSessions: sessions, trainingRecordingHashes: decoded.training_recording_hashes)
     }
     public func makeDetector() throws -> EEGExperimentalDetector {
@@ -55,6 +58,7 @@ public struct EEGMentalProfile: Sendable {
     }
     private struct Fields: Decodable {
         let schema: String, profile_id: String, feature_config_id: String, participant_id: String
+        let parent_profile_id: String?
         let validation_status: String, system_control_enabled: Bool
         let processing_settings: ProcessingSettings
         let training_sessions: [String], training_window_ids: [String]

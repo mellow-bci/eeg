@@ -38,6 +38,27 @@ final class ProfileCreationTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: path), artifact.data)
         XCTAssertThrowsError(try EEGProfileCreation.train(rows, participantID: "participant-नमस्ते-🧠", parentProfileID: "invalid"))
     }
+    func testRetrainingPreservesParentAndRequiresMatchingParticipant() throws {
+        let rows = try records(), participant = "participant-नमस्ते-🧠"
+        let parent = try EEGProfileCreation.train(rows, participantID: participant)
+        let child = try EEGProfileCreation.retrain(rows, participantID: participant, parent: parent.profile, settings: parent.profile.settings)
+        XCTAssertNil(parent.profile.parentProfileID)
+        XCTAssertEqual(child.profile.parentProfileID,parent.profile.id)
+        XCTAssertNotEqual(child.profile.id,parent.profile.id)
+        XCTAssertEqual(child.profile.trainingSessions,parent.profile.trainingSessions)
+        XCTAssertThrowsError(try EEGProfileCreation.retrain(rows,participantID:"different",parent:parent.profile,settings:parent.profile.settings))
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at:directory) }
+        let store = EEGProfileStore(directory:directory)
+        _ = try store.save(parent); _ = try store.save(child)
+        XCTAssertEqual(try store.entries().count,2)
+        XCTAssertEqual(try Data(contentsOf:directory.appendingPathComponent(parent.profile.id+".json")),parent.data)
+        XCTAssertEqual(try store.load(child.profile.id).parentProfileID,parent.profile.id)
+        var object = try JSONSerialization.jsonObject(with:child.data) as! [String:Any]
+        object["parent_profile_id"] = "invalid"
+        object["profile_id"] = try ProfileCanonicalJSON.digest(PythonCompatibleJSON.encode(object))
+        XCTAssertThrowsError(try EEGMentalProfile.load(data:PythonCompatibleJSON.encode(object)))
+    }
     func testPythonScalarSpelling() throws {
         let data = try PythonCompatibleJSON.encode(["x": [1e-7, 1e-5, 1e-4, 1e15, 1e16, -0.0], "s": "🧠\n"] as [String: Any])
         XCTAssertEqual(String(decoding: data, as: UTF8.self), "{\"s\":\"\\ud83e\\udde0\\n\",\"x\":[1e-07,1e-05,0.0001,1000000000000000.0,1e+16,-0.0]}")

@@ -297,7 +297,7 @@ struct CalibrationView: View {
         }
         TrialCaptureView(model: model, cues: model.trialCues)
         DatasetBuilderView(manifest: $datasetManifest, manifestName: $datasetName)
-        DatasetTrainingView(onSaved: { profile = $0 }, manifest: $datasetManifest, manifestName: $datasetName)
+        DatasetTrainingView(parentProfile: profile, onSaved: { profile = $0 }, manifest: $datasetManifest, manifestName: $datasetName)
         ProfileInspectionView(profile: $profile, preparedManifest: datasetManifest)
         Panel(title: "Research sequence") {
             ForEach(Array(["Prepare sensors and verify transport", "Record neutral and intentional task trials", "Evaluate held-out sessions and artifact challenges", "Qualify a confirmation and cancel mechanism"].enumerated()), id: \.offset) { index, label in

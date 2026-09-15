@@ -677,3 +677,25 @@ The profile remains experimental and cannot enable system control.
 
 Validation: 131 tests, one opt-in skip, zero failures; macOS, iOS and visionOS
 builds passed. No hardware trial or interactive error-layout check was performed.
+
+
+## Explicit native retraining
+
+Open or inspect a profile in Calibration, then enable “Retrain from the inspected
+profile” in the existing training panel. The selected dataset must match the
+parent participant. The same independent trainer refits from all provided training
+records using saved Processing settings; this is not incremental fitting and does
+not copy parent weights or evaluation results. Its versioned artifact records
+`parent_profile_id` and saves to a new content-derived filename. The parent file
+is not overwritten. The inspection panel displays the parent ID.
+
+Parent lineage is a reference, not proof that a parent file exists or that a
+profile is validated. Loading checks a supplied parent ID's hash-shaped format.
+Core regression coverage verifies same-participant gating, two separate saved
+files, unchanged parent bytes, loaded lineage, and malformed lineage rejection.
+No training or evaluation acceptance rules are relaxed; child profiles remain
+experimental and must be evaluated separately before any qualification claim.
+
+Validation: 132 tests, one optional skip, zero failures. Native macOS, iOS and
+visionOS builds passed. Interactive retraining and physiological validation remain
+pending; tests use synthetic training records.

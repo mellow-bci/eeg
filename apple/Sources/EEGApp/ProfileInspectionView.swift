@@ -19,6 +19,7 @@ struct ProfileInspectionView: View {
             }
             if let profile {
                 Label("Integrity and supported structure verified", systemImage: "checkmark.shield")
+                if let parent = profile.parentProfileID { LabeledContent("Parent profile", value: parent).textSelection(.enabled) }
                 LabeledContent("Participant", value: profile.participantID)
                 LabeledContent("Training sessions", value: String(profile.trainingSessions.count))
                 LabeledContent("Classes", value: profile.parameters.classes.joined(separator: ", "))
