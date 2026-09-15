@@ -1,6 +1,6 @@
 # EDF exchange implementation and qualification plan
 
-Status: design only, 2026-09-15. No EDF export is implemented or enabled. Native
+Status: candidate receipt-layout preflight implemented and tested, 2026-09-15. No EDF writer/export is implemented or enabled. Native
 JSONL remains the preservation format. This work stays inside EEGCore and the
 existing import/export UI, with no Cortex runtime dependency.
 
@@ -80,3 +80,64 @@ it is not yet the selected export policy. It would describe receipt timing, not
 prove neural sample timing. Reader support and scientific interpretation must be
 qualified before enabling it. No padding, dropped tails or invented nominal
 sample times have been introduced.
+
+## Candidate receipt-layout preflight (2026-09-15)
+
+`EEGEDFReceiptPlan.inspect` now implements a bounded preflight subset of step 2.
+It does **not** write EDF files or approve their compatibility; `exportEnabled`
+remains false, and no format option has been added to the app. Annotation
+allocation, header serialization, physical scaling, and independent-reader
+qualification still remain before the complete export plan/writer can be used.
+
+The candidate is EDF+D with one sample per ordinary signal per data record and
+zero record duration, as described in official EDF+ section 2.1.2. This represents
+recorded receipt observations, not reconstructed neural sampling time. Repeated
+receipt timestamps remain distinct samples; reader support for this case must
+be established. No interpolation, padding, resampling or tail dropping occurs.
+
+The inspector reads clock provenance and canonical analysis windows through
+EEGRecordingStore. Windows are bounded containers here: invalid/partial windows
+are not discarded. Their reasons are accumulated in `analysisWarnings`.
+Unsupported device configuration or inconsistent raw ADC mapping rejects the
+candidate. Missing microvolt values are reported but do not fabricate calibration:
+this candidate concerns uncalibrated ADC encoding only. Original JSONL remains
+necessary for raw packet/quality/event provenance.
+
+It requires a finalized nonempty source, a valid pre-sample clock anchor,
+nondecreasing receipt times and at most 99,999,999 samples (the eight-character
+EDF record-count field). Hash and count agreement across both canonical reads
+is required before returning any plan. Cancellation is checked before traversal,
+per bounded window and before returning. This does not authenticate recordings
+or guarantee detection of adversarial simultaneous mutation.
+
+The result retains channel order, every sample count, repeated timestamp count,
+per-channel unsigned ADC minima/maxima, source SHA-256 and the anchor's conditional
+wall-time bounds at the first and last samples. Bounds retain call-order
+uncertainty; clock drift and wall-clock synchronization accuracy remain unmeasured.
+No midpoint is silently selected as an exact measurement time.
+
+The proposed raw-word transform is `signed = unsigned - 32768`. It is exactly
+reversible for all 65,536 UInt16 inputs without clipping. This is not a microvolt
+calibration; no physical/header encoding is approved by the transform alone.
+
+### Preflight tests
+
+`EDFReceiptPlanTests` creates real finalized synthetic JSONL through the native
+writer and traverses the canonical reader. Tests cover a three-sample partial
+tail, duplicate receipt times, a gap/discontinuity, missing voltage metadata,
+channel ranges spanning 0...65535, preserved original file bytes, clock bounds,
+source hash and exhaustive reversible integer encoding. Missing anchors,
+unsupported configuration, incomplete/empty sources and backwards receipt time
+are rejected. No independent EDF reader is involved because no EDF is produced.
+
+```sh
+swift test --package-path apple --filter EDFReceiptPlanTests
+./apple/build-native.sh all
+```
+
+This is new preflight functionality, not EDF feature parity, reader interoperability,
+a calibrated timing axis or evidence of physiological accuracy.
+
+Local preflight qualification: all three tests passed, all three native targets
+built successfully. These builds do not establish physical-device or EDF-reader
+compatibility.
