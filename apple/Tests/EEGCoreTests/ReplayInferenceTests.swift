@@ -93,6 +93,51 @@ final class ReplayInferenceTests: XCTestCase {
         XCTAssertEqual(delivered,0);XCTAssertEqual(bounded.pendingInputs,0)
         bounded.stop()
     }
+    func testInferenceOverloadDoesNotLoseIndependentRecording() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let sourceStore=try EEGRecordingStore(directory:directory.appendingPathComponent("source"))
+        let source=try recording(sourceStore)
+        let samples=try sourceStore.replay(recording:source)
+        let destination=directory.appendingPathComponent("destination")
+        let writer=try EEGQueuedRecordingStore(directory:destination) {_,reason in XCTFail(reason)}
+        let saved=try writer.start()
+        let profile=try EEGMentalProfile.load(data:profileData())
+        let queue=DispatchQueue(label:"test.live.stalled")
+        var deliveries=0
+        let live=try EEGLiveInference(profile:profile,participantID:"participant",sessionID:"held-out",
+            maximumPendingInputs:256,queue:queue) {_ in deliveries += 1}
+        queue.suspend()
+        var suspended=true
+        defer {if suspended {queue.resume();queue.sync {}}}
+        let metadata=["81072f44-9f3d-11e3-a9dc-0002a5d5c51b":"018000102010"]
+        try writer.enqueueEvent(kind:"device_metadata",fields:metadata)
+        try writer.enqueueEvent(kind:"transport_status",fields:["status":"stable"])
+        XCTAssertTrue(live.submit(.event(try JSONSerialization.data(withJSONObject:metadata.merging(["kind":"device_metadata"]) {_,new in new}))))
+        XCTAssertTrue(live.submit(.event(Data("{\"kind\":\"transport_status\",\"status\":\"stable\"}".utf8))))
+        var stopped=false,overloads=0
+        for sample in samples {
+            // Same fan-out ordering as acquisition: preserve raw samples first.
+            try writer.enqueue(sample:sample)
+            if !stopped && !live.submit(.sample(sample)) {
+                overloads += 1;live.stop();stopped=true
+            }
+        }
+        try writer.finish()
+        XCTAssertEqual(overloads,1)
+        XCTAssertEqual(live.pendingInputs,256)
+        queue.resume();suspended=false;queue.sync {}
+        XCTAssertEqual(deliveries,0)
+        XCTAssertEqual(live.pendingInputs,0)
+        XCTAssertEqual(live.pendingEventBytes,0)
+        XCTAssertFalse(live.submit(.sample(samples[0])))
+        let stored=try EEGRecordingStore(directory:destination)
+        let restored=try stored.replay(recording:saved)
+        XCTAssertEqual(restored,samples)
+        let replay=try EEGReplayInference.run(store:stored,recording:saved,profile:profile,participantID:"participant",sessionID:"held-out")
+        XCTAssertEqual(replay.eegContentSHA256,contentDigest)
+        XCTAssertEqual(replay.windows.count,2)
+    }
     func testLiveEventByteBudgetInvalidatesAndReleasesOnDrain() throws {
         let profile=try EEGMentalProfile.load(data:profileData())
         let queue=DispatchQueue(label:"test.live.bytes")

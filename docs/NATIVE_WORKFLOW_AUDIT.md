@@ -676,3 +676,18 @@ Re-ran `swift test --package-path apple --filter
 'MentalProfileTests|ReplayInferenceTests|ProfileCreationTests'`: 14 tests passed,
 zero failures. This substantiates the specified profile/replay software subset;
 it does not qualify sustained device execution or any participant classifier.
+
+### Recording survives stalled inference (2026-09-15)
+
+`ReplayInferenceTests.testInferenceOverloadDoesNotLoseIndependentRecording` feeds
+512 synthetic samples to the queued recorder and a deliberately suspended live
+inference worker. Inference admission reaches its 256-input limit, is rejected
+once, and is stopped; recording continues for every sample. After recording
+finalization and inference drain, the test checks zero callbacks, zero pending
+inputs/event bytes, rejection of subsequent input, exact restored sample equality,
+and the existing independent content-fingerprint oracle. Both recorded windows
+remain available to canonical replay inference.
+
+Eight ReplayInferenceTests pass. This uses the real queue/store/consumer classes
+and the acquisition fan-out ordering, but does not instantiate the app's Bluetooth
+delegate or qualify hardware throughput. No production algorithm was changed.
