@@ -30,9 +30,15 @@ struct DatasetEvaluationView: View {
             DisclosureGroup("Exploratory session resampling") {
                 Toggle("Include session resampling range", isOn: $resamplingEnabled)
                 if resamplingEnabled {
-                    TextField("Resamples", text: $resamplingIterations)
-                    TextField("Reproducible seed", text: $resamplingSeed)
-                    TextField("Central percentage", text: $resamplingPercent)
+                    LabeledContent("Resamples") {
+                        TextField("Resamples", text: $resamplingIterations).labelsHidden().accessibilityLabel("Resamples")
+                    }
+                    LabeledContent("Reproducible seed") {
+                        TextField("Reproducible seed", text: $resamplingSeed).labelsHidden().accessibilityLabel("Reproducible seed")
+                    }
+                    LabeledContent("Central percentage") {
+                        TextField("Central percentage", text: $resamplingPercent).labelsHidden().accessibilityLabel("Central percentage")
+                    }
                     Text("Keeps each session intact. This range is not validated confidence coverage; few sessions or dependent acquisitions limit interpretation. It never enables control.").font(.caption)
                 }
             }.disabled(running)

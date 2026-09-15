@@ -61,3 +61,36 @@ button appeared automatically after the 40-window training completed, without
 pressing Refresh profiles. Saved profile JSON still matched the original fixture.
 Archived only verified synthetic additions out of the app library afterward.
 No hardware or physiological claims follow from this UI check.
+
+## Follow-up: session resampling controls (2026-09-15)
+
+Exercised the actual macOS application while disconnected, using the same four
+synthetic recordings and external profile described above. No headset connection,
+recording, audio cue or physiological experiment was performed.
+
+1. Enabled exploratory resampling and entered 1,000 draws, seed 42 and central
+   percentage 95. Opened the exact dataset manifest through the native file panel.
+2. Evaluation displayed 40 predictions and 5% rejection. Both class summaries
+   displayed two sessions and incomplete cue evidence; no bounds were presented.
+3. Exported the JSON through the native save panel. The parsed entire artifact
+   equalled the native CLI output with the same inputs/options. Local receipt:
+   `/tmp/eeg-ui-qualification-20260915/resampling-ui-evaluation.json`, SHA256
+   `47516ec5db3fbcb3a49fde318ad07c5ea30f3f324295dc24ce349dbebc18109a`.
+   This temporary path is an inspection record, not a durable fixture dependency.
+4. Changed seed to 43. Previous metrics, resampling results and export control
+   disappeared, preventing export of an old receipt under changed settings.
+5. A first cancellation attempt arrived after completion and was not counted.
+   A second attempt clicked Cancel evaluation while running; the UI returned
+   “Evaluation cancelled; no new receipt was produced.” No new result appeared.
+6. Populated text fields initially lacked persistent visible labels. Changed them
+   to labeled content, rebuilt macOS/iOS/visionOS successfully, relaunched and
+   visually verified Resamples, Reproducible seed and Central percentage beside
+   their values. The accessibility tree also names each editable field. This is
+   a focused check, not a full accessibility audit.
+7. Closed the synthetic profile and quit. Archived only the four hash-verified
+   synthetic library additions; both original user recording hashes remained
+   unchanged. Source fixtures and exported receipts were retained locally.
+
+These checks establish UI/CLI consistency and observable cancellation for this
+synthetic workflow. They do not establish confidence coverage, valid cue labels,
+mental-command accuracy, independent human sessions or production readiness.

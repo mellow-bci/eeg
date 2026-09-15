@@ -101,5 +101,7 @@ passed. The native CLI evaluated the existing four-recording synthetic fixture,
 retained all 40 evaluation-window predictions and the requested seed/count, and
 returned `incomplete_cue_evidence` for both classes. Four invalid CLI option sets
 were rejected with exit 2 and no stdout before source access. The NumPy oracle
-ran using NumPy 2.0.2. Interactive use of the new controls has not yet been
-visually qualified; build success is not a UX or physiological validation claim.
+ran using NumPy 2.0.2. The macOS controls, export, option-change invalidation and
+cancellation were subsequently exercised with synthetic recordings; see
+[the UI qualification record](qualification/NATIVE_UI_WORKFLOW.md). This does
+not qualify physiological performance or interaction on iOS/visionOS.
