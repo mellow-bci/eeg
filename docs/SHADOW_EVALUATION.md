@@ -1,5 +1,10 @@
 # Shadow evaluation contract
 
+Native live-output replay also enforces
+[recorded startup and run-boundary transport evidence](qualification/SHADOW_TRANSPORT_EVIDENCE.md).
+Matching output values alone cannot override missing stability or contradictory
+events within a live run.
+
 `processing.evaluation.summarize` measures read-only proposals from the same detector used
 by replay. It does not unlock control or infer stress, attention or neural origin.
 

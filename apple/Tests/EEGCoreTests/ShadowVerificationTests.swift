@@ -19,6 +19,7 @@ final class ShadowVerificationTests: XCTestCase {
         defer {if suspended {writerQueue.resume()};writer.abort();writerQueue.sync {}}
         let metadata=["81072f44-9f3d-11e3-a9dc-0002a5d5c51b":"018000102010"]
         try writer.enqueueEvent(kind:"device_metadata",fields:metadata)
+        try writer.enqueueEvent(kind:"transport_status",fields:["status":"stable"])
         func sample(_ i:Int)->EEGSample {
             let word=UInt16(31200+Int(50*sin(Double(i)*0.5)))
             return EEGSample(index:i,counter:i%128,receivedAt:Double(i)/128,continuous:true,
@@ -125,6 +126,60 @@ final class ShadowVerificationTests: XCTestCase {
         XCTAssertThrowsError(try EEGShadowVerification.catalog(store:store,recording:url,maximumRuns:0))
         let empty=try store.start();try store.finish()
         XCTAssertTrue(try EEGShadowVerification.catalog(store:store,recording:empty).runs.isEmpty)
+    }
+    func testActiveRunCannotHideTransportOrConfigurationEvents() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let store=try EEGRecordingStore(directory:directory),profile=try profile()
+        let url=try capture(store,profile:profile)
+        let original=try String(contentsOf:url).split(separator:"\n").map(String.init)
+        let events = [
+            "{\"kind\":\"transport_status\",\"status\":\"recovering\"}",
+            "{\"kind\":\"decode_error\",\"message\":\"injected packet rejection\"}",
+            "{\"kind\":\"connection_error\",\"message\":\"injected disconnection\"}",
+            "{\"kind\":\"device_metadata\",\"81072f44-9f3d-11e3-a9dc-0002a5d5c51b\":\"unsupported\"}"
+        ]
+        let start=try XCTUnwrap(original.firstIndex(where:{$0.contains("shadow_start")}))
+        let stop=try XCTUnwrap(original.firstIndex(where:{$0.contains("shadow_stop")}))
+        for event in events {
+            for insertion in [start+1,stop] {
+                var rows=original;rows.insert(event,at:insertion)
+                try (rows.joined(separator:"\n")+"\n").write(to:url,atomically:false,encoding:.utf8)
+                XCTAssertThrowsError(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run")) {
+                    guard case EEGShadowVerification.Failure.invalidRun = $0 else { return XCTFail("Unexpected: \($0)") }
+                }
+            }
+            // The native host stops the run before persisting the fault; later
+            // lifecycle events must not retroactively invalidate a completed run.
+            var rows=original;rows.insert(event,at:stop+1)
+            try (rows.joined(separator:"\n")+"\n").write(to:url,atomically:false,encoding:.utf8)
+            XCTAssertTrue(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run").completeMatch)
+        }
+    }
+    func testRunRequiresRecordedStableTransportBeforeStart() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let store=try EEGRecordingStore(directory:directory),profile=try profile()
+        let url=try capture(store,profile:profile)
+        let original=try String(contentsOf:url).split(separator:"\n").map(String.init)
+        let index=try XCTUnwrap(original.firstIndex(where:{$0.contains("transport_status")}))
+        for replacement in [nil,"{\"kind\":\"transport_status\",\"status\":\"recovering\"}",
+                            "{\"kind\":\"decode_error\"}","{\"kind\":\"connection_error\"}"] as [String?] {
+            var rows=original;rows.remove(at:index)
+            if let replacement {rows.insert(replacement,at:index)}
+            try (rows.joined(separator:"\n")+"\n").write(to:url,atomically:false,encoding:.utf8)
+            XCTAssertThrowsError(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run"))
+        }
+        for kind in ["decode_error","connection_error"] {
+            var rows=original
+            let start=try XCTUnwrap(rows.firstIndex(where:{$0.contains("shadow_start")}))
+            rows.insert("{\"kind\":\"\(kind)\"}",at:start)
+            try (rows.joined(separator:"\n")+"\n").write(to:url,atomically:false,encoding:.utf8)
+            XCTAssertThrowsError(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run"))
+            rows.insert("{\"kind\":\"transport_status\",\"status\":\"stable\"}",at:start+1)
+            try (rows.joined(separator:"\n")+"\n").write(to:url,atomically:false,encoding:.utf8)
+            XCTAssertTrue(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run").completeMatch)
+        }
     }
     func testMissingOutputAndMissingStopNeverPass() throws {
         let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

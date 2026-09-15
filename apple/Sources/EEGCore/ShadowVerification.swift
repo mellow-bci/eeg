@@ -61,6 +61,7 @@ public enum EEGShadowVerification {
         guard !runID.isEmpty else {throw Failure.invalidRun}
         guard maximumWindows>0 else {throw Failure.invalidLimit}
         var metadata: Data?
+        var stableTransportEvent: Data?
         var started=false, active=false, stopped=false
         var sessionID: String?
         var stopReason: String?
@@ -83,11 +84,24 @@ public enum EEGShadowVerification {
             }
             guard let object=try JSONSerialization.jsonObject(with:data) as? [String:Any] else {throw Failure.invalidRun}
             let kind=object["kind"] as? String
+            // The native live host terminates shadow inference before recording
+            // transport changes. Metadata is supplied at start, not changed in
+            // an active run. These events are global (no shadow_run_id); never
+            // skip them and falsely approve a contradictory run history.
+            if active, ["device_metadata", "transport_status", "decode_error", "connection_error"].contains(kind ?? "") {
+                throw Failure.invalidRun
+            }
             if kind=="device_metadata" {metadata=data;return}
+            if kind=="transport_status" {
+                guard let status=object["status"] as? String,["stable","recovering"].contains(status) else {throw Failure.invalidRun}
+                stableTransportEvent=status == "stable" ? data : nil
+                return
+            }
+            if kind=="decode_error" || kind=="connection_error" {stableTransportEvent=nil;return}
             guard object["shadow_run_id"] as? String==runID else {return}
             switch kind {
             case "shadow_start":
-                guard !started,let metadata,
+                guard !started,let metadata,let stableTransportEvent,
                       object["profile_id"] as? String==profile.id,
                       object["participant_id"] as? String==profile.participantID,
                       object["feature_config_id"] as? String==EEGMentalFeatures.configurationID,
@@ -106,7 +120,7 @@ public enum EEGShadowVerification {
                 }
                 processor=try EEGWindowInference(profile:profile,participantID:profile.participantID,sessionID:session)
                 try assembler.event(metadata)
-                try assembler.event(Data("{\"kind\":\"transport_status\",\"status\":\"stable\"}".utf8))
+                try assembler.event(stableTransportEvent)
                 sessionID=session;started=true;active=true
             case "shadow_inference":
                 guard active,let ordinalText=object["ordinal"] as? String,let ordinal=Int(ordinalText),
