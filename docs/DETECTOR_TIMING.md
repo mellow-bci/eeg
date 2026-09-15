@@ -51,3 +51,34 @@ Checkpoint 2026-09-15: 12 selected native detector/evaluation tests, 17 Python
 mental-processing tests and 11 native replay/shadow verification tests passed.
 macOS, iOS and visionOS builds succeeded. No live headset recording, cue playback
 or UI interaction was performed for this gate change.
+# Imported sample-index boundaries
+
+2026-09-15. Native recording validation accepts nonnegative `Int` sample indices,
+including `Int.max`. Inspection found three downstream checks evaluating
+`previous.index + 1`, which can trap on an otherwise parseable imported value.
+The shared `EEGSample.followsIndexAndCounter` now compares a known-positive
+successor minus one with a nonnegative predecessor, and checks both counter
+ranges before modular addition. It is an adjacency predicate only; it does not
+claim timing, transport, signal or physiological validity.
+
+Analysis-window assembly, spectrum validation and nominal export planning use
+the same predicate. `Int.max - 1 → Int.max` can be adjacent, but `Int.max → 0`
+cannot be represented as continuous. Counter `127 → 0` remains valid when indices
+advance normally. Raw decoding and stored sample values are unchanged.
+
+`SampleSequenceTests` checks integer/counter extrema, direct spectrum rejection,
+and an actual finalized two-sample native recording containing indices
+`Int.max, 0`. Canonical analysis retains both indices and reports
+`index_or_counter_gap`; nominal planning retains both samples in separate runs.
+The original file bytes remain identical. No process crash was induced to prove
+the prior arithmetic issue; the new boundary cases exercise the corrected path.
+
+Twenty-five selected tests passed. All three native builds and the independent
+compiled-source identity oracle also passed:
+
+```sh
+swift test --package-path apple --filter 'SampleSequenceTests|AnalysisWindowTests|SpectrumTests|DecoderTests|EDFNominalPlanTests'
+```
+
+This is malformed-input handling, not evidence of physically observed counter
+loss or native headset qualification.

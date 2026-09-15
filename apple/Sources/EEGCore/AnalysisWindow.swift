@@ -55,7 +55,7 @@ struct EEGAnalysisWindowAssembler {
         let currentSegment = stable ? segment : 0
         segments.insert(currentSegment)
         if let previous, previousSegment == currentSegment {
-            if sample.index != previous.index + 1 || sample.counter != (previous.counter + 1) % 128 { reasons.insert("index_or_counter_gap") }
+            if !sample.followsIndexAndCounter(previous) { reasons.insert("index_or_counter_gap") }
             if sample.receivedAt < previous.receivedAt || sample.receivedAt - previous.receivedAt > 0.5 { reasons.insert("arrival_gap") }
         }
         previous = sample; previousSegment = currentSegment

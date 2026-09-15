@@ -59,7 +59,7 @@ public enum EEGSpectrum {
         guard samples.allSatisfy({ $0.receivedAt.isFinite && $0.receivedAt >= 0 }) else { throw EEGSpectrumError.invalidTiming }
         guard samples.allSatisfy({ $0.continuous && $0.index >= 0 && (0..<128).contains($0.counter) }) else { throw EEGSpectrumError.discontinuity }
         for (a, b) in zip(samples, samples.dropFirst()) {
-            guard b.index == a.index + 1, b.counter == (a.counter + 1) % 128 else { throw EEGSpectrumError.discontinuity }
+            guard b.followsIndexAndCounter(a) else { throw EEGSpectrumError.discontinuity }
             guard b.receivedAt >= a.receivedAt, b.receivedAt - a.receivedAt <= 0.5 else { throw EEGSpectrumError.invalidTiming }
         }
         let span = samples[count - 1].receivedAt - samples[0].receivedAt

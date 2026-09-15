@@ -55,7 +55,7 @@ public struct EEGEDFNominalPlan: Sendable {
                 guard stable else { throw Failure.unstableTransport }
                 if let previous {
                     if !sample.continuous { pendingReasons.insert("sample_discontinuity") }
-                    if sample.index != previous.index + 1 || sample.counter != (previous.counter + 1) % 128 {
+                    if !sample.followsIndexAndCounter(previous) {
                         pendingReasons.insert("index_or_counter_gap")
                     }
                     if sample.receivedAt - previous.receivedAt > 0.5 { pendingReasons.insert("arrival_gap") }
