@@ -110,4 +110,59 @@ final class TrialCueControllerTests: XCTestCase {
         XCTAssertFalse(controller.checkCompleted)
     }
 
+    private func drainCallbacks() async {
+        await withCheckedContinuation {continuation in DispatchQueue.main.async {continuation.resume()}}
+    }
+    private func endRequested(acknowledge:Bool=true) async throws -> (Acquisition,Speech,TrialCueController) {
+        let acquisition=Acquisition(),speech=Speech()
+        let controller=TrialCueController(acquisition:acquisition,speech:speech,uptime:{acquisition.recordingClock})
+        try await ready(controller,speech)
+        controller.start(try planned(),ready:true,heard:true)
+        acquisition.complete();acquisition.complete()
+        let instruction=try XCTUnwrap(speech.utterances.last)
+        acquisition.recordingClock=2
+        controller.speechSynthesizer(AVSpeechSynthesizer(),didStart:instruction)
+        await drainCallbacks();acquisition.complete()
+        acquisition.recordingClock=4
+        controller.speechSynthesizer(AVSpeechSynthesizer(),didFinish:instruction)
+        await drainCallbacks()
+        XCTAssertEqual(acquisition.trial?.phase,.cuePlaying)
+        acquisition.complete()
+        XCTAssertEqual(acquisition.trial?.conditionDeadline,24)
+        acquisition.recordingClock=24;controller.tick()
+        XCTAssertEqual(acquisition.trial?.phase,.conditionActive)
+        if acknowledge {acquisition.complete()}
+        return (acquisition,speech,controller)
+    }
+    func testFullCueCyclePreservesObservedTimesThroughAcknowledgements() async throws {
+        let (acquisition,speech,controller)=try await endRequested()
+        let end=try XCTUnwrap(speech.utterances.last)
+        XCTAssertTrue(end.speechString.contains("Stop the task"))
+        acquisition.recordingClock=24.1
+        controller.speechSynthesizer(AVSpeechSynthesizer(),didStart:end)
+        await drainCallbacks();acquisition.complete()
+        acquisition.recordingClock=25
+        controller.speechSynthesizer(AVSpeechSynthesizer(),didFinish:end)
+        await drainCallbacks()
+        XCTAssertEqual(acquisition.trial?.phase,.endPlaying)
+        acquisition.complete()
+        XCTAssertEqual(acquisition.trial?.phase,.awaitingReport)
+        XCTAssertEqual(acquisition.trial?.events.map(\.at),[1,2,4,24,24.1,25])
+        XCTAssertFalse(controller.busy)
+        XCTAssertEqual(controller.status,"Awaiting your report")
+    }
+    func testEndRequestSavePastDeadlineCannotLaunchCue() async throws {
+        let (acquisition,speech,controller)=try await endRequested(acknowledge:false)
+        acquisition.recordingClock=24.6;controller.tick()
+        acquisition.complete()
+        XCTAssertEqual(acquisition.trial?.phase,.interrupted)
+        XCTAssertFalse(speech.utterances.contains {$0.speechString.contains("Please report")})
+    }
+    func testMissingEndSpeechStartStopsAtEndCueBound() async throws {
+        let (acquisition,_,controller)=try await endRequested()
+        acquisition.recordingClock=24.6;controller.tick()
+        XCTAssertEqual(acquisition.trial?.phase,.interrupted)
+        XCTAssertTrue(controller.status.contains("stopped"))
+    }
+
 }

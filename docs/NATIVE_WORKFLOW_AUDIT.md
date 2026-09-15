@@ -587,3 +587,26 @@ explicit Double parsing contract for the supplied JSON.
 Final validation: 126 tests, one opt-in qualification skipped, zero failures;
 macOS, iOS and visionOS builds passed. No physical headset or audio experiment
 was run. Shutdown waiting and physiological qualification remain outstanding.
+
+## Full cue-cycle timing checks
+
+The actual controller now accepts an internal monotonic-clock dependency, defaulting
+to process uptime in production. Tests advance it without sleeping or playing
+speech and invoke the same tick and delegate paths. A complete cycle checks the
+saved observation times [1, 2, 4, 24, 24.1, 25], the derived 24-second deadline and
+transition to awaitingReport only after the final acknowledgement. Delayed end-
+request persistence is also tested to prevent late instruction launch.
+
+A new regression first failed: after a successful end request with no speech-start
+callback, the controller waited for its general speech timeout instead of enforcing
+the end-cue bound. The endRequested state now checks the existing 0.5-second bound
+on each timer tick and interrupts when exceeded. The native timer's scheduling is
+not guaranteed; this is rejection when lateness is observed, not a physical
+real-time guarantee. Missing or excessively delayed callbacks cannot produce an
+accepted completed trial through this path.
+
+No headset or actual audio timing was measured in this change. The test clock is
+an internal dependency, not a user-selectable simulated acquisition mode.
+
+Validation: 129 tests executed, one opt-in qualification skipped, zero failures.
+Native macOS, iOS and visionOS builds passed.
