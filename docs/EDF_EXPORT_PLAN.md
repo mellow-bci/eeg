@@ -141,3 +141,53 @@ a calibrated timing axis or evidence of physiological accuracy.
 Local preflight qualification: all three tests passed, all three native targets
 built successfully. These builds do not establish physical-device or EDF-reader
 compatibility.
+
+## Independent-reader probe: candidate not interoperable in tested readers
+
+On 2026-09-15, `tools/probe_edf_receipt_layout.py` generated minimal synthetic
+EDF fixtures and tested **edfio 0.4.16** and **PyEDFlib 0.1.42**, with NumPy 2.0.2
+on Python 3.9.6/macOS arm64. These optional validation packages were installed in
+an isolated environment; they are not dependencies of the native app. No vendor
+assets or human recordings were used.
+
+| Fixture | edfio 0.4.16 | PyEDFlib 0.1.42 |
+|---|---|---|
+| Continuous control, three 1-second records | Exact digital/physical sample roundtrip | Exact digital/physical sample roundtrip |
+| Discontinuous positive-duration records at 0, 2, 4 seconds | Loads all samples; public duration reports 3 seconds, last record ends at 5 seconds | Rejects discontinuous file |
+| Single-sample zero-duration records at 0, 0.01, 2 seconds | UnboundLocalError for sampling_frequency | Rejects discontinuous file |
+| Single-sample zero-duration records at 0, 0, 2 seconds | Same UnboundLocalError | Rejects discontinuous file |
+
+[Full errors, versions, hashes and measurements](qualification/edf-reader-probe-20260915.json).
+The positive control is required to pass before candidate outcomes are interpreted.
+The digital values -32768, 0, 32767 map exactly to unsigned ADC values 0, 32768,
+65535 under the explicit test header; that is raw scaling, not microvolt calibration.
+The discontinuous edfio duration observation concerns its public duration API;
+this probe does not establish whether other internal APIs preserve TAL onsets.
+Successful sample loading does not qualify an application-level timeline roundtrip.
+
+This result blocks **this candidate layout's compatibility gate for these reader
+versions**, not the entire EEG stack and not every EDF reader. The preflight
+remains useful for source accounting, but must not be promoted to an enabled
+writer on the strength of specification text alone. EDF+ section 2.1.2 permits
+the special zero-duration representation; implementation support still matters.
+PyEDFlib's source also lists an explicit discontinuous-file error:
+[reader implementation](https://github.com/holgern/pyedflib/blob/master/pyedflib/_extensions/_pyedflib.pyx).
+
+Reproduce with a fresh directory:
+
+```sh
+python3 -m venv /tmp/eeg-edf-probe-env
+/tmp/eeg-edf-probe-env/bin/python -m pip install -r requirements-edf-qualification.txt
+/tmp/eeg-edf-probe-env/bin/python tools/probe_edf_receipt_layout.py /tmp/eeg-edf-probe-output
+```
+
+The probe is a hand-built format fixture generator, not a second application
+export path. It intentionally records unsupported outcomes and does not turn them
+into successful exports. It does not exhaust EDF compliance, event annotations,
+Unicode text, clock precision or real-headset interoperability.
+
+Next decision: investigate a reader that exposes and preserves individual EDF+D
+record onsets, or design an explicitly declared nominal-time EDF exchange plus
+original receipt-time provenance. Do not silently relabel irregular receipt times
+as regular neural sampling, drop tails, fill gaps, or remove the native originals
+to make a reader accept a file. No alternative timing policy is selected here.

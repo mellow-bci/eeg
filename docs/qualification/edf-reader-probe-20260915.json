@@ -1,0 +1,155 @@
+{
+  "schema": "eeg.edf-reader-probe.v1",
+  "synthetic": true,
+  "python": "3.9.6",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "versions": {
+    "edfio": "0.4.16",
+    "pyedflib": "0.1.42",
+    "numpy": "2.0.2"
+  },
+  "cases": [
+    {
+      "name": "continuous_control",
+      "sha256": "5b0930da0a51e5c83bc02238f88a630a7dff49375ef95f4d8e6818a17969a777",
+      "record_onsets_seconds": [
+        "+0",
+        "+1",
+        "+2"
+      ],
+      "record_duration_seconds": "1",
+      "last_record_end_seconds": 3.0,
+      "readers": {
+        "edfio": {
+          "digital_samples": [
+            -32768,
+            0,
+            32767
+          ],
+          "physical_samples": [
+            0.0,
+            32768.0,
+            65535.0
+          ],
+          "data_record_duration": 1.0,
+          "reported_duration_seconds": 3.0,
+          "accepted": true,
+          "digital_exact": true,
+          "physical_exact": true,
+          "warnings": []
+        },
+        "pyedflib": {
+          "digital_samples": [
+            -32768,
+            0,
+            32767
+          ],
+          "physical_samples": [
+            0.0,
+            32768.0,
+            65535.0
+          ],
+          "data_record_duration": 1.0,
+          "reported_duration_seconds": 3.0,
+          "accepted": true,
+          "digital_exact": true,
+          "physical_exact": true,
+          "warnings": []
+        }
+      }
+    },
+    {
+      "name": "discontinuous_positive_duration",
+      "sha256": "0c9365573e3abd5a0aa0125abe7a8d3e91b8713c25deb21f12d0f1ddac7fb012",
+      "record_onsets_seconds": [
+        "+0",
+        "+2",
+        "+4"
+      ],
+      "record_duration_seconds": "1",
+      "last_record_end_seconds": 5.0,
+      "readers": {
+        "edfio": {
+          "digital_samples": [
+            -32768,
+            0,
+            32767
+          ],
+          "physical_samples": [
+            0.0,
+            32768.0,
+            65535.0
+          ],
+          "data_record_duration": 1.0,
+          "reported_duration_seconds": 3.0,
+          "accepted": true,
+          "digital_exact": true,
+          "physical_exact": true,
+          "warnings": []
+        },
+        "pyedflib": {
+          "accepted": false,
+          "error_type": "OSError",
+          "error": "OUTPUT/discontinuous_positive_duration.edf: The file is discontinuous and cannot be read",
+          "warnings": []
+        }
+      }
+    },
+    {
+      "name": "zero_duration_unique_receipts",
+      "sha256": "49931ff81350ec7fbc4051c68c63f34d7874710a2dddea0591eee7c9381296c9",
+      "record_onsets_seconds": [
+        "+0",
+        "+0.01",
+        "+2"
+      ],
+      "record_duration_seconds": "0",
+      "last_record_end_seconds": 2.0,
+      "readers": {
+        "edfio": {
+          "accepted": false,
+          "error_type": "UnboundLocalError",
+          "error": "local variable 'sampling_frequency' referenced before assignment",
+          "warnings": []
+        },
+        "pyedflib": {
+          "accepted": false,
+          "error_type": "OSError",
+          "error": "OUTPUT/zero_duration_unique_receipts.edf: The file is discontinuous and cannot be read",
+          "warnings": []
+        }
+      }
+    },
+    {
+      "name": "zero_duration_repeated_receipts",
+      "sha256": "5d87bc965e5812172d310fec3340cd61801aac40ffd59a76eb591217c1aa429c",
+      "record_onsets_seconds": [
+        "+0",
+        "+0",
+        "+2"
+      ],
+      "record_duration_seconds": "0",
+      "last_record_end_seconds": 2.0,
+      "readers": {
+        "edfio": {
+          "accepted": false,
+          "error_type": "UnboundLocalError",
+          "error": "local variable 'sampling_frequency' referenced before assignment",
+          "warnings": []
+        },
+        "pyedflib": {
+          "accepted": false,
+          "error_type": "OSError",
+          "error": "OUTPUT/zero_duration_repeated_receipts.edf: The file is discontinuous and cannot be read",
+          "warnings": []
+        }
+      }
+    }
+  ],
+  "timestamp_roundtrip_qualified": false,
+  "limitations": [
+    "Hand-built minimal fixtures, not native exporter output",
+    "Successful loading alone is not preservation of per-record timing",
+    "No hardware, physiological or full EDF compliance qualification"
+  ]
+}
