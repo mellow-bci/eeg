@@ -8,8 +8,13 @@ struct DatasetEvaluationView: View {
     @State private var generation = 0
     @EnvironmentObject private var model: AcquisitionModel
     @State private var controlsOnly = false
+    @State private var resamplingEnabled = false
+    @State private var resamplingIterations = "10000"
+    @State private var resamplingSeed = "0"
+    @State private var resamplingPercent = "95"
     @State private var importing = false
     @State private var running = false
+    @State private var evaluationWorker: Task<Result<EEGEvaluationArtifact, Error>, Never>?
     @State private var artifact: EEGEvaluationArtifact?
     @State private var exporting = false
     @State private var exportData = Data()
@@ -22,6 +27,15 @@ struct DatasetEvaluationView: View {
             Text("Evaluate labeled sessions").font(.headline)
             Toggle("Controls-only evaluation", isOn: $controlsOnly).disabled(running)
                 .onChange(of: controlsOnly) { _, _ in artifact = nil; failure = nil; exportMessage = nil }
+            DisclosureGroup("Exploratory session resampling") {
+                Toggle("Include session resampling range", isOn: $resamplingEnabled)
+                if resamplingEnabled {
+                    TextField("Resamples", text: $resamplingIterations)
+                    TextField("Reproducible seed", text: $resamplingSeed)
+                    TextField("Central percentage", text: $resamplingPercent)
+                    Text("Keeps each session intact. This range is not validated confidence coverage; few sessions or dependent acquisitions limit interpretation. It never enables control.").font(.caption)
+                }
+            }.disabled(running)
             Text(controlsOnly ? "Only neutral-labeled control conditions are accepted. Task recall cannot be measured from control trials." : "Full evaluation requires at least 10 windows per class.").font(.caption)
             Text("Choose a dataset manifest with evaluation sessions. Rejected windows remain in the denominator; labels are declarations, not independently verified mental states.").foregroundStyle(.secondary)
             Button("Evaluate prepared dataset", systemImage: "chart.bar") {
@@ -29,7 +43,10 @@ struct DatasetEvaluationView: View {
             }.disabled(preparedManifest == nil || running || model.recording || model.ready)
             Button("Open dataset and evaluate", systemImage: "doc.badge.plus") { importing = true }
                 .disabled(running || model.recording || model.ready)
-            if running { ProgressView("Evaluating held-out recordings…") }
+            if running {
+                ProgressView("Evaluating held-out recordings…")
+                Button("Cancel evaluation") { evaluationWorker?.cancel() }
+            }
             if let failure { Text(failure).foregroundStyle(.red).textSelection(.enabled) }
             if let report {
                 Button("Export evaluation JSON", systemImage: "square.and.arrow.up") {
@@ -37,6 +54,18 @@ struct DatasetEvaluationView: View {
                     exportData = artifact.data; exporting = true
                 }
                 if let exportMessage { Text(exportMessage).font(.caption) }
+                if let resampling = artifact?.sessionResampling {
+                    DisclosureGroup("Session resampling results — exploratory") {
+                        ForEach(resampling.keys.sorted(), id: \.self) { label in
+                            let value = resampling[label]!
+                            Text("\(label): \(value.sessionIDs.count) sessions · \(value.status.replacingOccurrences(of: "_", with: " "))")
+                            if let low = value.lower, let high = value.upper {
+                                Text("Central \(value.options.centralMass.formatted(.percent)) range: \(percent(low))–\(percent(high))")
+                            }
+                        }
+                        Text("Not a validated confidence interval or qualification decision. Review missing exposure and session independence separately.").font(.caption)
+                    }
+                }
                 LabeledContent("Scope", value: report.controlsOnly ? "Controls only" : "Full labeled evaluation")
                 if !report.controlConditionsWithoutEligibleExposure.isEmpty {
                     Text("No eligible control exposure: " + report.controlConditionsWithoutEligibleExposure.map { $0.replacingOccurrences(of:"_",with:" ") }.joined(separator:", ")).font(.callout)
@@ -103,6 +132,11 @@ struct DatasetEvaluationView: View {
                 Text("Experimental window and trial accounting. Not observed includes rejected or missing exposure; inspect coverage. Windows within trials are correlated. These values do not establish physiological accuracy, physiologically validated false-activation rates or safe system control. Poisson bounds assume a constant independent event rate; clustered events weaken that assumption. Carry-in activity makes rates unavailable.").font(.caption).foregroundStyle(.secondary)
             }
         }
+        .onDisappear { evaluationWorker?.cancel() }
+        .onChange(of: resamplingEnabled) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
+        .onChange(of: resamplingIterations) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
+        .onChange(of: resamplingSeed) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
+        .onChange(of: resamplingPercent) { _,_ in artifact=nil;failure=nil;exportMessage=nil }
         .onChange(of: preparedManifest) { _,_ in generation += 1;artifact=nil;failure=nil;exportMessage=nil }
         .eegJSONImporter(isPresented: $importing) { selection in
             switch selection {
@@ -147,17 +181,35 @@ struct DatasetEvaluationView: View {
     /// Prepared and imported datasets share one evaluation path.
     private func evaluate(load: @escaping @Sendable () throws -> Data) {
         guard !running, !model.recording, !model.ready else { return }
+        let resampling: EEGSessionResampling.Options?
+        do {
+            if resamplingEnabled {
+                guard let iterations = Int(resamplingIterations), let seed = UInt64(resamplingSeed),
+                      let percent = Double(resamplingPercent) else { throw EEGSessionResampling.Failure.invalidOptions }
+                let value = EEGSessionResampling.Options(iterations: iterations, seed: seed, centralMass: percent / 100)
+                try value.validate(); resampling = value
+            } else { resampling = nil }
+        } catch { failure = "Enter at least 2 resamples, an unsigned integer seed and a percentage strictly between 0 and 100."; return }
         let directory = model.directory, controls = controlsOnly
         generation += 1;let request=generation
         running = true; artifact = nil; failure = nil; exportMessage = nil
+        let worker = Task.detached(priority: .utility) {
+            Result {
+                try Task.checkCancellation()
+                let result = try EEGEvaluationArtifact.run(manifest: load(), store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls, resampling: resampling)
+                try Task.checkCancellation()
+                return result
+            }
+        }
+        evaluationWorker = worker
         Task { @MainActor in
-            let result = await Task.detached(priority: .utility) {
-                Result { try EEGEvaluationArtifact.run(manifest: load(), store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls) }
-            }.value
-            running = false
+            let result = await worker.value
+            running = false; evaluationWorker = nil
             guard request == generation else { return }
+            guard !worker.isCancelled else { failure = "Evaluation cancelled; no new receipt was produced."; return }
             switch result {
             case .success(let value): artifact = value
+            case .failure(let error) where error is CancellationError: failure = "Evaluation cancelled; no new receipt was produced."
             case .failure(let error): failure = "Evaluation rejected: \(error.localizedDescription) [\(error)]"
             }
         }

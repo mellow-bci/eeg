@@ -92,3 +92,8 @@ that hides a failed session. Receipt tests verify counts and explicit nulls.
 The 18 selected trial/evaluation tests pass. No binomial confidence interval,
 trial/session independence, significance test, grouped permutation result,
 physiological performance or automatic qualification decision is implied.
+
+Version 5 adds opt-in [whole-session resampling](SESSION_RESAMPLING.md) with
+recorded settings. Its exploratory percentile range does not satisfy the outstanding
+requirement for defensible uncertainty/qualification on prospective physiological
+data. The counts and their denominators defined above are unchanged.

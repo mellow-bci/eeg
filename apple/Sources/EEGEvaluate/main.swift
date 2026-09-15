@@ -3,11 +3,12 @@ import Darwin
 import EEGCore
 
 let usage = """
-Usage: EEGEvaluate --manifest FILE --profile FILE --recordings DIRECTORY [--controls-only]
+Usage: EEGEvaluate --manifest FILE --profile FILE --recordings DIRECTORY [--controls-only] [--resamples N [--resampling-seed N] [--central-mass FRACTION]]
 
 Evaluates finalized local recordings through the native EEGCore pipeline.
 Writes a complete eeg.native-evaluation.v1 JSON receipt to stdout only on success.
 Diagnostics go to stderr. Exit 2 means invalid arguments; exit 1 means evaluation failed.
+Optional resampling is exploratory, not validated confidence coverage.
 No acquisition, cloud service or system-control output is enabled.
 """
 
@@ -19,12 +20,12 @@ func arguments(_ args: [String]) throws -> ([String: String], Bool) {
         if key == "--controls-only" {
             guard !controls else { throw ArgumentFailure.invalid }; controls = true; i += 1
         } else {
-            guard ["--manifest", "--profile", "--recordings"].contains(key), values[key] == nil,
+            guard ["--manifest", "--profile", "--recordings", "--resamples", "--resampling-seed", "--central-mass"].contains(key), values[key] == nil,
                   i + 1 < args.count, !args[i + 1].isEmpty, !args[i + 1].hasPrefix("--") else { throw ArgumentFailure.invalid }
             values[key] = args[i + 1]; i += 2
         }
     }
-    guard values.count == 3 else { throw ArgumentFailure.invalid }
+    guard ["--manifest", "--profile", "--recordings"].allSatisfy({ values[$0] != nil }) else { throw ArgumentFailure.invalid }
     return (values, controls)
 }
 func readManifest(_ url: URL) throws -> Data {
@@ -45,6 +46,19 @@ let args = Array(CommandLine.arguments.dropFirst())
 if args == ["--help"] { print(usage); exit(0) }
 do {
     let (options, controls) = try arguments(args)
+    var resampling: EEGSessionResampling.Options?
+    if let count = options["--resamples"] {
+        guard let iterations = Int(count) else { throw ArgumentFailure.invalid }
+        var value = EEGSessionResampling.Options(iterations: iterations)
+        if let raw = options["--resampling-seed"] {
+            guard let seed = UInt64(raw) else { throw ArgumentFailure.invalid }; value.seed = seed
+        }
+        if let raw = options["--central-mass"] {
+            guard let mass = Double(raw) else { throw ArgumentFailure.invalid }; value.centralMass = mass
+        }
+        do { try value.validate() } catch { throw ArgumentFailure.invalid }
+        resampling = value
+    } else if options["--resampling-seed"] != nil || options["--central-mass"] != nil { throw ArgumentFailure.invalid }
     let directory = URL(fileURLWithPath: options["--recordings"]!, isDirectory: true)
     // Do not create a missing source directory for a read-only evaluation.
     let attributes = try FileManager.default.attributesOfItem(atPath: directory.path)
@@ -52,7 +66,7 @@ do {
     let manifest = try readManifest(URL(fileURLWithPath: options["--manifest"]!))
     let profile = try EEGProfileStore.readDocument(URL(fileURLWithPath: options["--profile"]!))
     let artifact = try EEGEvaluationArtifact.run(manifest: manifest,
-        store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls)
+        store: EEGRecordingStore(directory: directory), profile: profile, controlsOnly: controls, resampling: resampling)
     try FileHandle.standardOutput.write(contentsOf: artifact.data)
 } catch ArgumentFailure.invalid {
     try? FileHandle.standardError.write(contentsOf: Data((usage + "\n").utf8)); exit(2)

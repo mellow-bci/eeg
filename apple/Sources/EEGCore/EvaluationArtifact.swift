@@ -6,15 +6,18 @@ import CryptoKit
 public struct EEGEvaluationArtifact: Sendable {
     public let report: EEGLabeledEvaluation
     public let data: Data
+    public let sessionResampling: [String: EEGSessionResampling.Result]?
     public static func run(manifest: Data, store: EEGRecordingStore, profile: EEGMentalProfile,
-                           controlsOnly: Bool = false) throws -> EEGEvaluationArtifact {
+                           controlsOnly: Bool = false, resampling: EEGSessionResampling.Options? = nil) throws -> EEGEvaluationArtifact {
+        try resampling?.validate()
         let dataset = try EEGTrainingDataset.load(manifest, store: store, settings: profile.settings)
         let report = try EEGLabeledEvaluation.run(profile: profile, dataset: dataset, controlsOnly: controlsOnly)
-        return try make(report: report, dataset: dataset, manifest: manifest, profile: profile)
+        return try make(report: report, dataset: dataset, manifest: manifest, profile: profile, resampling: resampling)
     }
     // Internal so production callers cannot attach an unrelated manifest to results.
     static func make(report: EEGLabeledEvaluation, dataset: EEGTrainingDataset, manifest: Data,
-                     profile: EEGMentalProfile) throws -> EEGEvaluationArtifact {
+                     profile: EEGMentalProfile, resampling: EEGSessionResampling.Options? = nil) throws -> EEGEvaluationArtifact {
+        try resampling?.validate()
         func nullable<T>(_ value: T?) -> Any { value.map { $0 as Any } ?? NSNull() }
         let predictions: [[String: Any]] = zip(report.predictions, dataset.evaluation).map { prediction, row in
             ["window_id": prediction.windowID, "session_id": prediction.sessionID,
@@ -67,14 +70,23 @@ public struct EEGEvaluationArtifact: Sendable {
              "eeg_content_sha256": session.eegSHA256, "usable_windows": session.usableWindows,
              "rejected_windows": session.rejectedWindows]
         }
+        var sessionResampling: [String: EEGSessionResampling.Result]?
+        if let resampling {
+            let summaries = report.sessionTrialMetrics
+            sessionResampling = try Dictionary(uniqueKeysWithValues: report.metrics.keys.sorted().map { label in
+                let rows = summaries.compactMapValues { $0[label] }
+                return (label, try EEGSessionResampling.run(rows, options: resampling))
+            })
+        }
         let object: [String: Any] = [
-            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-4",
+            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-5",
             "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
             "participant_id": dataset.participantID, "controls_only": report.controlsOnly,
             "system_control_enabled": false, "hardware_validated": false,
             "manifest_base64": manifest.base64EncodedString(),
             "manifest_sha256": SHA256.hash(data: manifest).map { String(format: "%02x", $0) }.joined(),
+            "session_resampling": try sessionResampling.map { try JSONSerialization.jsonObject(with: JSONEncoder().encode($0)) } ?? NSNull(),
             "trial_metrics": report.trialMetrics.mapValues(trialMetricObject),
             "session_trial_metrics": report.sessionTrialMetrics.mapValues { $0.mapValues(trialMetricObject) },
             "sources": sources, "predictions": predictions, "metrics": metrics, "session_metrics": sessionMetrics,
@@ -85,6 +97,7 @@ public struct EEGEvaluationArtifact: Sendable {
                 "prediction": "experimental candidate or explicit neutral; null is rejection, not neutral",
                 "class_rejection": "null predictions divided by windows of the actual class; includes unarmed and unusable windows; null rate when the class is absent",
                 "scored_trial": "candidate persistence evidence must start within the scored interval and at or after the recorded cue; task success requires the target label, neutral false positive accepts any task candidate; missing cue yields null; carry-ins are not credited",
+                "session_resampling": "optional exploratory whole-session pair resampling; not validated confidence coverage; assumes independent exchangeable sessions; few sessions, selection and missing exposure limit interpretation; never a qualification gate",
                 "trial_metrics": "cued task target observations or cued neutral false positives; one observation per declared trial; missing cues counted unavailable; zero eligible exposure retained; controls reported separately; no confidence or independence claim",
                 "trial_eligible_fraction": "armed usable window duration divided by the declared scored interval; includes gaps in denominator; not confidence or physiological validity",
                 "latency": "recorded cue completion to candidate input availability, not mental onset or live response",
@@ -102,6 +115,6 @@ public struct EEGEvaluationArtifact: Sendable {
                 "Training overlap checks cover this profile; parent lineage does not audit historical model-selection or evaluation reuse."]
         ]
         let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys, .prettyPrinted])
-        return EEGEvaluationArtifact(report: report, data: data)
+        return EEGEvaluationArtifact(report: report, data: data, sessionResampling: sessionResampling)
     }
 }

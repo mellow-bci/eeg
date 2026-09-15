@@ -56,6 +56,7 @@ public struct EEGTrainingDataset: Sendable {
         var evaluation = [EvaluationWindow]()
         var training = [EEGTrainingRecord](), summaries = [SessionSummary]()
         for session in manifest.sessions {
+            try Task.checkCancellation()
             guard !session.id.isEmpty, seenSessions.insert(session.id).inserted else { throw Failure.duplicateSession }
             guard session.independent_session, ["train", "evaluation"].contains(session.split),
                   !session.recording.isEmpty, session.recording == URL(fileURLWithPath: session.recording).lastPathComponent,
@@ -77,6 +78,7 @@ public struct EEGTrainingDataset: Sendable {
             var pending = [(Int, String, [Double])]()
             var evaluationPending = [(EEGInferenceWindow, Trial)]()
             let fileHash = try store.analysisWindows(recording: store.directory.appendingPathComponent(session.recording)) { window in
+                try Task.checkCancellation()
                 for sample in window.samples { try fingerprint.append(sample) }
                 guard let first = window.samples.first, let last = window.samples.last,
                       let trial = session.trials.first(where: { $0.start <= first.receivedAt && last.receivedAt <= $0.end }) else { return }

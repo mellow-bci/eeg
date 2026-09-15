@@ -100,6 +100,7 @@ public struct EEGLabeledEvaluation: Sendable {
         var detector = try profile.makeDetector(), predictions = [Prediction](), lastEnd = [String: Double]()
         var episodes = EEGActivationEpisodes()
         for row in dataset.evaluation {
+            try Task.checkCancellation()
             let input = row.input
             guard profile.parameters.classes.contains(row.label) else { throw Failure.invalidLabels }
             guard input.start.isFinite, input.start >= 0, input.end.isFinite, input.end > input.start,
