@@ -32,20 +32,27 @@ struct TrialCaptureView: View {
             if model.savingTrialRevision {ProgressView("Saving trial evidence")}
             if let plan=model.trialPlan {
                 Text("Seed: " + plan.seed).font(.caption.monospaced()).textSelection(.enabled)
-                Text("Trials started: \(model.trialsStarted) / 24. At least 10 seconds rest after review; 60 seconds after each block of eight.")
+                Text("Trials started: \(model.trialsStarted) / \(plan.trials.count). At least 10 seconds rest after review; 60 seconds after each block of eight.")
             }
             Button("Play audio check") { ready=false;heard=false;cues.audioCheck() }.disabled(cues.busy)
             Toggle("I heard the completed audio check", isOn: $heard).disabled(!cues.checkCompleted)
             Toggle("Participant is ready now and understands how to stop", isOn: $ready)
             Text(cues.status).accessibilityLabel("Cue status: " + cues.status)
-            HStack {
-                Button("Start trial") {
-                    do {
-                        let planned = try model.nextPlannedTrial()
-                        cues.start(planned, ready: ready, heard: heard);ready=false;heard=false
-                    } catch { self.error=error.localizedDescription }
-                }.disabled(!ready || !heard || !cues.checkCompleted || cues.busy || !model.recording || !model.transportStable || model.trialPlan?.trials.first == nil || active || model.trialPlan == nil || model.trialsStarted >= 24)
-                Button("Stop trial", role: .destructive) { cues.stop() }.disabled(!active && !cues.busy)
+            TimelineView(.periodic(from: .now, by: 1)) { _ in
+                let earliest = model.trialPlan.flatMap { try? $0.earliestNextStart(after: model.trial, started: model.trialsStarted) }
+                let remaining = earliest.map { max(0, $0 - model.recordingClock) }
+                if let remaining, remaining > 0 {
+                    Text("Rest: \(Int(ceil(remaining))) seconds remaining").monospacedDigit()
+                }
+                HStack {
+                    Button("Start trial") {
+                        do {
+                            let planned = try model.nextPlannedTrial()
+                            cues.start(planned, ready: ready, heard: heard);ready=false;heard=false
+                        } catch { self.error=error.localizedDescription }
+                    }.disabled(!ready || !heard || !cues.checkCompleted || cues.busy || !model.recording || !model.transportStable || model.trialPlan?.trials.first == nil || active || model.trialPlan == nil || remaining == nil || (remaining ?? 0) > 0)
+                    Button("Stop trial", role: .destructive) { cues.stop() }.disabled(!active && !cues.busy)
+                }
             }
             Text("Requires an active recording with stable transport. Keep eyes open. Reports and reviews must occur after the end cue; they are not objective evidence of a mental state.").font(.caption).foregroundStyle(.secondary)
             if let trial=model.trial {

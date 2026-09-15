@@ -710,3 +710,20 @@ sleep or background hardware experiment was performed. The OS may suspend before
 asynchronous finalization completes; an interrupted file must remain incomplete,
 not be reported as durably finalized. No background-execution entitlement or
 sleep-delay guarantee is introduced.
+
+## 2026-09-15 — Visible inter-trial rest timing
+
+The native trial panel previously left Start enabled during the mandatory rest
+period and surfaced the core readiness error only after a click. It now displays
+remaining seconds and disables Start until the earliest permitted time. Both UI
+and `EEGTrialPlan.next` use `earliestNextStart`; elapsed time is measured on the
+existing recording uptime clock, not the wall clock driving UI refreshes. The
+10-second rest and 60-second block rest remain unchanged. Missing terminal
+trial evidence and exhausted plans do not produce an eligible start. Trial count
+comes from the saved plan.
+
+Validation: three TrialPlanTests pass, including exact rest boundaries, first
+trial, missing predecessor evidence and exhausted plans. macOS, iOS and visionOS
+native builds pass. This is software timing validation; no wearer trial or
+interactive countdown qualification was performed. Acquisition and decoding
+were not changed.

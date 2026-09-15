@@ -44,14 +44,20 @@ public struct EEGTrialPlan: Encodable, Sendable {
     /// Every eighth trial gets a full minute; an interruption consumes its slot.
     public func next(after completed: EEGTrialEvidence?, started: Int, at: Double) throws -> EEGTrialEvidence {
         guard at.isFinite,at >= 0,started >= 0,started < trials.count else { throw EEGTrialEvidence.Failure.invalidTime }
+        guard at >= (try earliestNextStart(after: completed, started: started)) else { throw EEGTrialEvidence.Failure.readinessMissing }
+        return trials[started]
+    }
+    /// Earliest permitted start on the recording clock; shared with the native countdown.
+    public func earliestNextStart(after completed: EEGTrialEvidence?, started: Int) throws -> Double {
+        guard started >= 0, started < trials.count else { throw EEGTrialEvidence.Failure.invalidTransition }
         if started > 0 {
             guard let completed,completed.id == trials[started-1].id,
                   completed.phase == .reviewed || completed.phase == .interrupted,
                   let last = completed.events.last else { throw EEGTrialEvidence.Failure.invalidTransition }
             let rest: Double = started % 8 == 0 ? 60 : 10
-            guard at >= last.at+rest else { throw EEGTrialEvidence.Failure.readinessMissing }
+            return last.at + rest
         } else if completed != nil { throw EEGTrialEvidence.Failure.invalidTransition }
-        return trials[started]
+        return 0
     }
     private struct Generator {
         var state: UInt64

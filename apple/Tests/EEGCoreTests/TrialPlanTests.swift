@@ -35,9 +35,13 @@ final class TrialPlanTests: XCTestCase {
             XCTAssertThrowsError(try plan.next(after:previous,started:started,at:500))
             try previous.interrupt(reason:"synthetic_stop",at:100)
             let rest: Double = started % 8 == 0 ? 60 : 10
+            XCTAssertEqual(try plan.earliestNextStart(after:previous,started:started),100+rest)
             XCTAssertThrowsError(try plan.next(after:previous,started:started,at:100+rest-0.001))
             XCTAssertEqual(try plan.next(after:previous,started:started,at:100+rest).id,plan.trials[started].id)
         }
+        XCTAssertEqual(try plan.earliestNextStart(after:nil,started:0),0)
+        XCTAssertThrowsError(try plan.earliestNextStart(after:nil,started:1))
+        XCTAssertThrowsError(try plan.earliestNextStart(after:nil,started:24))
         XCTAssertThrowsError(try plan.next(after:nil,started:24,at:1000))
         XCTAssertThrowsError(try plan.next(after:nil,started:0,at:.nan))
         XCTAssertThrowsError(try EEGTrialPlan(sessionID:" ",participantID:"synthetic",seed:1))
