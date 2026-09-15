@@ -15,10 +15,15 @@ struct TrialCaptureView: View {
     var body: some View {
         Panel(title: "Planned research session") {
             Text("Save a balanced 24-trial order before the first cue. Each trial requires fresh readiness, a report and review. Only reviewed trials can be exported. Physiological qualification remains pending.").foregroundStyle(.secondary)
-            TextField("Participant pseudonym", text: $participant).disabled(model.trialPlan != nil || model.savingTrialPlan)
-            TextField("Independent session ID", text: $session).disabled(model.trialPlan != nil || model.savingTrialPlan)
-            Toggle("Artifact-control evaluation session",isOn:$controls).disabled(model.trialPlan != nil || model.savingTrialPlan)
-            Text(controls ? "Six trials each: ordinary seated activity, blinking, gentle jaw movement and gentle head movement. Evaluation only; these are not mental commands." : "Twelve neutral and twelve silent-subtraction trials.").font(.caption)
+            if let planned = model.trialPlan?.trials.first {
+                LabeledContent("Participant pseudonym", value: planned.participantID)
+                LabeledContent("Independent session ID", value: planned.sessionID)
+            } else {
+                TextField("Participant pseudonym", text: $participant).disabled(model.savingTrialPlan)
+                TextField("Independent session ID", text: $session).disabled(model.savingTrialPlan)
+            }
+            Toggle("Artifact-control evaluation session",isOn:Binding(get:{ effectiveControls },set:{ controls=$0 })).disabled(model.trialPlan != nil || model.savingTrialPlan)
+            Text(effectiveControls ? "Six trials each: ordinary seated activity, blinking, gentle jaw movement and gentle head movement. Evaluation only; these are not mental commands." : "Twelve neutral and twelve silent-subtraction trials.").font(.caption)
             Button("Save session plan") {
                 do { try model.commitTrialPlan(participantID: participant,sessionID: session,controls:controls);error=nil }
                 catch { self.error=error.localizedDescription }
@@ -39,7 +44,7 @@ struct TrialCaptureView: View {
                         let planned = try model.nextPlannedTrial()
                         cues.start(planned, ready: ready, heard: heard);ready=false;heard=false
                     } catch { self.error=error.localizedDescription }
-                }.disabled(!ready || !heard || !cues.checkCompleted || cues.busy || !model.recording || !model.transportStable || participant.trimmingCharacters(in: .whitespaces).isEmpty || session.trimmingCharacters(in: .whitespaces).isEmpty || active || model.trialPlan == nil || model.trialsStarted >= 24)
+                }.disabled(!ready || !heard || !cues.checkCompleted || cues.busy || !model.recording || !model.transportStable || model.trialPlan?.trials.first == nil || active || model.trialPlan == nil || model.trialsStarted >= 24)
                 Button("Stop trial", role: .destructive) { cues.stop() }.disabled(!active && !cues.busy)
             }
             Text("Requires an active recording with stable transport. Keep eyes open. Reports and reviews must occur after the end cue; they are not objective evidence of a mental state.").font(.caption).foregroundStyle(.secondary)
@@ -75,6 +80,9 @@ struct TrialCaptureView: View {
         .onChange(of: model.trial?.id) { _,_ in
             reason = ""; error = nil; ready = false; heard = false
         }
+    }
+    private var effectiveControls: Bool {
+        model.trialPlan.map { $0.controlProtocol == "eeg.artifact-controls.v1" } ?? controls
     }
     private func conditionName(_ condition: EEGTrialEvidence.Condition) -> String {
         switch condition {

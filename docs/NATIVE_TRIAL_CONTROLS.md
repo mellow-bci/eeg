@@ -230,3 +230,22 @@ four-condition explanation, then restoring it returned the neutral/subtraction
 explanation. Save-plan and start-trial remained disabled. No audio or capture was
 started. Active-trial review layout and reason reset still require interactive
 session qualification; they were not exercised by fabricating a live trial.
+
+
+### Saved-plan display authority
+
+After plan acknowledgement, the trial form reads participant, session and protocol
+from `AcquisitionModel.trialPlan`, rather than local form fields. Recreating the
+view cannot relabel a retained control plan as a subtraction plan or require
+retyping an identity that was already saved. Before saving, the editable draft
+fields remain local. Starting still requires the existing plan, active recording,
+stable transport, fresh readiness and audio confirmation. This does not resume
+recordings or trials after application restart.
+
+The upstream control-plan checkpoint `a955ca7` passed GitHub Actions run
+34919694414 (Python regressions, native tests, native-profile Python loading and
+native evaluation CLI). Interactive navigation with an active physical trial
+remains unqualified.
+
+This display change passed macOS, iOS and visionOS builds; no new physiological
+experiment was run.
