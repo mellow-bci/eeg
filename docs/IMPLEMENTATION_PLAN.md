@@ -10,6 +10,34 @@ a validated participant model and does not enable OS, HID or Cast actions. Earli
 `calibration/` eyes/blink protocols remain a separate ocular/sensory research track; their
 cue-associated outcomes are not evidence for the new classifier's neural validity.
 
+## Current native checkpoint (2026-09-15)
+
+The historical checkpoints below describe their state at implementation time; their
+“pending” statements are not the current backlog. The native app now has queued
+recording writes, acknowledged trial revisions, audible cue scheduling, readiness
+controls, review and canonical manifest export. Trial-controller checks include a
+complete acknowledged cycle, cancellation and delayed/missing end-cue callbacks.
+These are software tests, not physical audio timing or mental-command qualification.
+
+The next qualification priorities remain:
+
+1. Exercise the complete native workflow on independent real recording sessions,
+   with fresh participant readiness and reliable cue delivery. Preserve uncertain
+   or missed trials as excluded evidence rather than assigning inferred labels.
+2. Evaluate saved profiles on held-out sessions and ordinary-activity controls;
+   quantify false activations, latency and artifact dependence before enabling any
+   command output. Current inference remains a preview with no control actions.
+3. Qualify sustained capture with concurrent processing, reconnection, sleep/wake
+   and storage failure. Orderly shutdown can still wait for disk operations.
+4. Expand quality, gesture, export and API capabilities against separate measurable
+   acceptance criteria. Broader Cortex parity remains incomplete.
+
+`TrialRecoveryTests.testFractionalObservationTimesSurviveRecordingRecovery` covers
+100 finalized synthetic trial journals through the actual writer and reader,
+checking every recovered event timestamp and dataset start. It uses no headset
+samples and establishes serialization fidelity only. Reproduce with:
+`swift test --package-path apple --filter TrialRecoveryTests`.
+
 ## One workflow and its current state
 
 **Collect → Review → Analyze → Calibrate → inference preview → separately gated output.**

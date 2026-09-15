@@ -46,6 +46,34 @@ final class TrialRecoveryTests: XCTestCase {
             else { XCTAssertThrowsError(try store.recoveredTrials(recording:file)) }
         }
     }
+    func testFractionalObservationTimesSurviveRecordingRecovery() throws {
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at:root) }
+        let store=try EEGRecordingStore(directory:root)
+        let plan=try EEGTrialPlan(sessionID:"session",participantID:"synthetic",seed:42)
+        for i in 0..<100 {
+            let file=try store.start()
+            try store.appendEvent(kind:"trial_plan",fields:["json":String(decoding:try JSONEncoder().encode(plan),as:UTF8.self)])
+            var trial=plan.trials[0]
+            try store.appendTrialEvidence(trial)
+            let at=(100000.123456789+Double(i)*0.000132)-100000.1
+            try trial.requestCue(at:at,participantReady:true,audioCheckHeard:true,transportStable:true,recordingActive:true)
+            try store.appendTrialEvidence(trial)
+            try trial.cueStarted(at:at+1);try store.appendTrialEvidence(trial)
+            try trial.cueCompleted(at:at+2);try store.appendTrialEvidence(trial)
+            try trial.requestEndCue(at:at+22);try store.appendTrialEvidence(trial)
+            try trial.endCueStarted(at:at+22.1);try store.appendTrialEvidence(trial)
+            try trial.endCueCompleted(at:at+24);try store.appendTrialEvidence(trial)
+            try trial.report(.attempted,at:at+25);try store.appendTrialEvidence(trial)
+            try trial.review(accept:true,reviewer:"synthetic operator",reason:"fixture",at:at+26)
+            try store.appendTrialEvidence(trial)
+            try store.finish()
+            let recovered=try XCTUnwrap(store.recoveredTrials(recording:file).first)
+            XCTAssertEqual(recovered.events.map(\.at),trial.events.map(\.at))
+            XCTAssertEqual(recovered.phase,.reviewed)
+            XCTAssertEqual(try recovered.datasetTrial().start,try trial.datasetTrial().start)
+        }
+    }
     func testSavedPlanMustMatchSeedExactly() throws {
         let plan=try EEGTrialPlan(sessionID:"session",participantID:"synthetic",seed:42)
         let data=try JSONEncoder().encode(plan)
