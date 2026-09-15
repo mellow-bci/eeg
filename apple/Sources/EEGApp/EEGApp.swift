@@ -60,6 +60,7 @@ struct WorkspaceView: View {
                 Label("Stored on this device", systemImage: "lock.shield").font(.caption).foregroundStyle(.secondary).padding()
             }
         } detail: {
+            ScrollViewReader { navigation in
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     status
@@ -67,11 +68,12 @@ struct WorkspaceView: View {
                     case .live: LiveView()
                     case .recordings: LibraryView()
                     case .analysis: SpectrumAnalysisView()
-                    case .calibration: CalibrationView()
+                    case .calibration: CalibrationView(navigate: { navigation.scrollTo($0, anchor: .top) })
                     case .settings: ProcessingSettingsView()
                     case .system: SystemView()
                     }
                 }.padding(24).frame(maxWidth: 1400, alignment: .leading).frame(maxWidth: .infinity)
+            }
             }
             .navigationTitle((selection ?? .live).rawValue)
             .toolbar {
@@ -309,6 +311,7 @@ struct SignalInspector: View {
     }
 }
 struct CalibrationView: View {
+    let navigate: (String) -> Void
     @EnvironmentObject var model: AcquisitionModel
     @State private var profile: EEGMentalProfile?
     @State private var datasetManifest: Data?
@@ -316,19 +319,63 @@ struct CalibrationView: View {
     @State private var profileLibraryRevision = 0
     var body: some View {
         PageTitle(title: "Calibration", detail: "Define a task, record labeled trials and evaluate a separate session before any command output.")
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Calibration workflow").font(.headline).accessibilityAddTraits(.isHeader)
+            Text("Work through the stages below. Jumping between them does not start an experiment or discard your current inputs.").foregroundStyle(.secondary)
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 12)], spacing: 12) {
+                workflowLink(1, "Capture trials", "Record labeled tasks with audible cues.", "waveform", "capture")
+                workflowLink(2, "Prepare dataset", "Use reviewed, independent recordings.", "rectangle.stack", "dataset")
+                workflowLink(3, "Train profile", "Fit and save a versioned experimental profile.", "brain", "train")
+                workflowLink(4, "Evaluate", "Inspect the profile and test held-out sessions.", "chart.bar", "evaluate")
+            }
+            Text("Review trial evidence in Recordings before preparing a dataset. These stages describe the workflow; they are not completion or validation badges.").font(.caption).foregroundStyle(.secondary)
+        }.id("calibration-overview")
         Panel(title: "Current boundary") {
             Label("Command output disabled", systemImage: "hand.raised").font(.headline)
             Text("This workspace trains experimental profiles from labeled recordings. It does not yet provide a physiologically validated intent classifier. Offline processing settings define the research recipe; they do not establish accuracy.").foregroundStyle(.secondary)
         }
+        stageHeading(1, "Capture trials", "capture")
         TrialCaptureView(model: model, cues: model.trialCues)
+        stageHeading(2, "Prepare dataset", "dataset")
         DatasetBuilderView(manifest: $datasetManifest, manifestName: $datasetName)
+        stageHeading(3, "Train profile", "train")
         DatasetTrainingView(parentProfile: profile, onSaved: { profile = $0; profileLibraryRevision += 1 }, manifest: $datasetManifest, manifestName: $datasetName)
+        stageHeading(4, "Evaluate", "evaluate")
         ProfileInspectionView(profile: $profile, preparedManifest: datasetManifest, libraryRevision: profileLibraryRevision)
         Panel(title: "Research sequence") {
             ForEach(Array(["Prepare sensors and verify transport", "Record neutral and intentional task trials", "Evaluate held-out sessions and artifact challenges", "Qualify a confirmation and cancel mechanism"].enumerated()), id: \.offset) { index, label in
                 HStack(alignment: .top, spacing: 14) { Text(String(index + 1)).font(.callout.monospacedDigit()).foregroundStyle(.secondary); Text(label) }
             }
         }
+    }
+    private func workflowLink(_ number: Int, _ title: String, _ detail: String, _ icon: String, _ destination: String) -> some View {
+        Button { navigate("calibration-" + destination) } label: {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Image(systemName: icon).font(.title3)
+                    Spacer()
+                    Text(String(number)).font(.caption.monospacedDigit())
+                    Image(systemName: "arrow.down").font(.caption)
+                }
+                Text(title).font(.headline)
+                Text(detail).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
+            .padding(16)
+            .background(.quaternary.opacity(0.2), in: RoundedRectangle(cornerRadius: 12))
+            .contentShape(RoundedRectangle(cornerRadius: 12))
+        }.buttonStyle(.plain)
+            .accessibilityLabel("Stage \(number): \(title)")
+            .accessibilityHint("Jump to \(title.lowercased()). \(detail)")
+    }
+    private func stageHeading(_ number: Int, _ title: String, _ destination: String) -> some View {
+        HStack {
+            Text("\(number). \(title)").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
+            Spacer()
+            Button { navigate("calibration-overview") } label: {
+                Label("Workflow", systemImage: "arrow.up")
+            }.accessibilityLabel("Back to calibration workflow")
+        }.id("calibration-" + destination)
     }
 }
 struct SystemView: View {
