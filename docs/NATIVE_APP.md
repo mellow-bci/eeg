@@ -732,3 +732,21 @@ recording and inference algorithms are unchanged.
 
 Validation: seven replay/live consistency tests passed; macOS, iOS and visionOS
 builds passed. Interactive layout and hardware observation remain pending.
+
+
+## Per-session class metrics
+
+Evaluation receipts now include `session_metrics`, keyed by session and class,
+with the same TP/FP/FN, precision and recall fields as pooled `metrics`. The native
+“Results by session” disclosure shows these alongside exposure. Both summaries
+use one aggregation function over the same predictions; no inference is repeated.
+Rejected windows remain false negatives for their declared class. No examples
+means recall is null, not zero or success. These remain correlated window-level
+metrics, not independent trial accuracy or cross-session physiological validation.
+
+The CLI qualification script independently recomputes each session's counts and
+ratios from the exported predictions for two held-out synthetic recordings. It
+also retains source checks, exact canonical receipt comparison and failure checks.
+
+Validation: end-to-end CLI qualification passed; macOS, iOS and visionOS builds
+passed. Interactive metrics layout and real-session performance remain unqualified.

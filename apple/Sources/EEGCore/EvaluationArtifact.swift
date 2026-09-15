@@ -25,10 +25,12 @@ public struct EEGEvaluationArtifact: Sendable {
              "artifact_flags": row.input.artifact_flags, "shadow_enabled": row.shadowEnabled,
              "condition": row.condition]
         }
-        let metrics = report.metrics.mapValues { metric -> [String: Any] in
+        func metricObject(_ metric: EEGLabeledEvaluation.Metric) -> [String: Any] {
             ["true_positive": metric.truePositive, "false_positive": metric.falsePositive,
              "false_negative": metric.falseNegative, "precision": nullable(metric.precision), "recall": nullable(metric.recall)]
         }
+        let metrics = report.metrics.mapValues(metricObject)
+        let sessionMetrics = report.sessionMetrics.mapValues { $0.mapValues(metricObject) }
         func exposureObject(_ exposure: EEGConditionExposure) -> [String: Any] {
             ["eligible_seconds": exposure.eligibleSeconds, "unarmed_seconds": exposure.unarmedSeconds,
              "rejected_seconds": exposure.rejectedSeconds, "candidate_windows": exposure.candidateWindows,
@@ -59,7 +61,7 @@ public struct EEGEvaluationArtifact: Sendable {
             "system_control_enabled": false, "hardware_validated": false,
             "manifest_base64": manifest.base64EncodedString(),
             "manifest_sha256": SHA256.hash(data: manifest).map { String(format: "%02x", $0) }.joined(),
-            "sources": sources, "predictions": predictions, "metrics": metrics,
+            "sources": sources, "predictions": predictions, "metrics": metrics, "session_metrics": sessionMetrics,
             "control_conditions_without_eligible_exposure": report.controlConditionsWithoutEligibleExposure,
             "trials": trials, "conditions": conditions, "session_conditions": sessionConditions, "rejection_fraction": report.rejectionFraction,
             "definitions": [

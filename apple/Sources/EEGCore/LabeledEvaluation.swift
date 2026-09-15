@@ -12,6 +12,18 @@ public struct EEGLabeledEvaluation: Sendable {
         public let reason: String
         public let inputUsable: Bool
     }
+    public var sessionMetrics: [String: [String: Metric]] {
+        Dictionary(grouping: predictions, by: \.sessionID).mapValues { Self.summarize($0,classes:Array(metrics.keys)) }
+    }
+    private static func summarize(_ predictions: [Prediction], classes: [String]) -> [String: Metric] {
+        var result = [String: Metric]()
+        for label in classes {
+            result[label] = Metric(truePositive: predictions.filter { $0.actual == label && $0.predictedLabel == label }.count,
+                falsePositive: predictions.filter { $0.actual != label && $0.predictedLabel == label }.count,
+                falseNegative: predictions.filter { $0.actual == label && $0.predictedLabel != label }.count)
+        }
+        return result
+    }
     public let controlsOnly: Bool
     public let profileID: String
     public let predictions: [Prediction]
@@ -60,12 +72,7 @@ public struct EEGLabeledEvaluation: Sendable {
             predictions.append(Prediction(windowID: input.window_id, sessionID: input.session_id, trialID: row.trialID,
                 actual: row.label, predictedLabel: predicted, reason: proposal?.reason ?? "shadow_disabled", inputUsable: input.usable))
         }
-        var metrics = [String: Metric]()
-        for label in profile.parameters.classes {
-            metrics[label] = Metric(truePositive: predictions.filter { $0.actual == label && $0.predictedLabel == label }.count,
-                falsePositive: predictions.filter { $0.actual != label && $0.predictedLabel == label }.count,
-                falseNegative: predictions.filter { $0.actual == label && $0.predictedLabel != label }.count)
-        }
+        let metrics = summarize(predictions, classes: profile.parameters.classes)
         return EEGLabeledEvaluation(controlsOnly: controlsOnly, profileID: profile.id, predictions: predictions, metrics: metrics, trials: episodes.trials, conditions: episodes.conditions, sessionConditions: episodes.sessionConditions)
     }
 }

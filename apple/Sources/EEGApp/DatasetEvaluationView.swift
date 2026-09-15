@@ -53,10 +53,16 @@ struct DatasetEvaluationView: View {
                     exposureSummary(condition: condition, exposure: exposure)
                 }
                 DisclosureGroup("Results by session") {
+                    let metricsBySession = report.sessionMetrics
                     Text("Compare individual sessions before interpreting pooled rates.").font(.caption)
                     ForEach(report.sessionConditions.keys.sorted(), id: \.self) { session in
                         VStack(alignment: .leading, spacing: 8) {
                             Text(session).font(.headline).textSelection(.enabled)
+                            let metrics = metricsBySession[session] ?? [:]
+                            ForEach(metrics.keys.sorted(),id: \.self) { label in
+                                let metric = metrics[label]!
+                                Text("\(label): precision \(percent(metric.precision)) · recall \(percent(metric.recall)) · TP \(metric.truePositive) / FP \(metric.falsePositive) / FN \(metric.falseNegative)").font(.caption).monospacedDigit()
+                            }
                             ForEach(report.sessionConditions[session]!.keys.sorted(), id: \.self) { condition in
                                 exposureSummary(condition: condition, exposure: report.sessionConditions[session]![condition]!)
                             }
