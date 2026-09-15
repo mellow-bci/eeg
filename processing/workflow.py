@@ -53,8 +53,10 @@ def load_dataset(manifest_path):
         for trial in trials:
             if trial['id'] in seen_trials:raise ValueError('Duplicate trial ID')
             seen_trials.add(trial['id'])
-            a,b=float(trial['start']),float(trial['end'])
-            if not np.isfinite([a,b]).all() or b<=a:raise ValueError('Invalid trial interval')
+            if any(type(trial[k]) not in (int,float) for k in ('start','end')):raise ValueError('Numeric trial times required')
+            try:a,b=float(trial['start']),float(trial['end'])
+            except OverflowError as exc:raise ValueError('Invalid trial interval') from exc
+            if not np.isfinite([a,b]).all() or a<0 or b<=a:raise ValueError('Invalid trial interval')
             if any(a<y and b>x for x,y in intervals):raise ValueError('Overlapping labeled trials')
             intervals.append((a,b));trial['start']=a;trial['end']=b
             if not isinstance(trial['label'],str) or not trial['label'] or len(trial['label'])>80:raise ValueError('Invalid class label')
@@ -66,7 +68,7 @@ def load_dataset(manifest_path):
             shadow=trial.get('shadow_enabled',True)
             if type(shadow) is not bool or (split=='train' and not shadow):raise ValueError('Invalid shadow state')
             cue=trial.get('cue_completed_at')
-            if cue is not None and (type(cue) not in (float,int) or not np.isfinite(cue) or cue>b):raise ValueError('Invalid observed cue time')
+            if cue is not None and (type(cue) not in (float,int) or not np.isfinite(cue) or cue<0 or cue>b):raise ValueError('Invalid observed cue time')
             trial.update(condition=condition,shadow_enabled=shadow)
         matched_ids=set()
         accepted=0;rejected=0

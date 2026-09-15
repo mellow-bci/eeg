@@ -102,7 +102,7 @@ public struct EEGLabeledEvaluation: Sendable {
         for row in dataset.evaluation {
             let input = row.input
             guard profile.parameters.classes.contains(row.label) else { throw Failure.invalidLabels }
-            guard input.start.isFinite, input.end.isFinite, input.end > input.start,
+            guard input.start.isFinite, input.start >= 0, input.end.isFinite, input.end > input.start,
                   input.start >= (lastEnd[input.session_id] ?? -.infinity) else { throw Failure.invalidTiming }
             lastEnd[input.session_id] = input.end
             let proposal: EEGExperimentalProposal?

@@ -4,7 +4,9 @@
 
 ## One processing contract
 
-`processing.contract` explicitly adapts Python reference JSONL and Swift `eeg-native-v1` JSONL into immutable canonical samples. `processing.windows` produces nonoverlapping256-sample windows. `processing.workflow.windows_from` is the shared route for feature extraction, dataset building and replay inference. Native capture never runs Python; this first inference implementation is an offline Python research consumer of the explicit canonical adapter. A native trained-inference port remains future work.
+`processing.contract` adapts Python reference JSONL and Swift `eeg-native-v1` JSONL into immutable canonical samples. The Python research path shares `processing.workflow.windows_from` across feature extraction, dataset building and replay inference.
+
+The local app now implements acquisition, native window/feature processing, profile training/loading, replay and labeled evaluation in Swift. `EEGTrainingDataset`, `EEGMentalFeatures`, `EEGProfileCreation`, `EEGExperimentalDetector`, `EEGReplayInference` and `EEGLabeledEvaluation` are the implemented path; native capture does not run Python or Cortex. The Python implementation remains a separate optional research/reference implementation with numerical comparison fixtures, not a runtime dependency. See [NATIVE_WORKFLOW_AUDIT.md](NATIVE_WORKFLOW_AUDIT.md) for software/UI evidence and [NATIVE_TRIAL_OUTCOMES.md](NATIVE_TRIAL_OUTCOMES.md) for native reporting extensions. Neither implementation has a physiologically qualified personal command model.
 
 ## Evidence versus design
 
@@ -87,3 +89,18 @@ must be actual booleans. Missing source identity is rejected before event adapta
 rather than converted into strings such as `None`. Unknown metadata remains allowed
 as unknown and is rejected by the valid-window gate, never promoted to readiness.
 The full Python suite passed 119 tests after this change.
+
+### Nonnegative recording-clock validation
+
+Imported trial starts, cue completion times and candidate evidence starts must be
+nonnegative on the receipt-clock axis. Native dataset/evaluation gates and the
+Python reference reject negative values instead of producing a longer apparent
+cue latency or crediting evidence from before the clock origin. Zero remains valid.
+Python manifest times must be numeric JSON values, matching the native decoder;
+Boolean/string coercion is no longer accepted. This is input/provenance validation,
+not clock synchronization or a claim of physiological timing accuracy.
+
+Regression tests cover negative trial/cue/evidence times, Python Boolean/string
+times and rejection before feature extraction. Existing synthetic recording-to-profile
+and held-out evaluation tests continue to exercise the accepted path. No saved
+recordings are rewritten and no sample time is normalized to repair invalid input.

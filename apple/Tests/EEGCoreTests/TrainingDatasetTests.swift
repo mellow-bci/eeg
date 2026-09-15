@@ -77,12 +77,14 @@ final class TrainingDatasetTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: directory) }
         let store = try EEGRecordingStore(directory: directory)
         let original = session("a", directory.appendingPathComponent("unused.jsonl"))
-        for mode in 0..<3 {
+        for mode in 0..<5 {
             var changed = original
             var trials = changed["trials"] as! [[String: Any]]
             if mode == 0 { trials[0]["label_verified"] = false }
             if mode == 1 { trials[1]["start"] = 19 }
             if mode == 2 { changed["recording"] = "../outside.jsonl" }
+            if mode == 3 { trials[0]["start"] = -1 }
+            if mode == 4 { trials[0]["cue_completed_at"] = -1 }
             changed["trials"] = trials
             XCTAssertThrowsError(try EEGTrainingDataset.load(manifest([changed]), store: store)) { error in
                 if mode == 2 {

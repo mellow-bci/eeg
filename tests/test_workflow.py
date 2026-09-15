@@ -16,6 +16,20 @@ class WorkflowTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'dataset.json';p.write_text('{}')
             with self.assertRaises(ValueError):load_dataset(p)
+    def test_bad_receipt_times_never_reach_feature_extraction(self):
+        from unittest.mock import patch
+        for field,value in [('start',-1),('cue_completed_at',-1),('start',True),('end','20')]:
+            trial={'id':'t','start':0,'end':20,'label':'neutral','accepted':True,'label_verified':True}
+            trial[field]=value
+            session={'id':'a','recording':'unused.jsonl','split':'evaluation','independent_session':True,'trials':[trial]}
+            with tempfile.TemporaryDirectory() as directory:
+                p=Path(directory)/'dataset.json'
+                p.write_text(json.dumps({'schema':'eeg.dataset.v1','participant_id':'test','sessions':[session]}))
+                # Isolate manifest validation; neither real nor simulated EEG is scored.
+                with patch('processing.workflow.recording_fingerprint',return_value='test'), patch('processing.workflow.windows_from') as extract:
+                    with self.subTest(field=field,value=value), self.assertRaises(ValueError):load_dataset(p)
+                    extract.assert_not_called()
+
     def test_cross_manifest_content_rejected(self):
         p={'training_sessions':['A'],'training_window_ids':['a'],'training_recording_hashes':{'A':'x'}}
         with self.assertRaisesRegex(ValueError,'EEG content'):

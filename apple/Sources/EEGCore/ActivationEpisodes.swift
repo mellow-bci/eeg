@@ -67,9 +67,9 @@ struct EEGActivationEpisodes {
     mutating func consume(_ row: EEGTrainingDataset.EvaluationWindow, proposal: EEGExperimentalProposal?) throws {
         let input = row.input, duration = row.input.end - row.input.start
         guard duration.isFinite, duration > 0 else { throw EEGLabeledEvaluation.Failure.invalidTiming }
-        guard row.trialStart.isFinite, row.trialEnd.isFinite, row.trialEnd > row.trialStart,
+        guard row.trialStart.isFinite, row.trialStart >= 0, row.trialEnd.isFinite, row.trialEnd > row.trialStart,
               input.start >= row.trialStart, input.end <= row.trialEnd else { throw EEGLabeledEvaluation.Failure.invalidTiming }
-        if let cue = row.cueCompletedAt { guard cue.isFinite, cue <= row.trialEnd else { throw EEGLabeledEvaluation.Failure.invalidTiming } }
+        if let cue = row.cueCompletedAt { guard cue.isFinite, cue >= 0, cue <= row.trialEnd else { throw EEGLabeledEvaluation.Failure.invalidTiming } }
         let key = TrialKey(session: input.session_id, trial: row.trialID)
         var trial = trialStorage[key] ?? EEGTrialTiming(sessionID: input.session_id, trialID: row.trialID,
             label: row.label, condition: row.condition, start: row.trialStart, end: row.trialEnd, cueCompletedAt: row.cueCompletedAt)
@@ -82,7 +82,7 @@ struct EEGActivationEpisodes {
         else { metrics.eligibleSeconds += duration; trial.eligibleSeconds += duration }
         let label = row.shadowEnabled && input.usable ? proposal?.experimentalCandidate : nil
         if let label {
-            guard let start = proposal?.evidenceStart, start.isFinite, start <= input.start,
+            guard let start = proposal?.evidenceStart, start.isFinite, start >= 0, start <= input.start,
                   !input.continuity_id.isEmpty else { throw EEGLabeledEvaluation.Failure.invalidTiming }
             metrics.candidateWindows += 1
             if start >= row.trialStart, start >= (row.cueCompletedAt ?? row.trialStart) {

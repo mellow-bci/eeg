@@ -61,6 +61,9 @@ final class ActivationEpisodesTests: XCTestCase {
     func testInvalidEvidenceChronologyRejected() {
         var counter = EEGActivationEpisodes()
         XCTAssertThrowsError(try counter.consume(row(0), proposal: candidate(2)))
+        XCTAssertThrowsError(try counter.consume(row(0), proposal: candidate(-1)))
+        XCTAssertThrowsError(try counter.consume(row(0, trialStart: -1), proposal: nil))
+        XCTAssertThrowsError(try counter.consume(task(0, cue: -1), proposal: nil))
     }
     private func task(_ start: Double, cue: Double?) -> EEGTrainingDataset.EvaluationWindow {
         let base = row(start)

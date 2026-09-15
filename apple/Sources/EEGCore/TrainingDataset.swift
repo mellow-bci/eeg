@@ -64,12 +64,12 @@ public struct EEGTrainingDataset: Sendable {
             for trial in session.trials {
                 let condition = trial.condition ?? (trial.label == "neutral" ? "cued_neutral" : "cued_task")
                 guard !trial.id.isEmpty, trialIDs.insert(trial.id).inserted, !trial.label.isEmpty, trial.label.count <= 80,
-                      trial.accepted, trial.label_verified, trial.start.isFinite, trial.end.isFinite, trial.end > trial.start,
+                      trial.accepted, trial.label_verified, trial.start.isFinite, trial.start >= 0, trial.end.isFinite, trial.end > trial.start,
                       !intervals.contains(where: { trial.start < $0.1 && trial.end > $0.0 }),
                       ["cued_task", "cued_neutral", "ordinary_activity", "blink_control", "jaw_control", "head_movement_control"].contains(condition),
                       (condition == "cued_task") == (trial.label != "neutral"),
                       session.split != "train" || (["cued_task", "cued_neutral"].contains(condition) && trial.shadow_enabled != false) else { throw Failure.invalidTrial }
-                if let cue = trial.cue_completed_at { guard cue.isFinite, cue <= trial.end else { throw Failure.invalidTrial } }
+                if let cue = trial.cue_completed_at { guard cue.isFinite, cue >= 0, cue <= trial.end else { throw Failure.invalidTrial } }
                 intervals.append((trial.start, trial.end))
             }
             var fingerprint = EEGRecordingFingerprint(), matched = Set<String>()

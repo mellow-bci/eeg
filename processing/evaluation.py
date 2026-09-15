@@ -18,7 +18,7 @@ def summarize(predictions):
     for row in predictions:
         sid, tid = row['session_id'], row['trial_id']
         start, end = row['start'], row['end']
-        if not all(type(v) in (int, float) and math.isfinite(v) for v in (start, end)) or end <= start:
+        if not all(type(v) in (int, float) and math.isfinite(v) for v in (start, end)) or start < 0 or end <= start:
             raise ValueError('Invalid evaluation time interval')
         if start < last_end.get(sid, -math.inf):
             raise ValueError('Overlapping or unordered evaluation windows')
@@ -34,12 +34,12 @@ def summarize(predictions):
         identity = (row['trial_start'], row['trial_end'], condition, row['actual'], row.get('cue_completed_at'))
         if key not in trials:
             a, b = identity[:2]
-            if not all(type(v) in (int, float) and math.isfinite(v) for v in (a, b)) or b <= a:
+            if not all(type(v) in (int, float) and math.isfinite(v) for v in (a, b)) or a < 0 or b <= a:
                 raise ValueError('Invalid trial interval')
             if any(other['session_id'] == sid and a < other['end'] and b > other['start'] for other in trials.values()):
                 raise ValueError('Overlapping trial intervals')
             cue = identity[-1]
-            if cue is not None and (type(cue) not in (int, float) or not math.isfinite(cue) or cue > b):
+            if cue is not None and (type(cue) not in (int, float) or not math.isfinite(cue) or cue < 0 or cue > b):
                 raise ValueError('Invalid observed cue completion time')
             trials[key] = {'identity': identity, 'session_id': sid, 'trial_id': tid,
                            'condition': condition, 'actual': row['actual'], 'start': a, 'end': b,
@@ -62,7 +62,7 @@ def summarize(predictions):
         label = row['event'].get('experimental_candidate') if armed and usable else None
         continuity = row['event'].get('continuity_id')
         evidence_start=row['event'].get('candidate_evidence_start')
-        if label and (type(evidence_start) not in (int,float) or not math.isfinite(evidence_start) or evidence_start>start):
+        if label and (type(evidence_start) not in (int,float) or not math.isfinite(evidence_start) or evidence_start<0 or evidence_start>start):
             raise ValueError('Invalid candidate evidence chronology')
         if label and not continuity:
             raise ValueError('Candidate lacks continuity provenance')

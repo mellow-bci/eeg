@@ -69,6 +69,14 @@ class ShadowTests(unittest.TestCase):
         a['cue_completed_at']=None
         self.assertIsNone(summarize([a])['trials'][0]['cued_target_detected'])
 
+    def test_negative_receipt_clock_metadata_is_rejected(self):
+        for field in ('start', 'trial_start', 'cue_completed_at'):
+            value=row(0)
+            value[field]=-1
+            with self.subTest(field=field), self.assertRaises(ValueError):summarize([value])
+        value=row(0, 'task');value['event']['candidate_evidence_start']=-1
+        with self.assertRaises(ValueError):summarize([value])
+
     def test_overlaps_and_inconsistent_trials_rejected(self):
         variants=[[row(0),row(1)],[row(0),row(2,condition='blink_control')],
                   [row(0),row(2,trial='different')]]
