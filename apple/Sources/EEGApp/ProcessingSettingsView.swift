@@ -85,9 +85,9 @@ struct ProcessingSettingsView: View {
         .formStyle(.grouped)
         .navigationTitle("Processing")
         .task { if !loaded { loaded = true; load() } }
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.json], allowsMultipleSelection: false) { result in
+        .eegJSONImporter(isPresented: $importing) { result in
             do {
-                guard let url = try result.get().first else { return }
+                let url = try result.get()
                 let access = url.startAccessingSecurityScopedResource()
                 defer { if access { url.stopAccessingSecurityScopedResource() } }
                 let settings = try ProcessingSettingsStore.read(url)

@@ -66,7 +66,7 @@ struct DatasetEvaluationView: View {
             }
         }
         .onChange(of: preparedManifest) { _,_ in generation += 1;artifact=nil;failure=nil;exportMessage=nil }
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { selection in
+        .eegJSONImporter(isPresented: $importing) { selection in
             switch selection {
             case .failure(let error): failure = error.localizedDescription
             case .success(let url): evaluate(url)

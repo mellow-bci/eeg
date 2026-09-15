@@ -301,3 +301,20 @@ benign post-discovery file modification, duplicate run rejection, invalid limits
 empty recordings and incomplete-source rejection. The full suite passed 103
 tests. Interactive run selection and physical recording comparisons remain
 unqualified; software discovery is not a physiological validation result.
+
+## Shared native JSON opening
+
+All five JSON import consumers (capture, processing settings, profile inspection,
+training manifest and evaluation manifest) now use one platform adapter. macOS
+uses NSOpenPanel; iOS and visionOS retain SwiftUI's document importer. Each consumer
+keeps its existing bounded read and schema/provenance validation. Cancellation
+and leaving the view close the macOS panel without accepting a document.
+
+The macOS interactive check selected the synthetic mental-profile.json fixture
+through the training manifest picker. Open was enabled and the filename appeared
+in Calibration. Attempting training rejected the wrong schema (missing sessions);
+no profile was listed as saved. Reopening and cancelling returned to Calibration.
+This tests file selection and rejection, not successful physiological training.
+All three native targets built successfully with ./apple/build-native.sh all.
+Other consumers share the adapter but were not individually exercised in this
+check; iOS and visionOS were build-checked only. No Cast files changed.

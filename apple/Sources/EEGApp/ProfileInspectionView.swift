@@ -1,9 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import EEGCore
-#if os(macOS)
-import AppKit
-#endif
 
 struct ProfileInspectionView: View {
     @State private var importing = false
@@ -15,7 +12,7 @@ struct ProfileInspectionView: View {
         Panel(title: "Independent training profile") {
             ProfileLibraryView { profile = $0; failure = nil }
             HStack {
-                Button("Open profile", systemImage: "doc.badge.plus") { openDocument() }.disabled(loading || importing)
+                Button("Open profile", systemImage: "doc.badge.plus") { importing=true }.disabled(loading || importing)
                 if loading { ProgressView().controlSize(.small) }
                 Spacer()
                 if profile != nil { Button("Close profile") { profile = nil; failure = nil } }
@@ -37,27 +34,7 @@ struct ProfileInspectionView: View {
             }
             if let failure { Label(failure, systemImage: "exclamationmark.triangle").foregroundStyle(.red).textSelection(.enabled) }
         }
-        #if !os(macOS)
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in
-            receiveDocument(result)
-        }
-        #endif
-    }
-    private func openDocument() {
-        #if os(macOS)
-        importing = true
-        let panel = NSOpenPanel()
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = false
-        panel.allowsMultipleSelection = false
-        panel.allowedContentTypes = [.json]
-        panel.begin { response in
-            importing = false
-            if response == .OK, let url = panel.url { receiveDocument(.success(url)) }
-        }
-        #else
-        importing = true
-        #endif
+        .eegJSONImporter(isPresented:$importing) { receiveDocument($0) }
     }
     private func receiveDocument(_ result: Result<URL, Error>) {
         switch result {

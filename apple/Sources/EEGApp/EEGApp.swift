@@ -93,8 +93,8 @@ struct WorkspaceView: View {
             .inspector(isPresented: $inspector) { SignalInspector().inspectorColumnWidth(min: 270, ideal: 310, max: 370) }
             #endif
         }
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.json], allowsMultipleSelection: false) { result in
-            do { if let url = try result.get().first { model.importRawCapture(url) } } catch { model.message = error.localizedDescription }
+        .eegJSONImporter(isPresented: $importing) { result in
+            do { model.importRawCapture(try result.get()) } catch { model.message = error.localizedDescription }
         }
         .onChange(of: model.playback) { _, value in if value { selection = .recordings } }
         .alert("EEG", isPresented: Binding(get: { model.message != nil }, set: { if !$0 { model.message = nil } })) {

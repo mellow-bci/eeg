@@ -26,7 +26,7 @@ struct DatasetTrainingView: View {
             if let result { Text(result).textSelection(.enabled) }
             if let failure { Text(failure).foregroundStyle(.red).textSelection(.enabled) }
         }
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { selection in
+        .eegJSONImporter(isPresented: $importing) { selection in
             switch selection {
             case .failure(let error): failure = error.localizedDescription
             case .success(let url):
