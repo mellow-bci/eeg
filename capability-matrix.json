@@ -187,13 +187,22 @@
         ]
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
-      "missing_parameters_assets_dependencies": "Native bounded I/O scheduling, clock characterization, interpolation policy and prolonged fault evidence.",
-      "current_implementation": "Arrival timestamps/counters, epoch/continuity handling, bounded previews and Python consumer handling. processing/contract.py and windows.py additionally enforce immutable canonical samples and nonoverlapping valid windows; no validated reconstructed missing EEG.",
+      "missing_parameters_assets_dependencies": "Physical host/device clock characterization, interpolation policy and prolonged native fault/load measurements. Queued I/O is implemented; its existence does not prove sustained hardware throughput.",
+      "current_implementation": "Arrival timestamps/counters and canonical nonoverlapping windows preserve raw measurements. Native EEGQueuedRecordingStore and EEGLiveInference provide ordered bounded recording/inference queues, generation invalidation and explicit overload/error states. EEGRecordingClockAnchor brackets one host wall-clock observation using receipt-clock readings; clock accuracy remains unmeasured. No reconstructed missing EEG is presented as measured data.",
       "target_component": "Acquisition service owns timing and loss; derived interpolation, if added, must remain separate and flagged in recording metadata.",
       "acceptance_gate": "Fault injection, latency/memory measurements, explicit gap counts; interpolated samples never masquerade as measured samples.",
-      "delivery_notes": "Partial; native I/O scheduling and sustained operation remain gates.",
+      "delivery_notes": "Native queue implementations and software tests exist. Physical startup, sleep/wake, clock drift, sustained throughput and fault qualification remain pending; interpolation is unimplemented.",
       "vendor_equivalence_claimed": false,
-      "native_hardware_validated": false
+      "native_hardware_validated": false,
+      "software_evidence": [
+        "apple/Sources/EEGCore/QueuedRecordingStore.swift",
+        "apple/Sources/EEGCore/LiveInference.swift",
+        "apple/Sources/EEGCore/RecordingClockAnchor.swift",
+        "apple/Tests/EEGCoreTests/QueuedRecordingTests.swift",
+        "apple/Tests/EEGCoreTests/RecordingClockAnchorTests.swift",
+        "docs/NATIVE_WORKFLOW_AUDIT.md",
+        "docs/RECORDING_CLOCK_ANCHOR.md"
+      ]
     },
     {
       "id": "capability-06",
@@ -288,13 +297,18 @@
         ]
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
-      "missing_parameters_assets_dependencies": "Native feature port, prospective artifact-threshold validation, end-to-end timing and physical signal interpretation. Independent numeric settings are explicit; vendor spectral settings remain unresolved.",
+      "missing_parameters_assets_dependencies": "Prospective artifact-threshold validation, physical signal interpretation, frequency-response qualification for additional filter recipes and target-device timing measurements. Vendor spectral settings remain unresolved; our documented settings are independent choices.",
       "current_implementation": "processing/features.py defines 256-sample Hann/Welch spectra and 70 log-band-power features with explicit unvalidated amplitude/flat/rail rejection. Known-sine energy and unchanged-input tests exist; historical descriptive analysis remains separate. Native EEGSpectrum and EEGMentalFeatures share one spectral implementation; real-recording and synthetic oracles cover PSD and all 70 features. EEGIntervalAnalysis computes selected-window means and spectrograms with explicit structural rejection and artifact flags.",
       "target_component": "Analysis service with versioned filter/window/PSD recipes and explicit display-only versus causal processing.",
       "acceptance_gate": "Fixed signal reference tests, frequency/amplitude response, unit consistency, gaps/short-window rejection and online latency.",
-      "delivery_notes": "Implemented/tested offline Python spectral subset; not a native or physiological-equivalence claim.",
+      "delivery_notes": "Native and Python spectral subsets are implemented and numerically tested. Native feature port is no longer pending. No physiological interpretation, filter-family parity or hardware latency qualification is claimed.",
       "vendor_equivalence_claimed": false,
-      "native_hardware_validated": false
+      "native_hardware_validated": false,
+      "software_evidence": [
+        "apple/Sources/EEGCore/MentalFeatures.swift",
+        "apple/Sources/EEGCore/Spectrum.swift",
+        "apple/Tests/EEGCoreTests/SpectrumTests.swift"
+      ]
     },
     {
       "id": "capability-09",
@@ -324,7 +338,7 @@
       },
       "body_evidence": "Selected bounded body evidence now exists: docs/MENTAL_REFERENCE_TRACE.md and evidence/mental-command-reference/manifest.json establish named feature-selection/PCA/canonical/Gaussian-density/posterior call sites and neutral-training state. Complete raw-to-feature path, numeric settings and vendor-trained state remain unresolved.",
       "missing_parameters_assets_dependencies": "Prospective independent task/neutral sessions, artifact controls and ordinary-activity exposure; physical cue audibility/timing and native headset lifecycle qualification. Queued recording and acknowledged trial writes exist, but sustained capture with concurrent inference needs hardware measurement. Live collection/review is not established by the synthetic imported-dataset workflow. Vendor weights/settings are neither required nor imported.",
-      "current_implementation": "Python processing/mental.py and the native EEGCore implement train-only scaling/feature ranking, PCA, diagonal Gaussian classification including neutral, score/distance rejection and persistence. Native profile creation and integrity-checked local storage, finalized-recording dataset loading, held-out labeled evaluation, exposure/cue metrics and provenance receipts now exist. EEGEvaluate uses the same native receipt/evaluation entry point as the app. Output remains experimental and system control disabled. This is an independent design, not a recovered vendor algorithm. Native planned speech trials, persisted/recovered transition evidence, balanced seeded order, rest/timing gates and source-pinned dataset building now feed native training and held-out evaluation. Acquisition now feeds a bounded shadow-only consumer using shared window inference, with explicit profile start/stop, separate recorded results and stale-result invalidation. This live integration remains hardware-unqualified. Class-specific and per-session metrics include explicit rejection counts and unavailable denominators; artifact-control trials export as evaluation-only neutral conditions. Versioned retraining preserves parent identity without claiming inherited validation.",
+      "current_implementation": "Python processing/mental.py and the native EEGCore implement train-only scaling/feature ranking, PCA, diagonal Gaussian classification including neutral, score/distance rejection and persistence. Native profile creation and integrity-checked local storage, finalized-recording dataset loading, held-out labeled evaluation, exposure/cue metrics and provenance receipts now exist. EEGEvaluate uses the same native receipt/evaluation entry point as the app. Output remains experimental and system control disabled. This is an independent design, not a recovered vendor algorithm. Native planned speech trials, persisted/recovered transition evidence, balanced seeded order, rest/timing gates and source-pinned dataset building now feed native training and held-out evaluation. Acquisition now feeds a bounded shadow-only consumer using shared window inference, with explicit profile start/stop, separate recorded results and stale-result invalidation. This live integration remains hardware-unqualified. Class-specific and per-session metrics include explicit rejection counts and unavailable denominators; artifact-control trials export as evaluation-only neutral conditions. Versioned retraining preserves parent identity without claiming inherited validation. Whole-trial and per-session summaries retain missing cues and eligible exposure. Optional session resampling is exploratory, not validated confidence coverage. Native dataset loading checks exact cross-session excerpts; receipts audit which saved-profile training sources are present. Detector persistence rejects negative and overlapping timing. Complete historical model-selection provenance and prospective physiological qualification remain absent.",
       "target_component": "One mental-processing service and versioned profile contract, consumed by the native Calibration workspace. Offline Python processing.workflow is the first research implementation, not a second user-facing application.",
       "acceptance_gate": "Synthetic numerical/state/profile tests plus real prospective whole-session evaluation with independently verified task labels, no content reuse, artifact controls, neutral exposure and uncertainty. Native port must match fixed reference vectors before physical integration; outputs stay disabled.",
       "delivery_notes": "The macOS import/train/inspect/evaluate/export path was exercised with synthetic recordings at d63f9de, with saved profile and exported report compared against the fixture evaluator. Automatic profile-list refresh was subsequently checked at the UI level. Real cue collection, cross-session physiology and artifact dependence remain unqualified. See docs/qualification/NATIVE_UI_WORKFLOW.md and docs/NATIVE_WORKFLOW_AUDIT.md for exact scopes.",
@@ -350,7 +364,14 @@
         "apple/Tests/EEGCoreTests/TrialDatasetExportTests.swift",
         "docs/NATIVE_TRIAL_CONTROLS.md",
         "docs/qualification/NATIVE_UI_WORKFLOW.md",
-        "docs/qualification/native-ui-synthetic-evaluation-20260915.json"
+        "docs/qualification/native-ui-synthetic-evaluation-20260915.json",
+        "apple/Sources/EEGCore/RecordingOverlap.swift",
+        "apple/Sources/EEGCore/TrainingSourceAudit.swift",
+        "apple/Sources/EEGCore/SessionResampling.swift",
+        "docs/NATIVE_TRIAL_OUTCOMES.md",
+        "docs/DATASET_EXCERPT_CHECK.md",
+        "docs/DETECTOR_TIMING.md",
+        "docs/SESSION_RESAMPLING.md"
       ]
     },
     {
@@ -764,5 +785,6 @@
   "implementation_priority": "Independent mental-command contract/windows/features/profile training/neutral inference/evaluation first; ocular calibration is a separate research track, not a substitute.",
   "status_evidence_notes": "Tested mental/spectral/profile entries refer to tests/test_mental_processing.py and tests/test_processing_contract.py software invariants, not a fitted participant or hardware-qualified neural classifier. Shadow episode/exposure/latency calculations are covered by tests/test_shadow_evaluation.py and integrated synthetic workflow tests; real ordinary-activity and physiological validation remain open.",
   "availability_policy": "docs/PRODUCT_CAPABILITY_POLICY.md: all independently implemented capabilities available without subscription tiers or artificial recording/export/training limits; actual resource, authorization and validation constraints remain explicit.",
-  "native_workflow_audit": "docs/NATIVE_WORKFLOW_AUDIT.md"
+  "native_workflow_audit": "docs/NATIVE_WORKFLOW_AUDIT.md",
+  "code_audit_checkpoint": "8a9d7b4"
 }

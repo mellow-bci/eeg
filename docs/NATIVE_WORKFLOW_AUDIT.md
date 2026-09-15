@@ -1,7 +1,21 @@
 # Native mental-command workflow audit — 2026-09-15
 
-Code checkpoint: `b0f6d90`. This audit preserves the complete feature-parity goal;
-it does not redefine completion as the pieces implemented below.
+Current code review checkpoint: `8a9d7b4`. The current capability table is
+[PARITY_ROADMAP.md](PARITY_ROADMAP.md), generated from the canonical machine
+inventory. Source coverage, excerpt checks, trial summaries, resampling and
+sequential timing gates now have their own algorithm/evidence documents linked
+there. They do not establish a physiologically qualified mental command.
+
+This file is an implementation evidence ledger. The snapshot and ordered plan
+immediately below were recorded at `b0f6d90`; their pending items were subsequently
+implemented in later sections. Do not treat that historical snapshot as the
+current backlog. Current priority remains fresh native hardware/cue qualification,
+independent task/neutral sessions and artifact/ordinary-activity controls under
+[MENTAL_QUALIFICATION_PROTOCOL.md](MENTAL_QUALIFICATION_PROTOCOL.md), followed by
+the individually gated capability expansions. No historical readiness message
+substitutes for a new participant session.
+
+## Historical snapshot — b0f6d90
 
 | Requirement | Current code/evidence | Unfinished proof or work |
 |---|---|---|

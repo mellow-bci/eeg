@@ -10,6 +10,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.9'
+      - name: Capability inventory consistency
+        run: python tools/render_capability_matrix.py --check
       - run: python -m pip install -r requirements.txt -r requirements-analysis.txt
       - run: python -W error::ResourceWarning -m unittest discover -s tests -p 'test_*.py' -v
       - name: Native tests and synthetic profile export
