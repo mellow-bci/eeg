@@ -1,3 +1,4 @@
+import Foundation
 import XCTest
 @testable import EEGCore
 
@@ -94,6 +95,32 @@ final class TrialSessionTests: XCTestCase {
         XCTAssertEqual(session.trial?.cueCompletedAt,4)
         XCTAssertEqual(session.trial?.conditionDeadline,24)
         XCTAssertEqual(session.trial?.events.map(\.at),[1,2,4])
+    }
+
+    func testFractionalInterruptionSurvivesJSONContainerRoundTrip() throws {
+        for index in 1...100 {
+            var trial=try planned()
+            let at=(100000.123456789+Double(index)*0.000132)-100000.1
+            try trial.interrupt(reason:"operator_stopped",at:at)
+            let object=try JSONSerialization.jsonObject(with:JSONEncoder().encode(trial))
+            let data=try JSONSerialization.data(withJSONObject:object)
+            let recovered:EEGTrialEvidence
+            do {recovered=try EEGTrialEvidence.recover(data)} catch {
+                XCTFail("Recovery failed at \(at): \(error)");return
+            }
+            struct Event:Decodable {let at:Double}
+            struct Received:Decodable {let events:[Event]}
+            let received=try JSONDecoder().decode(Received.self,from:data)
+            XCTAssertEqual(recovered.events.last?.at,received.events.last?.at)
+        }
+    }
+
+    func testRecoveryStillRejectsUnknownFieldsAndNumericBooleans() throws {
+        let original=try JSONSerialization.jsonObject(with:JSONEncoder().encode(planned())) as! [String:Any]
+        var changed=original;changed["accepted"]=0
+        XCTAssertThrowsError(try EEGTrialEvidence.recover(JSONSerialization.data(withJSONObject:changed)))
+        changed=original;changed["extra"]=true
+        XCTAssertThrowsError(try EEGTrialEvidence.recover(JSONSerialization.data(withJSONObject:changed)))
     }
 
 }

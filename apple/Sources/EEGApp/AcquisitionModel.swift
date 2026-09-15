@@ -15,6 +15,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     lazy var trialCues = TrialCueController(acquisition: self)
     @Published private(set) var trial: EEGTrialEvidence?
     private var trialSession: EEGTrialSession?
+    private var interruptingTrial=false
     @Published private(set) var shadowActive = false
     @Published private(set) var shadowStatus = "Stopped"
     @Published private(set) var shadowResult: EEGWindowInferenceResult?
@@ -62,8 +63,8 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     private let revisionID = "2A28"
     private let configID = "81072F44-9F3D-11E3-A9DC-0002A5D5C51B"
     static let channels = ["AF3","F7","F3","FC5","T7","P7","O1","O2","P8","T8","FC6","F4","F8","AF4"]
-    override init() {
-        directory = FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0].appendingPathComponent("EEG/Recordings",isDirectory:true)
+    init(storageDirectory:URL?=nil) {
+        directory = storageDirectory ?? FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0].appendingPathComponent("EEG/Recordings",isDirectory:true)
         super.init()
         do {
             store = try EEGQueuedRecordingStore(directory:directory) { [weak self] generation,reason in
@@ -226,7 +227,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         guard ready,!recording,!finalizingRecording,!playback,fileOperation==nil,let store=store else { return }
         do {
             let url=try store.start();recording=true
-            trial=nil;trialPlan=nil;savingTrialPlan=false;savingTrialRevision=false;trialsStarted=0;trialSession=EEGTrialSession { try store.appendTrialEvidence($0) }
+            trial=nil;trialPlan=nil;savingTrialPlan=false;savingTrialRevision=false;interruptingTrial=false;trialsStarted=0;trialSession=EEGTrialSession()
             try store.enqueueEvent(kind:"device_metadata",fields:metadata.mapValues{$0.map{String(format:"%02x",$0)}.joined()})
             try recordTransport(reason:"recording_start")
             event("Recording started: "+url.lastPathComponent)
@@ -333,11 +334,22 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     func cancelTrial(reason:String) {interruptTrial(reason:reason)}
     private func interruptTrial(reason: String) {
-        guard let trialSession,trialSession.active || trialSession.pending != nil else { return }
-        do { try trialSession.interrupt(reason: reason,at: recordingClock) }
-        catch {
-            // Do not recurse through storageFailed: a failed interruption has
-            // already invalidated the in-memory trial and may not be durable.
+        guard !interruptingTrial,let trialSession,trialSession.active || trialSession.pending != nil else {return}
+        do {
+            if trialSession.pending != nil {
+                try trialSession.invalidatePending(reason:reason,at:recordingClock)
+                throw EEGTrialSession.Failure.persistenceUnavailable
+            }
+            interruptingTrial=true
+            let generation=store?.generation
+            try submitTrialTransition({try $0.interrupt(reason:reason,at:$1)}) { [weak self] _ in
+                guard let self,self.store?.generation==generation else {return}
+                self.interruptingTrial=false
+            }
+        } catch {
+            interruptingTrial=false
+            // Uncertain evidence cannot be finalized. Do not recurse through
+            // storageFailed when interruption itself could not be persisted.
             store?.abort();recording=false;refreshRecordings()
             message="Trial evidence could not be saved: "+error.localizedDescription
         }

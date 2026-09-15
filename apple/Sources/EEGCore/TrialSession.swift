@@ -13,6 +13,9 @@ public final class EEGTrialSession {
     public private(set) var persistenceFailure: String?
     public private(set) var pending: Revision?
     private let persist: (EEGTrialEvidence) throws -> Void
+    /// Queued consumers prepare and acknowledge explicitly; synchronous calls
+    /// without an installed sink fail instead of silently accepting evidence.
+    public convenience init() {self.init(persist:{_ in throw Failure.persistenceUnavailable})}
     public init(persist: @escaping (EEGTrialEvidence) throws -> Void) { self.persist = persist }
     public var active: Bool {
         guard let trial else { return false }

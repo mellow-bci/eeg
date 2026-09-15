@@ -543,3 +543,47 @@ audio delivery, speech latency, headset quality or participant compliance.
 
 Validation: 122 tests, one opt-in load qualification skipped, zero failures;
 macOS, iOS and visionOS native builds passed.
+
+## Queued interruption and actual acquisition-model checks
+
+Normal interruption now prepares and queues the canonical interruption revision.
+An in-flight flag coalesces repeated cancel/transport-loss/stop calls until its
+acknowledgement. Stop Recording places its checkpoint and final barrier after the
+queued interruption. No synchronous trial sink is installed in the app anymore;
+EEGTrialSession's no-sink initializer supports explicit prepare/acknowledge only.
+Synchronous calls without a sink fail rather than accepting unsaved evidence.
+
+If another revision is already pending, interruption still invalidates and aborts
+the uncertain capture. It must not append a completion marker or publish a late
+start. Orderly process termination still waits for the final storage barrier;
+a permanently stalled device/filesystem may delay that shutdown.
+
+AcquisitionModel accepts an optional storage directory for isolated tests;
+production retains its existing Application Support location. App tests exercise
+the actual model and queued file store with declared synthetic lifecycle readiness,
+without initializing Bluetooth or playing audio. Repeated cancellation is checked
+against the resulting file: one planned revision, one interruption, then summary.
+A second test stops during pending start and checks rejection, zero started trials,
+interrupted state and no summary/finalized event. These are lifecycle tests, not
+proof of headset readiness or physiological results.
+
+The full acquisition test exposed a fractional-timestamp recovery issue: comparing
+sorted, reserialized JSON bytes rejected valid evidence after Foundation's numeric
+representation round trip. A deterministic fractional-time test reproduced it.
+Recovery now compares parsed JSON structure and values with exact Double equality,
+without a tolerance; booleans remain distinct from numeric zero/one, and unknown
+keys reject. The test checks the timestamp parsed from the supplied JSON, not a
+claim of bitwise preservation across arbitrary Foundation serialization steps.
+Original recording bytes are not rewritten. Extra-key and numeric-boolean
+rejection tests retain strict schema boundaries.
+
+A further fractional case showed that merely replacing byte equality was not
+enough: repeated NSDecimalNumber conversion could also drift the parsed value.
+Recovery now uses a small typed JSON decoder with direct Double parsing for both
+the supplied and reconstructed evidence. It keeps strict structural equality and
+exact numeric comparison, with no epsilon. Regression expectations use the same
+explicit Double parsing contract for the supplied JSON.
+
+Final validation: 126 tests, one opt-in qualification skipped, zero failures;
+macOS, iOS and visionOS builds passed. No physical headset or audio experiment
+was run. Shutdown waiting and physiological qualification remain outstanding.

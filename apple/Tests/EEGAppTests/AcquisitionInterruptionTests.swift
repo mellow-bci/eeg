@@ -1,0 +1,80 @@
+import XCTest
+import EEGCore
+@testable import EEGApp
+
+@MainActor
+final class AcquisitionInterruptionTests:XCTestCase {
+    private func waitUntil(_ condition:()->Bool) async throws {
+        for _ in 0..<200 {
+            if condition() {return}
+            try await Task.sleep(nanoseconds:10_000_000)
+        }
+        XCTFail("Timed out waiting for local persistence")
+    }
+    func testRepeatedCancelDrainsOneInterruptionBeforeSummary() async throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let model=AcquisitionModel(storageDirectory:directory)
+        // Synthetic lifecycle readiness only. Never initialize Bluetooth, emit
+        // audio, or assert physiological validity in this test.
+        model.ready=true;model.transportStable=true
+        model.startRecording()
+        XCTAssertTrue(model.recording)
+        try model.commitTrialPlan(participantID:"synthetic",sessionID:"isolated-test")
+        try await waitUntil {model.trialPlan != nil}
+        let planned=try model.nextPlannedTrial()
+        try await withCheckedThrowingContinuation { (continuation:CheckedContinuation<Void,Error>) in
+            do {try model.submitTrialBegin(planned) {continuation.resume(with:$0)}}
+            catch {continuation.resume(throwing:error)}
+        }
+        model.cancelTrial(reason:"operator_stopped")
+        XCTAssertTrue(model.savingTrialRevision)
+        model.cancelTrial(reason:"repeated_stop")
+        model.stopRecording()
+        XCTAssertTrue(model.finalizingRecording)
+        try await waitUntil {!model.finalizingRecording && !model.savingTrialRevision}
+        XCTAssertFalse(model.recording)
+        XCTAssertEqual(model.trial?.phase,.interrupted)
+        XCTAssertEqual(model.trial?.reviewReason,"operator_stopped")
+        let files=try FileManager.default.contentsOfDirectory(at:directory,includingPropertiesForKeys:nil)
+            .filter {$0.pathExtension=="jsonl"}
+        let url=try XCTUnwrap(files.first)
+        XCTAssertEqual(files.count,1)
+        let rows=try String(contentsOf:url).split(separator:"\n").map {
+            try JSONSerialization.jsonObject(with:Data($0.utf8)) as! [String:Any]
+        }
+        let revisions=rows.filter {$0["kind"] as? String == "trial_evidence"}
+        XCTAssertEqual(revisions.count,2)
+        let last=try XCTUnwrap(revisions.last?["evidence"])
+        let recovered=try EEGTrialEvidence.recover(JSONSerialization.data(withJSONObject:last))
+        XCTAssertEqual(recovered.phase,.interrupted)
+        XCTAssertEqual(recovered.reviewReason,"operator_stopped")
+        XCTAssertEqual(rows.last?["kind"] as? String,"summary")
+        XCTAssertTrue(model.events.contains {$0.contains("Recording finalized")})
+    }
+    func testStopDuringPendingStartCannotFinalizeOrPublishStart() async throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let model=AcquisitionModel(storageDirectory:directory)
+        model.ready=true;model.transportStable=true;model.startRecording()
+        try model.commitTrialPlan(participantID:"synthetic",sessionID:"cancel-start")
+        try await waitUntil {model.trialPlan != nil}
+        let completed=expectation(description:"invalidated start")
+        try model.submitTrialBegin(model.nextPlannedTrial()) { result in
+            if case .success=result {XCTFail("Cancelled start published")}
+            completed.fulfill()
+        }
+        model.stopRecording()
+        XCTAssertFalse(model.recording)
+        XCTAssertFalse(model.finalizingRecording)
+        await fulfillment(of:[completed],timeout:2)
+        XCTAssertEqual(model.trialsStarted,0)
+        XCTAssertEqual(model.trial?.phase,.interrupted)
+        let files=try FileManager.default.contentsOfDirectory(at:directory,includingPropertiesForKeys:nil)
+            .filter {$0.pathExtension=="jsonl"}
+        XCTAssertEqual(files.count,1)
+        XCTAssertFalse(try String(contentsOf:XCTUnwrap(files.first)).contains("\"summary\""))
+        XCTAssertFalse(model.events.contains {$0.contains("Recording finalized")})
+    }
+
+}
