@@ -14,12 +14,13 @@ struct TrialCaptureView: View {
     var body: some View {
         Panel(title: "Planned research session") {
             Text("Save a balanced 24-trial order before the first cue. Each trial requires fresh readiness, a report and review. Dataset export and physiological qualification remain pending.").foregroundStyle(.secondary)
-            TextField("Participant pseudonym", text: $participant).disabled(model.trialPlan != nil)
-            TextField("Independent session ID", text: $session).disabled(model.trialPlan != nil)
+            TextField("Participant pseudonym", text: $participant).disabled(model.trialPlan != nil || model.savingTrialPlan)
+            TextField("Independent session ID", text: $session).disabled(model.trialPlan != nil || model.savingTrialPlan)
             Button("Save session plan") {
                 do { try model.commitTrialPlan(participantID: participant,sessionID: session);error=nil }
                 catch { self.error=error.localizedDescription }
-            }.disabled(!model.recording || model.trialPlan != nil)
+            }.disabled(!model.recording || model.trialPlan != nil || model.savingTrialPlan)
+            if model.savingTrialPlan {ProgressView("Saving session plan")}
             if let plan=model.trialPlan {
                 Text("Seed: " + plan.seed).font(.caption.monospaced()).textSelection(.enabled)
                 Text("Trials started: \(model.trialsStarted) / 24. At least 10 seconds rest after review; 60 seconds after each block of eight.")

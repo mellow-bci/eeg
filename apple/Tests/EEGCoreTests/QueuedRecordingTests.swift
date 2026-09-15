@@ -225,4 +225,67 @@ final class QueuedRecordingTests: XCTestCase {
         XCTAssertEqual(writer.statistics.pendingInputs,0)
     }
 
+    private final class SyncGateOutput: EEGRecordingOutput {
+        let file:FileHandle, entered:DispatchSemaphore, release:DispatchSemaphore
+        let fail:Bool
+        init(_ file:FileHandle,entered:DispatchSemaphore,release:DispatchSemaphore,fail:Bool) {
+            self.file=file;self.entered=entered;self.release=release;self.fail=fail
+        }
+        func write(_ data:Data) throws {try file.write(contentsOf:data)}
+        func synchronize() throws {
+            entered.signal()
+            guard release.wait(timeout:.now()+5) == .success else {throw CocoaError(.fileWriteUnknown)}
+            if fail {throw CocoaError(.fileWriteOutOfSpace)}
+            try file.synchronize()
+        }
+        func close() throws {try file.close()}
+        func offset() throws -> UInt64 {try file.offset()}
+        func truncate(at offset:UInt64) throws {try file.truncate(atOffset:offset)}
+    }
+    func testAcknowledgedEventWaitsForSynchronization() throws {try checkAcknowledgement(fail:false)}
+    func testAcknowledgedEventReportsSynchronizationFailure() throws {try checkAcknowledgement(fail:true)}
+    private func checkAcknowledgement(fail:Bool) throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let raw=try EEGRecordingStore(directory:directory)
+        let entered=DispatchSemaphore(value:0),release=DispatchSemaphore(value:0),done=DispatchSemaphore(value:0)
+        raw.outputFactory={SyncGateOutput($0,entered:entered,release:release,fail:fail)}
+        let queue=DispatchQueue(label:"test.ack.writer")
+        let writer=try EEGQueuedRecordingStore(store:raw,queue:queue) {_,_ in XCTAssertTrue(fail)}
+        let url=try writer.start()
+        defer {release.signal();writer.abort();queue.sync {}}
+        try writer.enqueueEvent(kind:"annotation",fields:["text":"requires acknowledgement"]) { result in
+            switch result {
+            case .success: XCTAssertFalse(fail)
+            case .failure: XCTAssertTrue(fail)
+            }
+            done.signal()
+        }
+        XCTAssertEqual(entered.wait(timeout:.now()+2),.success)
+        XCTAssertEqual(done.wait(timeout:.now()+0.02),.timedOut)
+        release.signal()
+        XCTAssertEqual(done.wait(timeout:.now()+2),.success)
+        queue.sync {}
+        XCTAssertEqual(writer.statistics.failed,fail)
+        XCTAssertEqual(writer.statistics.writtenInputs,fail ? 0:1)
+        // Neither acknowledgement nor a partially written failed event means
+        // this recording has been finalized.
+        XCTAssertFalse(try String(contentsOf:url).contains("\"summary\""))
+    }
+    func testAbortedAcknowledgedEventCompletesWithFailure() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let queue=DispatchQueue(label:"test.ack.abort")
+        let writer=try EEGQueuedRecordingStore(store:EEGRecordingStore(directory:directory),queue:queue) {_,_ in XCTFail()}
+        _=try writer.start();queue.suspend()
+        let completed=expectation(description:"aborted acknowledgement")
+        try writer.enqueueEvent(kind:"annotation",fields:[:]) { result in
+            guard case .failure = result else {return XCTFail("Aborted event acknowledged")}
+            completed.fulfill()
+        }
+        writer.abort();queue.resume()
+        wait(for:[completed],timeout:2);queue.sync {}
+        XCTAssertEqual(writer.statistics.discardedInputs,1)
+    }
+
 }

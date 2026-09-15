@@ -9,6 +9,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     @Published var message: String?
     @Published var samples: [EEGSample] = []
     @Published private(set) var trialPlan: EEGTrialPlan?
+    @Published private(set) var savingTrialPlan = false
     @Published private(set) var trialsStarted = 0
     lazy var trialCues = TrialCueController(acquisition: self)
     @Published private(set) var trial: EEGTrialEvidence?
@@ -224,7 +225,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         guard ready,!recording,!finalizingRecording,!playback,fileOperation==nil,let store=store else { return }
         do {
             let url=try store.start();recording=true
-            trial=nil;trialPlan=nil;trialsStarted=0;trialSession=EEGTrialSession { try store.appendTrialEvidence($0) }
+            trial=nil;trialPlan=nil;savingTrialPlan=false;trialsStarted=0;trialSession=EEGTrialSession { try store.appendTrialEvidence($0) }
             try store.enqueueEvent(kind:"device_metadata",fields:metadata.mapValues{$0.map{String(format:"%02x",$0)}.joined()})
             try recordTransport(reason:"recording_start")
             event("Recording started: "+url.lastPathComponent)
@@ -260,13 +261,24 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     /// Uses exactly the receipt clock used by the decoder, not wall-clock time.
     var recordingClock: Double { ProcessInfo.processInfo.systemUptime-origin }
     func commitTrialPlan(participantID: String, sessionID: String) throws {
-        guard recording,trialPlan == nil,trial == nil,let store else { throw EEGTrialEvidence.Failure.invalidTransition }
+        guard recording,!savingTrialPlan,trialPlan == nil,trial == nil,let store else { throw EEGTrialEvidence.Failure.invalidTransition }
         let plan = try EEGTrialPlan(sessionID: sessionID,participantID: participantID,seed: UInt64.random(in: .min ... .max))
         let json = String(decoding: try JSONEncoder().encode(plan),as: UTF8.self)
+        savingTrialPlan=true
+        let generation=store.generation
         do {
-            try store.appendEvent(kind: "trial_plan",fields: ["json":json,"receivedAt":String(recordingClock)])
-            trialPlan=plan
-        } catch { storageFailed(error);throw error }
+            try store.enqueueEvent(kind: "trial_plan",fields: ["json":json,"receivedAt":String(recordingClock)]) { [weak self] result in
+                DispatchQueue.main.async {
+                    guard let self,self.store?.generation==generation else {return}
+                    self.savingTrialPlan=false
+                    guard self.recording else {return}
+                    switch result {
+                    case .success: self.trialPlan=plan
+                    case .failure(let error): self.storageFailed(error)
+                    }
+                }
+            }
+        } catch { savingTrialPlan=false;storageFailed(error);throw error }
     }
     func nextPlannedTrial() throws -> EEGTrialEvidence {
         guard let trialPlan else { throw EEGTrialEvidence.Failure.invalidTransition }

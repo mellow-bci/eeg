@@ -34,7 +34,7 @@ public final class EEGQueuedRecordingStore {
     }
     private var admitted=0, written=0, discarded=0, writeFailures=0, peakInputs=0, peakBytes=0
     private var maximumWait=0.0, maximumWrite=0.0
-    private enum Input { case sample(EEGSample), event(String,[String:String]) }
+    private enum Input { case sample(EEGSample), event(String,[String:String],Bool) }
     private let store: EEGRecordingStore
     private let queue: DispatchQueue
     private let notifications=DispatchQueue(label:"cloud.autonomy.eeg.recording.failures")
@@ -93,7 +93,11 @@ public final class EEGQueuedRecordingStore {
         }
         try enqueue(.sample(sample),cost:512)
     }
-    public func enqueueEvent(kind: String,fields: [String:String]) throws {
+    /// With onPersisted, completion follows write + filesystem synchronize, not
+    /// admission. Completion runs on the notification queue. This is not a
+    /// hardware power-loss guarantee. Rejected admission throws without callback.
+    public func enqueueEvent(kind: String,fields: [String:String],
+                             onPersisted: ((Result<Void,Error>)->Void)? = nil) throws {
         var cost=kind.utf8.count
         guard cost<=byteCapacity else { reject("event_capacity");throw Failure.admissionRejected }
         for (key,value) in fields {
@@ -102,9 +106,9 @@ public final class EEGQueuedRecordingStore {
                 cost+=count
             }
         }
-        try enqueue(.event(kind,fields),cost:max(1,cost))
+        try enqueue(.event(kind,fields,onPersisted != nil),cost:max(1,cost),completion:onPersisted)
     }
-    private func enqueue(_ input: Input,cost: Int) throws {
+    private func enqueue(_ input: Input,cost: Int,completion: ((Result<Void,Error>)->Void)? = nil) throws {
         lock.lock()
         guard active,!failed else { lock.unlock();throw Failure.aborted }
         guard pending<capacity,cost<=byteCapacity-bytes else {
@@ -116,18 +120,24 @@ public final class EEGQueuedRecordingStore {
         queue.async { [self] in
             defer {lock.lock();pending-=1;bytes-=cost;lock.unlock()}
             lock.lock();let usable=active && !failed;lock.unlock()
-            guard usable else {lock.lock();discarded+=1;lock.unlock();return}
+            guard usable else {
+                lock.lock();discarded+=1;lock.unlock()
+                if let completion {notifications.async {completion(.failure(Failure.aborted))}}
+                return
+            }
             let startedAt=ProcessInfo.processInfo.systemUptime
             lock.lock();maximumWait=max(maximumWait,startedAt-submittedAt);lock.unlock()
             do {
                 switch input {
                 case .sample(let sample): try store.append(sample:sample)
-                case .event(let kind,let fields): try store.appendEvent(kind:kind,fields:fields)
+                case .event(let kind,let fields,let synchronize): try store.appendEvent(kind:kind,fields:fields,synchronize:synchronize)
                 }
                 lock.lock();written+=1;maximumWrite=max(maximumWrite,ProcessInfo.processInfo.systemUptime-startedAt);lock.unlock()
+                if let completion {notifications.async {completion(.success(()))}}
             } catch {
                 lock.lock();writeFailures+=1;maximumWrite=max(maximumWrite,ProcessInfo.processInfo.systemUptime-startedAt);lock.unlock()
                 reject("recording_write_failed: \(error)")
+                if let completion {notifications.async {completion(.failure(error))}}
             }
         }
         lock.unlock()

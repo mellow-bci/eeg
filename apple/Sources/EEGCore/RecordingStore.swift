@@ -77,12 +77,15 @@ public final class EEGRecordingStore {
         catch { abortLocked(); throw error }
     }
 
-    public func appendEvent(kind: String, fields: [String: String]) throws {
+    public func appendEvent(kind: String, fields: [String: String], synchronize: Bool = false) throws {
         lock.lock(); defer { lock.unlock() }
         guard !kind.isEmpty, kind != "summary", kind != "stream_start", kind != "eeg_sample", kind != "trial_evidence", fields["kind"] == nil else { throw EEGRecordingError.invalidData }
         var event: [String: Any] = fields
         event["kind"] = kind
-        do { try writeEvent(event) } catch { abortLocked(); throw error }
+        do {
+            try writeEvent(event)
+            if synchronize {try writer?.synchronize()}
+        } catch { abortLocked(); throw error }
     }
 
     /// Persist each trial transition alongside original samples. Call from a file-I/O

@@ -406,3 +406,32 @@ validation; it is not a physiological or live Bluetooth timing qualification.
 
 macOS, iOS and visionOS native builds passed. The new queued-status wording is
 build-checked; no hardware run was initiated for this change.
+
+## Acknowledged asynchronous trial-plan save
+
+Trial-plan saving now enters the same bounded recording queue as samples with an
+onPersisted completion. This specific event requests write plus filesystem
+synchronize. The UI holds savingTrialPlan, disables duplicate saves and identity
+edits, and publishes the plan only after successful completion for the current
+recording generation while recording is still active. A stopped or replaced
+recording cannot have a late acknowledgement enable its trials. Failure goes
+through the existing storage-failure path.
+
+The store's canonical appendEvent now has an optional synchronize flag; ordinary
+events retain their previous write-only behavior. Queued events with onPersisted
+request synchronization and deliver their completion on the notification queue.
+Admission errors throw without a callback; admitted events discarded before
+writing complete with failure. An in-flight write/sync may complete after an
+abort, so success acknowledges that I/O only, not an active or finalized capture.
+Neither filesystem synchronization nor the callback guarantees hardware power-loss
+survival. Trial revision transitions remain synchronous and are the next pending
+acknowledgement lifecycle work.
+
+Three new tests hold synchronization behind a semaphore, verify no early success,
+release it successfully or with a storage error, and verify a discarded queued
+event reports failure. Ten recording-queue tests passed. These are injected I/O
+boundaries rather than physiological or device tests.
+
+Full validation: 110 tests, one opt-in load qualification skipped, zero failures;
+macOS, iOS and visionOS builds passed. The plan-saving UI is build-checked only;
+no fresh participant trial was performed.
