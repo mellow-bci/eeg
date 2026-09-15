@@ -38,8 +38,35 @@ final class TrainingDatasetTests: XCTestCase {
         XCTAssertEqual(Set(dataset.records.map(\.session_id)), ["a", "b"])
         let artifact = try EEGProfileCreation.train(dataset.records, participantID: dataset.participantID)
         XCTAssertEqual(Set(artifact.profile.trainingSessions), ["a", "b"])
-        XCTAssertFalse(try EEGReplayInference.run(store: store, recording: c, profile: artifact.profile, participantID: "synthetic", sessionID: "c").systemControlEnabled)
+        // Exercise the application's actual persistence boundary, not only
+        // the in-memory fitted object: save, reopen the library, revalidate.
+        let profileDirectory = directory.appendingPathComponent("Profiles")
+        let saved = try EEGProfileStore(directory: profileDirectory).save(artifact)
+        XCTAssertEqual(saved.id, artifact.profile.id)
+        let reopened = EEGProfileStore(directory: profileDirectory)
+        XCTAssertEqual(try reopened.entries().map(\.id), [artifact.profile.id])
+        let loaded = try reopened.load(artifact.profile.id)
+        XCTAssertEqual(try Data(contentsOf: profileDirectory.appendingPathComponent(loaded.id + ".json")), artifact.data)
+        let replayBefore = try EEGReplayInference.run(store: store, recording: c,
+            profile: artifact.profile, participantID: "synthetic", sessionID: "c")
+        let replayAfter = try EEGReplayInference.run(store: store, recording: c,
+            profile: loaded, participantID: "synthetic", sessionID: "c")
+        XCTAssertEqual(replayAfter.windows, replayBefore.windows)
+        XCTAssertEqual(replayAfter.windows.count, 20)
+        XCTAssertTrue(replayAfter.windows.allSatisfy { $0.status == "no_reliable_command" && !$0.systemControlEnabled })
+        XCTAssertFalse(replayAfter.systemControlEnabled)
         let receipt = try EEGEvaluationArtifact.run(manifest: manifestData, store: store, profile: artifact.profile)
+        let persistedReceipt = try EEGEvaluationArtifact.run(manifest: manifestData, store: store, profile: loaded)
+        XCTAssertEqual(persistedReceipt.data, receipt.data)
+        // Saving and reloading must not strip the learned-source exclusions.
+        for identity in ["a", "renamed-training-source"] {
+            XCTAssertThrowsError(try EEGReplayInference.run(store: store, recording: a,
+                profile: loaded, participantID: "synthetic", sessionID: identity)) { error in
+                    guard case EEGReplayInference.Failure.trainingRecording = error else {
+                        return XCTFail("Unexpected persisted-profile gate: \(error)")
+                    }
+                }
+        }
         let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
         XCTAssertEqual(receipt.trainingSourceAudit.status, "all_training_sources_present")
         XCTAssertEqual(receipt.trainingSourceAudit.matches.count, 2)

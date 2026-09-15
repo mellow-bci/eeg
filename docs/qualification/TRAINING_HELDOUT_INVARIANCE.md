@@ -39,3 +39,36 @@ independent acquisition, externally selected hyperparameters, or a model tuned
 after viewing evaluation results. Existing exact recording/excerpt reuse checks
 remain separate gates. No physiological classification, cross-session robustness,
 mental-command accuracy or system-control qualification follows from this test.
+
+## Connected save/reload and evaluation workflow
+
+The existing
+`testRecordingsAndLabelsTrainNativeProfileWithoutEvaluationLeakage` now exercises
+the actual profile-library boundary as part of the same workflow. Four finalized
+synthetic recordings contain 20 windows each: two training sessions (40 windows)
+and two held-out evaluation sessions (40 windows). Their labels are explicitly
+synthetic manifest inputs, not observed participant cue responses.
+
+After canonical extraction and fitting, the test calls `EEGProfileStore.save`,
+constructs a fresh store instance, lists its entry and reloads the profile through
+the validating loader. Stored bytes must equal the fitter's serialized artifact.
+The loaded profile must then produce exactly the same 20 replay-window results
+and byte-identical full evaluation receipt as the in-memory fitted profile.
+All replay windows retain `no_reliable_command` and disabled system control.
+
+The reloaded profile must reject a training recording both under its original
+session identity and under a different session name. Thus this connected fixture
+checks that persistence does not strip session/content exclusions or silently
+change the tested replay decisions or evaluation provenance.
+It does not replace the separate corrupt-profile and filesystem-failure tests.
+
+The extended test passed in 29.911 seconds on the local Debug build:
+
+```sh
+swift test --package-path apple --filter TrainingDatasetTests.testRecordingsAndLabelsTrainNativeProfileWithoutEvaluationLeakage
+```
+
+Only the temporary test library is used and removed. No application launch,
+headset capture, audio cues, real profile or Cast state was touched. This is
+connected software qualification, not a successful physiological mental-command
+experiment, native live-host qualification or proof of reliable command accuracy.
