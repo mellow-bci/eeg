@@ -21,6 +21,15 @@ The [manifest](../evidence/mental-command-reference/manifest.json) records addre
 | Sensitivity configuration | [`loadSensitivityFromConfig`, `0x100b3922c`](../evidence/mental-command-reference/sensitivity-config.txt): calls `Core::normalize(HeadsetType)`, traverses a keyed collection and copies a selected list to manager storage at offset `0xb90` | **High**: sensitivity configuration is selected by normalized headset type and stored as a list. | Actual list values, defaults/fallback behavior, index meaning and downstream effect on probability or thresholds. This body contains no universal sensitivity constant to copy. |
 | Score smoothing setup | [`ScoringManager::setLPF`, `0x100b5c6d0`](../evidence/mental-command-reference/scoring-lowpass.txt): creates two length-2 lists, loads their constants, and constructs `FilterTxf(int=1,list1,list2)` at `0x100b5c7c4`. [32-byte constant read](../evidence/mental-command-reference/scoring-coefficients.txt) gives `[0.2,0]` and `[1,-0.8]` | **High** for those exact coefficients and constructor arguments. **Conditional inference**: with conventional numerator/denominator interpretation these are consistent with exponential smoothing with weight `0.2`. | Actual `FilterTxf` update equation, reset state, update cadence and `ScoringManager::run` invocation gating. Do not claim a smoothing time constant or output latency from the coefficient alone. |
 
+## Follow-up caller trace
+
+[Caller and density-loop evidence](MENTAL_CALLER_DATAFLOW.md) now traces the
+canonical-transform argument to the classifier collection count, identifies
+weighted repeated density accumulation, and locates the posterior scalar in
+execution-object state. This narrows several unknowns in the initial table; it
+does not establish action mapping, normalized mixture semantics or sensitivity
+values. Our single diagonal Gaussian per class is explicitly distinct.
+
 ## What this establishes
 
 The selected classifier code contains a statistically structured feature-selection/PCA/canonical/Gaussian-density/posterior path, profile-backed neutral training state, headset-indexed sensitivity settings and an explicitly configured score filter. This supports learning from those architecture choices for our independently trained system.
