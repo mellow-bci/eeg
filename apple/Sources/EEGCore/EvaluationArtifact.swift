@@ -60,12 +60,14 @@ public struct EEGEvaluationArtifact: Sendable {
             "manifest_base64": manifest.base64EncodedString(),
             "manifest_sha256": SHA256.hash(data: manifest).map { String(format: "%02x", $0) }.joined(),
             "sources": sources, "predictions": predictions, "metrics": metrics,
+            "control_conditions_without_eligible_exposure": report.controlConditionsWithoutEligibleExposure,
             "trials": trials, "conditions": conditions, "session_conditions": sessionConditions, "rejection_fraction": report.rejectionFraction,
             "definitions": [
                 "time_axis": "recorded receipt-time seconds; window end is the last sample receipt",
                 "prediction": "experimental candidate or explicit neutral; null is rejection, not neutral",
                 "latency": "recorded cue completion to candidate input availability, not mental onset or live response",
                 "poisson_bound": "one-sided 95% upper bound; assumes constant independent event rate; unavailable for carry-ins or zero eligible exposure",
+                "control_coverage": "lists required artifact-control conditions with zero eligible exposure; an empty list does not establish adequate duration or qualification",
                 "session_conditions": "exposure and onset counts by session and condition; pooled rates can hide between-session variability",
                 "labels": "participant/operator declarations, not independent physiological ground truth",
                 "reproduction": "requires this manifest, the referenced original recordings and matching profile; verify both source digests"

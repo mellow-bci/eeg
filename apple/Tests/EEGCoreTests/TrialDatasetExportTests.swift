@@ -66,6 +66,10 @@ final class TrialDatasetExportTests: XCTestCase {
             XCTAssertNil(receipt.report.metrics["task"]?.recall)
             let condition = plan.trials[0].requestedCondition.rawValue
             XCTAssertEqual(Set(receipt.report.conditions.keys),Set([condition]))
+            let missing = Set(receipt.report.controlConditionsWithoutEligibleExposure)
+            XCTAssertEqual(missing,Set(["ordinary_activity","blink_control","jaw_control","head_movement_control"]).subtracting([condition]))
+            let receiptJSON = try JSONSerialization.jsonObject(with:receipt.data) as! [String:Any]
+            XCTAssertEqual(Set(receiptJSON["control_conditions_without_eligible_exposure"] as! [String]),missing)
             let exposure = try XCTUnwrap(receipt.report.conditions[condition])
             XCTAssertEqual(exposure.eligibleSeconds + exposure.rejectedSeconds + exposure.unarmedSeconds,6 * 255.0/128,accuracy:1e-10)
             XCTAssertThrowsError(try EEGEvaluationArtifact.run(manifest:data,store:store,profile:profile))

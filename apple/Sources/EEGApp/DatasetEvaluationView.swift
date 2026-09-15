@@ -34,6 +34,10 @@ struct DatasetEvaluationView: View {
                 Button("Export evaluation JSON", systemImage: "square.and.arrow.up") { exporting = true }
                 if let exportMessage { Text(exportMessage).font(.caption) }
                 LabeledContent("Scope", value: report.controlsOnly ? "Controls only" : "Full labeled evaluation")
+                if !report.controlConditionsWithoutEligibleExposure.isEmpty {
+                    Text("No eligible control exposure: " + report.controlConditionsWithoutEligibleExposure.map { $0.replacingOccurrences(of:"_",with:" ") }.joined(separator:", ")).font(.callout)
+                }
+                Text("Control coverage indicates presence only. Adequate duration and real artifact-response validation are still required.").font(.caption).foregroundStyle(.secondary)
                 LabeledContent("Evaluation windows", value: String(report.predictions.count))
                 LabeledContent("Rejected", value: report.rejectionFraction.formatted(.percent.precision(.fractionLength(1))))
                 ForEach(report.metrics.keys.sorted(), id: \.self) { label in

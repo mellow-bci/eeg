@@ -19,6 +19,12 @@ public struct EEGLabeledEvaluation: Sendable {
     public let trials: [EEGTrialTiming]
     public let conditions: [String: EEGConditionExposure]
     public let sessionConditions: [String: [String: EEGConditionExposure]]
+    /// Presence check only, not a duration or physiological qualification gate.
+    public var controlConditionsWithoutEligibleExposure: [String] {
+        ["ordinary_activity", "blink_control", "jaw_control", "head_movement_control"].filter {
+            (conditions[$0]?.eligibleSeconds ?? 0) <= 0
+        }
+    }
     public let systemControlEnabled = false
     public let hardwareValidated = false
     public var rejectionFraction: Double { Double(predictions.filter { $0.predictedLabel == nil }.count) / Double(predictions.count) }

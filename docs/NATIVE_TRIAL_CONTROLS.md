@@ -249,3 +249,18 @@ remains unqualified.
 
 This display change passed macOS, iOS and visionOS builds; no new physiological
 experiment was run.
+
+
+### Missing control exposure
+
+Native evaluation lists `control_conditions_without_eligible_exposure` in the
+receipt and UI: ordinary activity, blink, jaw and head-movement controls whose
+eligible duration is zero or absent. Rejected or unarmed exposure does not satisfy
+this presence check. The four-condition recording/export regression checks that
+each single-condition evaluation lists the other three as missing. This diagnostic
+does not enforce an arbitrary minimum duration and an empty list is not a pass,
+physiological validation, or permission to enable command output.
+
+Validation: both targeted export/evaluation tests passed, covering all four control
+conditions; macOS, iOS and visionOS builds passed. UI layout and real exposure
+qualification remain pending.
