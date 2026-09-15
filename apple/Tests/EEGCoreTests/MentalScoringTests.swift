@@ -18,6 +18,39 @@ final class MentalScoringTests: XCTestCase {
             for (a, e) in zip(actual.uncalibratedScores, c.scores) { XCTAssertEqual(a, e, accuracy: 1e-10) }
         }
     }
+    func testUnderflowedDensitiesNormalizeButCannotPromoteOutliers() throws {
+        // Independent analytic 1-D example: both ordinary Gaussian densities
+        // round to zero, but their likelihood ratio remains representable.
+        let parameters = EEGMentalScoringParameters(classes: ["neutral", "task"],
+            center: Array(repeating: 0, count: 70), scale: Array(repeating: 1, count: 70),
+            selected: [0], pca_mean: [0], components: [[1]], gaussians: [
+                .init(label: "neutral", mean: [0], variance: [1], distance_limit: 4),
+                .init(label: "task", mean: [1], variance: [1], distance_limit: 4)])
+        var values = Array(repeating: 0.0, count: 70)
+        values[0] = 50
+        XCTAssertEqual(exp(-0.5 * 50 * 50) / sqrt(2 * Double.pi), 0)
+        XCTAssertEqual(exp(-0.5 * 49 * 49) / sqrt(2 * Double.pi), 0)
+        let score = try EEGMentalScoring.score(values: values, parameters: parameters)
+        let ratio = exp(-49.5)
+        XCTAssertEqual(score.uncalibratedScores[0] / score.uncalibratedScores[1], ratio, accuracy: ratio * 1e-12)
+        XCTAssertTrue(score.uncalibratedScores.allSatisfy { $0.isFinite && $0 >= 0 })
+        XCTAssertEqual(score.uncalibratedScores.reduce(0, +), 1, accuracy: 1e-15)
+        XCTAssertEqual(score.candidateLabel, "task")
+        XCTAssertTrue(score.outsideTrainingDistribution)
+        var detector = try EEGExperimentalDetector(parameters: parameters, settings: ProcessingSettings(),
+            participantID: "synthetic", profileID: "analytic-underflow-test")
+        for index in 0..<4 {
+            let proposal = detector.infer(EEGInferenceWindow(values: values,
+                feature_config_id: EEGMentalFeatures.configurationID, artifact_flags: [], usable: true,
+                participant_id: "synthetic", session_id: "s", continuity_id: "segment-1",
+                window_id: String(index), start: Double(index * 2), end: Double(index * 2 + 2)))
+            XCTAssertEqual(proposal.reason, "out_of_training_distribution")
+            XCTAssertNil(proposal.experimentalCandidate)
+            XCTAssertNil(proposal.evidenceStart)
+            XCTAssertNil(proposal.command)
+            XCTAssertFalse(proposal.systemControlEnabled)
+        }
+    }
     func testInvalidAndExtremeFeaturesReject() throws {
         let f = try fixture()
         for values in [[Double](), [Double](repeating: .nan, count: 70), [Double](repeating: 1e308, count: 70)] {

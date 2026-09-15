@@ -30,6 +30,14 @@ execution-object state. This narrows several unknowns in the initial table; it
 does not establish action mapping, normalized mixture semantics or sensitivity
 values. Our single diagonal Gaussian per class is explicitly distinct.
 
+## Posterior arithmetic follow-up
+
+[Bounded posterior dataflow](MENTAL_POSTERIOR_DATAFLOW.md) identifies the
+selected-column minimum, appended scalar-weighted entry and shared denominator
+on the successful path. Helper semantics, neutral identity and sensitivity
+mapping remain unknown. It also records an independent underflow/outlier test;
+this does not change or equate the two algorithms.
+
 ## What this establishes
 
 The selected classifier code contains a statistically structured feature-selection/PCA/canonical/Gaussian-density/posterior path, profile-backed neutral training state, headset-indexed sensitivity settings and an explicitly configured score filter. This supports learning from those architecture choices for our independently trained system.
