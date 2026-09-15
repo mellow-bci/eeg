@@ -23,6 +23,10 @@ public struct EEGEvaluationArtifact: Sendable {
         var sourceAuditObject = try JSONSerialization.jsonObject(with: JSONEncoder().encode(trainingSourceAudit)) as! [String: Any]
         sourceAuditObject["status"] = trainingSourceAudit.status
         func nullable<T>(_ value: T?) -> Any { value.map { $0 as Any } ?? NSNull() }
+        func confusionObject(_ row: EEGLabeledEvaluation.ConfusionRow) -> [String: Any] {
+            ["predicted_counts": row.predictedCounts, "rejected_windows": row.rejectedWindows,
+             "actual_windows": row.actualWindows]
+        }
         let predictions: [[String: Any]] = zip(report.predictions, dataset.evaluation).map { prediction, row in
             ["window_id": prediction.windowID, "session_id": prediction.sessionID,
              "trial_id": prediction.trialID, "actual_label": prediction.actual,
@@ -88,7 +92,7 @@ public struct EEGEvaluationArtifact: Sendable {
             })
         }
         let object: [String: Any] = [
-            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-9",
+            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-10",
             "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
             "participant_id": dataset.participantID, "controls_only": report.controlsOnly,
@@ -104,6 +108,8 @@ public struct EEGEvaluationArtifact: Sendable {
             "session_trial_metrics": report.sessionTrialMetrics.mapValues { $0.mapValues(trialMetricObject) },
             "training_source_audit": sourceAuditObject,
             "sources": sources, "predictions": predictions, "metrics": metrics, "session_metrics": sessionMetrics,
+            "confusion": report.confusion.mapValues(confusionObject),
+            "session_confusion": report.sessionConfusion.mapValues { $0.mapValues(confusionObject) },
             "control_conditions_without_eligible_exposure": report.controlConditionsWithoutEligibleExposure,
             "trials": trials, "conditions": conditions, "session_conditions": sessionConditions, "rejection_fraction": report.rejectionFraction,
             "definitions": [
@@ -111,6 +117,7 @@ public struct EEGEvaluationArtifact: Sendable {
                 "detector_timing": "nonnegative receipt times; overlapping or reordered windows within the current session/continuity are rejected and reset persistence; forward gaps over 0.05 seconds restart persistence",
                 "always_neutral_baseline": "signal-free comparator predicts neutral for every evaluated window, including detector-rejected/unarmed windows; same labels and denominators, pooled and per session; cued-trial candidate observations are zero for task detection and neutral false positives, retaining unavailable cue evidence as null rates; not a trained model, significance test, qualification or control policy",
                 "prediction": "experimental candidate or explicit neutral; null is rejection, not neutral",
+                "confusion": "actual labels index rows; predicted_counts index predicted labels; rejected_windows is separate and includes every null prediction; raw counts retain absent classes as zeros; rows sum to actual_windows; pooled and per session; correlated windows are not independent trials",
                 "training_source_audit": "whole-content hash coverage of profile training sources among current manifest training sources; missing sources leave historical excerpt reuse unchecked; all present is not physiological or independence qualification",
                 "dataset_excerpt_check": "canonical-counter-adc-blocks-v1: scans every sample offset against 256-sample blocks of earlier manifest sessions; exact bytes confirm rolling-hash candidates; covers samples emitted by analysisWindows; no independence proof",
                 "class_rejection": "null predictions divided by windows of the actual class; includes unarmed and unusable windows; null rate when the class is absent",

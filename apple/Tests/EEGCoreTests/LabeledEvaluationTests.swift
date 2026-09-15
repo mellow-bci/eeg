@@ -3,6 +3,40 @@ import XCTest
 @testable import EEGCore
 
 final class LabeledEvaluationTests: XCTestCase {
+    func testMulticlassConfusionConservesWindowsAndSeparatesRejection() {
+        let pairs: [(String, String?)] = [("left", "right"), ("left", nil), ("left", "left"),
+            ("right", "neutral"), ("neutral", "left"), ("rejected", "rejected")]
+        let predictions = pairs.enumerated().map { index, pair in
+            EEGLabeledEvaluation.Prediction(windowID: String(index), sessionID: index % 2 == 0 ? "a" : "b", trialID: "t",
+                actual: pair.0, predictedLabel: pair.1, reason: "fixture", inputUsable: pair.1 != nil)
+        }
+        let classes = ["neutral", "left", "right", "rejected", "absent"]
+        let rows = EEGLabeledEvaluation.confusion(predictions, classes: classes)
+        XCTAssertEqual(rows["left"]?.predictedCounts["right"], 1)
+        XCTAssertEqual(rows["left"]?.rejectedWindows, 1)
+        XCTAssertEqual(rows["left"]?.actualWindows, 3)
+        XCTAssertEqual(rows["rejected"]?.predictedCounts["rejected"], 1)
+        XCTAssertEqual(rows["rejected"]?.rejectedWindows, 0)
+        XCTAssertEqual(rows["absent"]?.actualWindows, 0)
+        XCTAssertEqual(rows.values.reduce(0) { $0 + $1.actualWindows }, predictions.count)
+        let metrics = EEGLabeledEvaluation.summarize(predictions, classes: classes)
+        for label in classes {
+            XCTAssertEqual(rows[label]?.predictedCounts[label], metrics[label]?.truePositive)
+            XCTAssertEqual(rows[label]?.actualWindows, metrics[label]?.actualWindows)
+            XCTAssertEqual(rows[label]?.rejectedWindows, metrics[label]?.rejectedWindows)
+        }
+        XCTAssertEqual(EEGLabeledEvaluation.confusion(Array(predictions.reversed()), classes: classes), rows)
+        let report = EEGLabeledEvaluation(controlsOnly: false, profileID: "fixture", predictions: predictions,
+            metrics: metrics, trials: [], conditions: [:], sessionConditions: [:])
+        XCTAssertEqual(Set(report.sessionConfusion.keys), Set(["a", "b"]))
+        XCTAssertEqual(report.sessionConfusion["a"]?["left"]?.rejectedWindows, 0)
+        XCTAssertEqual(report.sessionConfusion["b"]?["left"]?.rejectedWindows, 1)
+        for actual in classes {
+            for predicted in classes {
+                XCTAssertEqual(report.sessionConfusion.values.reduce(0) { $0 + $1[actual]!.predictedCounts[predicted]! }, rows[actual]!.predictedCounts[predicted])
+            }
+        }
+    }
     func testClassRejectionDistinguishesWrongLabelNeutralAndMissingClass() throws {
         let pairs:[(String,String?)] = [("task",nil),("task","neutral"),("task","task"),("neutral","neutral")]
         let predictions = pairs.enumerated().map { index,pair in
@@ -197,7 +231,13 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertEqual(receipt.data, try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile).data)
         let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
         XCTAssertEqual(object["controls_only"] as? Bool, true)
-        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-9")
+        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-10")
+        let confusion = object["confusion"] as! [String: [String: Any]]
+        XCTAssertEqual(confusion.values.reduce(0) { $0 + ($1["actual_windows"] as! Int) }, report.predictions.count)
+        let sessionConfusion = object["session_confusion"] as! [String: [String: [String: Any]]]
+        for (session, rows) in sessionConfusion {
+            XCTAssertEqual(rows.values.reduce(0) { $0 + ($1["actual_windows"] as! Int) }, report.predictions.filter { $0.sessionID == session }.count)
+        }
         let sessions = try XCTUnwrap(object["session_conditions"] as? [String: [String: [String: Any]]])
         XCTAssertEqual(Set(sessions.keys),Set(report.sessionConditions.keys))
         for (session, conditions) in report.sessionConditions {

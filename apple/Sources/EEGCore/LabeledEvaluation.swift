@@ -17,6 +17,33 @@ public struct EEGLabeledEvaluation: Sendable {
     public var sessionMetrics: [String: [String: Metric]] {
         Dictionary(grouping: predictions, by: \.sessionID).mapValues { Self.summarize($0,classes:Array(metrics.keys)) }
     }
+    public struct ConfusionRow: Sendable, Equatable {
+        public let predictedCounts: [String: Int]
+        public let rejectedWindows: Int
+        public var actualWindows: Int { predictedCounts.values.reduce(0, +) + rejectedWindows }
+    }
+    public var confusion: [String: ConfusionRow] {
+        Self.confusion(predictions, classes: Array(metrics.keys))
+    }
+    public var sessionConfusion: [String: [String: ConfusionRow]] {
+        Dictionary(grouping: predictions, by: \.sessionID).mapValues {
+            Self.confusion($0, classes: Array(metrics.keys))
+        }
+    }
+    /// Actual labels form rows; predicted labels form columns. Rejection is a
+    /// separate count, never a reserved label that can collide with a command.
+    static func confusion(_ predictions: [Prediction], classes: [String]) -> [String: ConfusionRow] {
+        let labels = Set(classes).union(predictions.map(\.actual)).union(predictions.compactMap(\.predictedLabel))
+        var counts = Dictionary(uniqueKeysWithValues: labels.map { ($0, Dictionary(uniqueKeysWithValues: labels.map { ($0, 0) })) })
+        var rejected = [String: Int]()
+        for row in predictions {
+            if let predicted = row.predictedLabel { counts[row.actual]![predicted]! += 1 }
+            else { rejected[row.actual, default: 0] += 1 }
+        }
+        return Dictionary(uniqueKeysWithValues: counts.map { label, columns in
+            (label, ConfusionRow(predictedCounts: columns, rejectedWindows: rejected[label, default: 0]))
+        })
+    }
     /// Signal-free comparator: predicts neutral for every evaluated window,
     /// including windows rejected by the learned detector. It is not another model.
     public var alwaysNeutralMetrics: [String: Metric] {

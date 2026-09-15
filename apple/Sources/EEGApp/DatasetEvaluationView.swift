@@ -95,6 +95,7 @@ struct DatasetEvaluationView: View {
                     Text("Window comparisons are descriptive. Correlated windows are not independent trials; this does not establish significance or physiological validity.").font(.caption)
                 }
                 LabeledContent("Evaluation windows", value: String(report.predictions.count))
+                confusionSummary(report.confusion)
                 LabeledContent("Rejected", value: report.rejectionFraction.formatted(.percent.precision(.fractionLength(1))))
                 ForEach(report.metrics.keys.sorted(), id: \.self) { label in
                     let metric = report.metrics[label]!
@@ -124,6 +125,7 @@ struct DatasetEvaluationView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(session).font(.headline).textSelection(.enabled)
                             let metrics = metricsBySession[session] ?? [:]
+                            confusionSummary(report.sessionConfusion[session] ?? [:])
                             ForEach(metrics.keys.sorted(),id: \.self) { label in
                                 let metric = metrics[label]!
                                 Text("\(label): precision \(percent(metric.precision)) · recall \(percent(metric.recall)) · TP \(metric.truePositive) / FP \(metric.falsePositive) / FN \(metric.falseNegative) · rejected \(metric.rejectedWindows) / \(metric.actualWindows) (\(percent(metric.rejectionFraction)))").font(.caption).monospacedDigit()
@@ -171,6 +173,21 @@ struct DatasetEvaluationView: View {
             switch result {
             case .success: exportMessage = "Evaluation receipt exported. Keep the matching profile and original recordings for reproduction."
             case .failure(let error): failure = "Export failed: \(error.localizedDescription)"
+            }
+        }
+    }
+    private func confusionSummary(_ rows: [String: EEGLabeledEvaluation.ConfusionRow]) -> some View {
+        DisclosureGroup("Command confusion — window counts") {
+            Text("Each row is a declared actual label. Columns count predicted labels; rejection is separate. These are correlated windows, not independent trials.").font(.caption)
+            ForEach(rows.keys.sorted(), id: \.self) { actual in
+                let row = rows[actual]!
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Actual: \(actual) · \(row.actualWindows) windows").font(.headline)
+                    ForEach(row.predictedCounts.keys.sorted(), id: \.self) { predicted in
+                        LabeledContent("Predicted: \(predicted)", value: String(row.predictedCounts[predicted]!))
+                    }
+                    LabeledContent("Rejected (no prediction)", value: String(row.rejectedWindows))
+                }.monospacedDigit()
             }
         }
     }
