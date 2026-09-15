@@ -4,7 +4,7 @@ import EEGCore
 struct ProfileLibraryView: View {
     @EnvironmentObject private var model: AcquisitionModel
     let revision: Int
-    let onOpen: (EEGMentalProfile) -> Void
+    let onOpen: (String) -> Void
     @State private var entries: [EEGProfileStore.Entry] = []
     @State private var busy = false
     @State private var refreshPending = false
@@ -27,7 +27,7 @@ struct ProfileLibraryView: View {
                         Text(entry.modified, style: .date).font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Button("Inspect") { open(entry.id) }.disabled(busy)
+                    Button("Inspect") { onOpen(entry.id) }.disabled(busy)
                         .accessibilityLabel("Inspect profile \(entry.id)")
                 }
             }
@@ -47,20 +47,6 @@ struct ProfileLibraryView: View {
             switch result {
             case .success(let values): entries = values
             case .failure(let error): entries = []; failure = "Profile library unavailable: \(error)"
-            }
-            if refreshPending { refresh() }
-        }
-    }
-    private func open(_ id: String) {
-        guard !busy else { return }
-        let store = store
-        busy = true; failure = nil
-        Task { @MainActor in
-            let result = await Task.detached(priority: .utility) { Result { try store.load(id) } }.value
-            busy = false
-            switch result {
-            case .success(let profile): onOpen(profile)
-            case .failure(let error): failure = "Saved profile rejected: \(error)"
             }
             if refreshPending { refresh() }
         }

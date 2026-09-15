@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 import EEGCore
 
 struct ProfileInspectionView: View {
+    @EnvironmentObject private var model: AcquisitionModel
     @State private var importing = false
     @State private var loading = false
     @Binding var profile: EEGMentalProfile?
@@ -11,7 +12,10 @@ struct ProfileInspectionView: View {
     @State private var failure: String?
     var body: some View {
         Panel(title: "Independent training profile") {
-            ProfileLibraryView(revision: libraryRevision) { profile = $0; failure = nil }
+            ProfileLibraryView(revision: libraryRevision) { id in
+                let store = EEGProfileStore(directory: model.directory.deletingLastPathComponent().appendingPathComponent("Profiles", isDirectory: true))
+                loadProfile { try store.load(id) }
+            }.disabled(loading || importing)
             HStack {
                 Button("Open profile", systemImage: "doc.badge.plus") { importing=true }.disabled(loading || importing)
                 if loading { ProgressView().controlSize(.small) }
@@ -42,20 +46,23 @@ struct ProfileInspectionView: View {
         switch result {
         case .failure(let error): failure = error.localizedDescription
         case .success(let url):
-            loading = true; profile = nil; failure = nil
-            Task { @MainActor in
-                let result = await Task.detached(priority: .userInitiated) {
-                    Result { () throws -> EEGMentalProfile in
-                        let access = url.startAccessingSecurityScopedResource()
-                        defer { if access { url.stopAccessingSecurityScopedResource() } }
-                        return try EEGProfileStore.readDocument(url)
-                    }
-                }.value
-                loading = false
-                switch result {
-                case .success(let value): profile = value
-                case .failure(let error): failure = "Profile rejected: \(error)"
-                }
+            loadProfile {
+                let access = url.startAccessingSecurityScopedResource()
+                defer { if access { url.stopAccessingSecurityScopedResource() } }
+                return try EEGProfileStore.readDocument(url)
+            }
+        }
+    }
+    /// Both file import and the local library share one in-flight selection.
+    private func loadProfile(_ load: @escaping @Sendable () throws -> EEGMentalProfile) {
+        guard !loading else { return }
+        loading = true; profile = nil; failure = nil
+        Task { @MainActor in
+            let result = await Task.detached(priority: .userInitiated) { Result { try load() } }.value
+            loading = false
+            switch result {
+            case .success(let value): profile = value
+            case .failure(let error): failure = "Profile rejected: \(error)"
             }
         }
     }

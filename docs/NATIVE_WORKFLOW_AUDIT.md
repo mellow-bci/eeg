@@ -743,3 +743,19 @@ All eleven TrialCueControllerTests pass. These tests verify controller callback
 invalidation, not real speaker audibility, operating-system scheduling, or durable
 storage cancellation. No production algorithm or acquisition code changed; no
 physical headset or participant session was used.
+
+## 2026-09-15 — One profile inspection loader
+
+Saved-library inspection and external profile import formerly owned independent
+asynchronous loading flags. Code inspection found that both could run at once,
+with the last completion replacing the displayed profile. The library now passes
+its selected identity to the inspection view, which owns one guarded loading
+operation for both sources. Selection controls are disabled during import/loading;
+the previous inspection is cleared when loading starts. Saved profiles still use
+`EEGProfileStore.load` (including filename/content identity checking), while
+external documents retain security-scoped access and document validation.
+
+This removes duplicate selection/publication paths without changing profile
+validation or inference. The race was identified by code inspection, not an
+interactively reproduced failure. Native builds on macOS, iOS and visionOS are
+the validation scope; no hardware or physiological qualification is implied.
