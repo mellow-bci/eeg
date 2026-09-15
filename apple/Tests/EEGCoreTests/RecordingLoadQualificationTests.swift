@@ -102,4 +102,91 @@ final class RecordingLoadQualificationTests: XCTestCase {
         // Do not silently overwrite an earlier qualification report.
         try JSONSerialization.data(withJSONObject:report,options:[.prettyPrinted,.sortedKeys]).write(to:output,options:.withoutOverwriting)
     }
+    func testPacedRecordingWithInference() throws {
+        let environment=ProcessInfo.processInfo.environment
+        guard let reportPath=environment["EEG_CONCURRENT_LOAD_REPORT"] else {
+            throw XCTSkip("Set EEG_CONCURRENT_LOAD_REPORT for concurrent qualification")
+        }
+        guard let duration=Double(environment["EEG_RECORDING_LOAD_SECONDS"] ?? "10"),
+              duration.isFinite,duration>=2,duration<=3600 else {return XCTFail("Duration must be 2...3600 seconds")}
+        let fixture=URL(fileURLWithPath:#filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("Fixtures/spectrum/mental-profile.json")
+        let profile=try EEGMentalProfile.load(data:Data(contentsOf:fixture))
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let writer=try EEGQueuedRecordingStore(directory:directory) {_,reason in XCTFail(reason)}
+        let url=try writer.start()
+        let queue=DispatchQueue(label:"qualification.concurrent.inference")
+        var results=[EEGWindowInferenceResult](),delays=[Double]()
+        let start=ProcessInfo.processInfo.systemUptime
+        let consumer=try EEGLiveInference(profile:profile,participantID:profile.participantID,sessionID:"synthetic-concurrent",
+            maximumPendingInputs:512,queue:queue) {output in
+            XCTAssertNil(output.failure)
+            guard let window=output.window else {return}
+            results.append(window)
+            if let end=window.inputEnd {delays.append(ProcessInfo.processInfo.systemUptime-start-end)}
+            do {try writer.enqueueEvent(kind:"qualification_inference",fields:["ordinal":String(window.ordinal),"synthetic":"true"])}
+            catch {XCTFail("Inference result recording failed: \(error)")}
+        }
+        defer {consumer.stop()}
+        let metadata=["81072f44-9f3d-11e3-a9dc-0002a5d5c51b":"018000102010"]
+        try writer.enqueueEvent(kind:"device_metadata",fields:metadata)
+        try writer.enqueueEvent(kind:"transport_status",fields:["status":"stable"])
+        XCTAssertTrue(consumer.submit(.event(try JSONSerialization.data(withJSONObject:metadata.merging(["kind":"device_metadata"]) {_,new in new}))))
+        XCTAssertTrue(consumer.submit(.event(Data("{\"kind\":\"transport_status\",\"status\":\"stable\"}".utf8))))
+        let count=Int(duration*128)
+        var admission=[Double](),peakPending=0
+        for index in 0..<count {
+            let remaining=start+Double(index)/128-ProcessInfo.processInfo.systemUptime
+            if remaining>0 {Thread.sleep(forTimeInterval:remaining)}
+            let began=ProcessInfo.processInfo.systemUptime
+            let word=UInt16(31200+Int(50*sin(Double(index)*0.5)))
+            let adc=Dictionary(uniqueKeysWithValues:EEGRecordingStore.channels.map {($0,Double(word))})
+            let sample=EEGSample(index:index,counter:index%128,receivedAt:Double(index)/128,continuous:true,
+                adcWords:[UInt16](repeating:word,count:15),electrodesADC:adc,
+                electrodesMicrovolts:adc.mapValues {$0/7.8},notificationSlot:0,recordFlag:0)
+            try writer.enqueue(sample:sample)
+            XCTAssertTrue(consumer.submit(.sample(sample)))
+            peakPending=max(peakPending,consumer.pendingInputs)
+            admission.append(ProcessInfo.processInfo.systemUptime-began)
+        }
+        queue.sync {}
+        let beforeFinish=ProcessInfo.processInfo.systemUptime
+        try writer.finish()
+        let finishSeconds=ProcessInfo.processInfo.systemUptime-beforeFinish
+        let store=try EEGRecordingStore(directory:directory)
+        let replay=try EEGReplayInference.run(store:store,recording:url,profile:profile,
+            participantID:profile.participantID,sessionID:"synthetic-concurrent",maximumWindows:count/256+1)
+        // A trailing partial window exists only in finalized replay; live input
+        // has not received it as a complete window.
+        XCTAssertEqual(results,Array(replay.windows.prefix(results.count)))
+        XCTAssertEqual(results.count,count/256)
+        var verified=0
+        _=try store.finalizedRecords(recording:url) {_,sample in
+            guard let sample else {return}
+            XCTAssertEqual(sample.index,verified)
+            XCTAssertEqual(sample.receivedAt,Double(verified)/128)
+            let word=UInt16(31200+Int(50*sin(Double(verified)*0.5)))
+            XCTAssertEqual(sample.adcWords,[UInt16](repeating:word,count:15))
+            verified+=1
+        }
+        XCTAssertEqual(verified,count)
+        let stats=writer.statistics
+        XCTAssertEqual(stats.writtenInputs,2+count+results.count)
+        XCTAssertEqual(stats.failedWrites,0);XCTAssertEqual(stats.discardedInputs,0)
+        XCTAssertEqual(consumer.pendingInputs,0)
+        func p99(_ values:[Double])->Double {values.sorted()[Int(Double(values.count-1)*0.99)]}
+        let report:[String:Any]=[
+            "schema":"eeg.concurrent-load-qualification.v1","synthetic":true,"hardware_validated":false,
+            "duration_seconds":duration,"samples_verified":verified,"windows_matched_to_replay":results.count,
+            "profile_id":profile.id,"os":ProcessInfo.processInfo.operatingSystemVersionString,
+            "admission_seconds_p99":p99(admission),"inference_availability_delay_seconds_p99":p99(delays),
+            "inference_availability_delay_seconds_max":delays.max()!,"finish_drain_seconds":finishSeconds,
+            "observed_peak_pending_inference_inputs":peakPending,"peak_pending_recording_inputs":stats.peakPendingInputs,
+            "written_inputs":stats.writtenInputs,"failed_writes":stats.failedWrites,"discarded_inputs":stats.discardedInputs,
+            "limitations":["Synthetic 128 Hz receipt schedule, not Bluetooth", "No app main-queue presentation or audio timing",
+                "Delay includes producer scheduling plus worker processing; not isolated classifier time",
+                "No physiological validity; artifact/model rejections remain legitimate outputs", "No process RSS measurement"]]
+        try JSONSerialization.data(withJSONObject:report,options:[.prettyPrinted,.sortedKeys]).write(to:URL(fileURLWithPath:reportPath),options:.withoutOverwriting)
+    }
+
 }

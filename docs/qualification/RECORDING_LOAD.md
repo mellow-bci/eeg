@@ -73,3 +73,45 @@ absorbed a roughly 103 ms write delay in this run; low admission percentiles do
 not imply bounded disk latency. Producer lateness p99 was 3.850 ms and 0.925 ms,
 respectively. No RSS, Bluetooth or concurrent classifier measurement was made.
 One minute per rate still does not qualify long-session or crash reliability.
+
+## Concurrent recording and inference harness
+
+`testPacedRecordingWithInference` is separately opt-in. It uses 128 Hz synthetic
+calibrated samples, a validated experimental fixture profile, the live inference
+consumer and the queued recorder concurrently. Each inference output also queues
+an event in the recording. The producer follows a monotonic schedule. After
+completion, every full live window must equal canonical finalized replay; sample
+indices, timestamps and raw words are checked, along with queue failure counts.
+A partial trailing replay window is not compared as a completed live window.
+
+```sh
+EEG_CONCURRENT_LOAD_REPORT=/tmp/eeg-concurrent-load.json \
+EEG_RECORDING_LOAD_SECONDS=60 \
+swift test -c release --package-path apple \
+  --filter RecordingLoadQualificationTests.testPacedRecordingWithInference
+```
+
+Duration is 2...3600 seconds. Output delay is measured from the synthetic last
+sample's scheduled availability to worker output, so it includes host scheduling
+and processing. It is not isolated classifier time or the app's main-queue
+presentation delay. Inputs are synthetic; this does not qualify Bluetooth,
+physiological performance, or resident memory use. The observed queue peak is
+sampled by the producer and may miss shorter excursions. Reports are diagnostic;
+passing assertions, not report existence, establish this software check.
+
+### 2026-09-15 concurrent one-minute result
+
+Core source `f5cfa0f`, with the concurrent harness added in this change; release
+Swift test on macOS 26.6.2 (25G83). One selected test passed in 60.752 seconds,
+zero failures. Raw report: [concurrent-load-60s-20260915.json](concurrent-load-60s-20260915.json).
+
+- 7,680 samples verified; all 30 full inference windows matched finalized replay.
+- 7,712 inputs written (samples, metadata/stability, inference events); zero
+  discarded inputs and zero failed writes.
+- Producer admission p99: 0.182 ms; inference availability delay p99: 6.148 ms,
+  maximum: 6.504 ms. These timings have the scope described above.
+- Observed inference queue peak: 2; recording queue peak: 4; final drain: 1.266 ms.
+
+The report covers only this one-minute synthetic host run. It does not establish
+long-duration memory stability, physical headset behavior, UI latency or a
+physiologically useful classifier. No runtime algorithm or output gate changed.
