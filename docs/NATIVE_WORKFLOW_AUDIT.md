@@ -182,3 +182,35 @@ closed. It was opened from the repository, not copied into the saved-profile
 library. No hardware connection, cue, physiological experiment or command was
 started. Persistence across application restart and other document pickers remain
 to be exercised. Three native platform builds passed for the panel change.
+
+## Bounded recording writer integrated
+
+`EEGQueuedRecordingStore` now owns the native acquisition writer and serializes
+all writes through the existing `EEGRecordingStore` format/validation. Normal
+BLE notifications, decoded samples, decode errors and transport status enqueue
+without waiting for disk I/O. The default admission limits are 1024 inputs and
+4 MiB of accounted logical payload, configurable at construction. Samples use
+fixed channel cardinality and a 512-byte logical charge; event charges count
+UTF-8 key/value bytes. These are admission bounds, not exact heap/RSS bounds.
+
+Admission is not persistence. Trial evidence, annotations, shadow events and
+finish use ordered synchronous barriers: earlier admitted measurements precede
+them, and trial acknowledgement retains the store's write/synchronize guarantee.
+These less frequent barriers can still block the UI, especially on a stalled
+disk. A fully asynchronous control/cue acknowledgement design remains unfinished.
+Calls must come from one host executor; the native host uses its main executor.
+
+Overload, invalid admission or asynchronous write failure invalidates the writer,
+discards pending work and aborts without a summary. The incomplete file preserves
+whatever was successfully written; it is not presented as a complete capture.
+A generation-tagged failure callback prevents an old failure from aborting a new
+recording. The native host stops the recording and trial/shadow workflow on error.
+Abort/finish also remain synchronous barriers. Process termination can lose
+queued measurements and leaves the recording incomplete; no power-loss guarantee.
+
+Tests exercise ordered samples/events and trial sample-count acknowledgement,
+finish draining, count and byte overload, injected disk failure, lack of a false
+completion marker, accounting release and a new generation after abort. The full
+suite passed 100 tests; the strengthened trial-order check was then rerun in the
+focused queue suite. Three platform builds passed. Physical stream throughput,
+long-duration memory, stalls, shutdown and cue timing require qualification.

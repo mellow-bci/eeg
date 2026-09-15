@@ -484,7 +484,7 @@
       },
       "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
       "missing_parameters_assets_dependencies": "Native durability/failure-status qualification, indexed library and prolonged recording tests.",
-      "current_implementation": "Native append-only JSONL raw/sample/event records, completion/schema validation, library review, bounded replay/CSV export and analysis. Shared reads detect size/timestamp or named-inode changes and reject provisional results. Python archive and RecordingLibrary also exist; cue markers and reference Parquet recovery remain research evidence. Trial transitions and plans are recorded and recovered with shared revision checks; aborted writers omit completion. Failed summary writes/flushes attempt rollback and expose uncertainty if rollback fails.",
+      "current_implementation": "Native append-only JSONL raw/sample/event records, completion/schema validation, library review, bounded replay/CSV export and analysis. Shared reads detect size/timestamp or named-inode changes and reject provisional results. Python archive and RecordingLibrary also exist; cue markers and reference Parquet recovery remain research evidence. Trial transitions and plans are recorded and recovered with shared revision checks; aborted writers omit completion. Failed summary writes/flushes attempt rollback and expose uncertainty if rollback fails. Native acquisition uses a bounded serial recording queue for high-rate writes; control and trial writes remain synchronous ordered barriers. Offline queue tests cover order, overload, disk failure, incomplete abort and restart; physical throughput is unqualified.",
       "target_component": "One recording service owns acquisition, metadata, markers, library index and completion/failure state.",
       "acceptance_gate": "Disk failure/crash recovery, exclusive private writes, schema/count validation, corruption reporting and complete export round trips.",
       "delivery_notes": "Core implemented; long-session durability/indexing qualification pending.",
@@ -493,6 +493,8 @@
       "software_evidence": [
         "apple/Sources/EEGCore/RecordingStore.swift",
         "apple/Sources/EEGCore/RecordingOutput.swift",
+        "apple/Sources/EEGCore/QueuedRecordingStore.swift",
+        "apple/Tests/EEGCoreTests/QueuedRecordingTests.swift",
         "apple/Tests/EEGCoreTests/RecordingCompletionTests.swift",
         "apple/Tests/EEGCoreTests/TrialRecoveryTests.swift"
       ]

@@ -40,7 +40,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     private var metadata: [String: Data] = [:]
     private var pendingMetadata = Set<String>()
     private var dataCharacteristic: CBCharacteristic?
-    private var store: EEGRecordingStore?
+    private var store: EEGQueuedRecordingStore?
     private var scanTimer: Timer?
     private var freshnessTimer: Timer?
     private var connectionTimer: Timer?
@@ -60,7 +60,15 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     override init() {
         directory = FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0].appendingPathComponent("EEG/Recordings",isDirectory:true)
         super.init()
-        do { store = try EEGRecordingStore(directory:directory); refreshRecordings() } catch { message=error.localizedDescription }
+        do {
+            store = try EEGQueuedRecordingStore(directory:directory) { [weak self] generation,reason in
+                DispatchQueue.main.async {
+                    guard let self,self.recording,self.store?.generation==generation else {return}
+                    self.storageFailed(NSError(domain:"EEGRecordingQueue",code:1,userInfo:[NSLocalizedDescriptionKey:reason]))
+                }
+            }
+            refreshRecordings()
+        } catch { message=error.localizedDescription }
         // Bluetooth is initialized only when the user chooses Find headset.
         freshnessTimer=Timer.scheduledTimer(withTimeInterval:0.25,repeats:true) { [weak self] _ in
             guard let self=self, let last=self.lastArrival, self.ready else { return }
@@ -144,14 +152,14 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         if let error=error { fail(error);return };guard let data=characteristic.value,decoder != nil else { return }
         let now=ProcessInfo.processInfo.systemUptime
         do {
-            if recording { try store?.appendEvent(kind:"ble_notification",fields:["hex":data.map{String(format:"%02x",$0)}.joined(),"receivedAt":String(now-origin)]) }
+            if recording { try store?.enqueueEvent(kind:"ble_notification",fields:["hex":data.map{String(format:"%02x",$0)}.joined(),"receivedAt":String(now-origin)]) }
         } catch { storageFailed(error);return }
         let decoded:[EEGSample]
         do { decoded=try decoder!.decode(packet:data,receivedAt:now-origin) }
         catch {
             decodeErrors+=1;setTransport(false,reason:"rejected_packet",receivedAt:now-origin);stableSince=nil;contiguous=0;lastArrival=now
             event("Rejected packet: "+error.localizedDescription)
-            do { if recording { try store?.appendEvent(kind:"decode_error",fields:["message":error.localizedDescription,"receivedAt":String(now-origin)]) } }
+            do { if recording { try store?.enqueueEvent(kind:"decode_error",fields:["message":error.localizedDescription,"receivedAt":String(now-origin)]) } }
             catch { storageFailed(error) }
             return
         }
@@ -165,7 +173,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         if now-lastPreviewUpdate >= 0.1,!playback { samples=previewBuffer;lastPreviewUpdate=now }
         do {
             for sample in decoded {
-                if recording { try store?.append(sample:sample) }
+                if recording { try store?.enqueue(sample:sample) }
                 if let shadow,!shadow.submit(.sample(sample)) { stopShadow(reason:"inference_overload") }
                 let slot=Int(sample.counter)%64
                 if metadata[configID]==Data([1,128,0,16,32,16]),slot<14,sample.adcWords.count==15 { contactRaw[Self.channels[slot]]=sample.adcWords[7] }
@@ -173,7 +181,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         } catch { storageFailed(error) }
     }
     private func recordTransport(reason:String,receivedAt:Double?=nil) throws {
-        try store?.appendEvent(kind:"transport_status",fields:["status":transportStable ? "stable":"recovering",
+        try store?.enqueueEvent(kind:"transport_status",fields:["status":transportStable ? "stable":"recovering",
             "reason":reason,"receivedAt":String(receivedAt ?? (ProcessInfo.processInfo.systemUptime-origin)),
             "calibrated":String(decoder?.voltageDivisor != nil),"physiology_validated":"false"])
     }
