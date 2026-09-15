@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise the native CLI with generated synthetic recordings, never a headset."""
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -21,8 +22,32 @@ with tempfile.TemporaryDirectory(prefix="eeg-native-cli-") as temporary:
     assert result.returncode == 0, result.stderr.decode()
     assert result.stdout == (fixture / "expected.json").read_bytes(), "CLI differs from canonical evaluator"
     receipt = json.loads(result.stdout)
-    assert len(receipt["predictions"]) == 20
+    assert len(receipt["predictions"]) == 40
     assert receipt["system_control_enabled"] is False
+    # Recompute exposure from serialized windows rather than trusting two calls
+    # to the same native exporter to agree. Distinct held-out sessions start at
+    # the same receipt time and must remain separate in the report.
+    assert set(receipt["session_conditions"]) == {"c", "d"}
+    expected = {}
+    for window in receipt["predictions"]:
+        key = (window["session_id"], window["condition"])
+        totals = expected.setdefault(key, {"eligible_seconds": 0.0,
+            "rejected_seconds": 0.0, "unarmed_seconds": 0.0, "candidate_windows": 0})
+        field = ("unarmed_seconds" if not window["shadow_enabled"] else
+                 "rejected_seconds" if not window["input_usable"] else "eligible_seconds")
+        totals[field] += window["end_seconds"] - window["start_seconds"]
+        if window["predicted_label"] not in (None, "neutral"):
+            totals["candidate_windows"] += 1
+    for (session, condition), totals in expected.items():
+        actual = receipt["session_conditions"][session][condition]
+        for field, value in totals.items():
+            assert math.isclose(actual[field], value, rel_tol=1e-12, abs_tol=1e-12), (session, condition, field)
+    for condition, pooled in receipt["conditions"].items():
+        for field in ("eligible_seconds", "rejected_seconds", "unarmed_seconds",
+                      "candidate_windows", "episode_onsets", "carry_in_candidates"):
+            total = sum(values.get(condition, {}).get(field, 0)
+                        for values in receipt["session_conditions"].values())
+            assert math.isclose(pooled[field], total, rel_tol=1e-12, abs_tol=1e-12), (condition, field)
     for args, status in [([str(executable), "--unknown"], 2),
                          (arguments + ["--controls-only"], 1),
                          (arguments + ["--manifest", "duplicate"], 2)]:
@@ -33,4 +58,4 @@ with tempfile.TemporaryDirectory(prefix="eeg-native-cli-") as temporary:
     (fixture / "manifest.json").write_text("{}")
     failed = subprocess.run(arguments, capture_output=True, timeout=120)
     assert failed.returncode == 1 and not failed.stdout
-print("Native CLI matches canonical synthetic evaluation; invalid inputs emit no receipt.")
+print("Native CLI matches canonical two-session synthetic evaluation; exposure totals verified independently; invalid inputs emit no receipt.")

@@ -626,7 +626,12 @@ recording directory must already exist; invalid arguments do not create one.
 
 `python3 tools/check_native_evaluation_cli.py` generates temporary synthetic
 recordings through the native test, executes the CLI, and compares the receipt
-byte-for-byte with the canonical evaluator's output. It checks wrong flags,
+byte-for-byte with the canonical evaluator's output. The fixture has two training
+and two held-out synthetic recordings, with 40 evaluation windows. Python also
+recomputes per-session eligible/rejected/unarmed durations and candidate counts
+from exported window rows and checks pooled counts equal session totals. This is
+an independent accounting check, not a second classifier or physiological oracle.
+It checks wrong flags,
 duplicate arguments, a mixed-task dataset in controls-only mode and a malformed
 manifest: each must fail with stderr diagnostics and no stdout receipt. Temporary
 fixtures are removed by the test script. CI runs this check; synthetic agreement

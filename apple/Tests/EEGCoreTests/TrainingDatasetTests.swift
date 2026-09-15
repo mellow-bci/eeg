@@ -30,10 +30,11 @@ final class TrainingDatasetTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: directory) }
         let store = try EEGRecordingStore(directory: directory)
         let a = try recording(store, offset: 0), b = try recording(store, offset: 10), c = try recording(store, offset: 20)
-        let manifestData = try manifest([session("a", a), session("b", b), session("c", c, split: "evaluation")])
+        let d = try recording(store, offset: 30)
+        let manifestData = try manifest([session("a", a), session("b", b), session("c", c, split: "evaluation"), session("d", d, split: "evaluation")])
         let dataset = try EEGTrainingDataset.load(manifestData, store: store)
         XCTAssertEqual(dataset.records.count, 40)
-        XCTAssertEqual(dataset.sessions.map(\.usableWindows), [20, 20, 20])
+        XCTAssertEqual(dataset.sessions.map(\.usableWindows), [20, 20, 20, 20])
         XCTAssertEqual(Set(dataset.records.map(\.session_id)), ["a", "b"])
         let artifact = try EEGProfileCreation.train(dataset.records, participantID: dataset.participantID)
         XCTAssertEqual(Set(artifact.profile.trainingSessions), ["a", "b"])
@@ -43,7 +44,7 @@ final class TrainingDatasetTests: XCTestCase {
         XCTAssertEqual(object["schema"] as? String, "eeg.native-evaluation.v1")
         XCTAssertEqual(Data(base64Encoded: object["manifest_base64"] as! String), manifestData)
         XCTAssertEqual(object["profile_id"] as? String, artifact.profile.id)
-        XCTAssertEqual((object["predictions"] as! [[String: Any]]).count, 20)
+        XCTAssertEqual((object["predictions"] as! [[String: Any]]).count, 40)
         let sources = object["sources"] as! [[String: Any]]
         XCTAssertEqual(sources.map { $0["file_sha256"] as! String }, dataset.sessions.map(\.fileSHA256))
         XCTAssertEqual(sources.map { $0["eeg_content_sha256"] as! String }, dataset.sessions.map(\.eegSHA256))
@@ -56,7 +57,7 @@ final class TrainingDatasetTests: XCTestCase {
             try manifestData.write(to: export.appendingPathComponent("manifest.json"), options: .withoutOverwriting)
             try artifact.data.write(to: export.appendingPathComponent("profile.json"), options: .withoutOverwriting)
             try receipt.data.write(to: export.appendingPathComponent("expected.json"), options: .withoutOverwriting)
-            for source in [a, b, c] {
+            for source in [a, b, c, d] {
                 try FileManager.default.copyItem(at: source, to: export.appendingPathComponent(source.lastPathComponent))
             }
         }
