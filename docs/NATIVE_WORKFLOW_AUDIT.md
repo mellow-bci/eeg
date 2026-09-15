@@ -280,3 +280,24 @@ outputs, and independently replay the recorded boundary. They verify equality,
 altered candidate detection, missing outputs and stop detection. The full suite
 passed 102 tests; focused follow-up coverage also checks incomplete source and
 invalid limit rejection. These fixtures provide no physiological evidence.
+
+## Run selection from finalized recordings
+
+The offline comparison panel now loads a run catalog from the selected finalized
+recording and offers only runs referencing the open profile. Manual run-ID entry
+has been removed. A configurable listing limit defaults to 1024 runs; exceeding
+it rejects the load instead of returning a partial catalog. Each listed identifier,
+session and profile field must be nonempty and at most 4096 UTF-8 bytes, and run
+IDs must be unique. Listing validates the whole source but does not validate the
+run's inference outputs or prove participant identity.
+
+The catalog retains the source SHA-256. Comparison passes that expected digest
+to the verifier, which rejects a changed source after its complete read. Changing
+the recording clears both selection and previous results. Loading is explicit
+and runs off the UI executor; the form is disabled during a load/comparison.
+
+The catalog test checks run/session/profile metadata, source pinning across a
+benign post-discovery file modification, duplicate run rejection, invalid limits,
+empty recordings and incomplete-source rejection. The full suite passed 103
+tests. Interactive run selection and physical recording comparisons remain
+unqualified; software discovery is not a physiological validation result.

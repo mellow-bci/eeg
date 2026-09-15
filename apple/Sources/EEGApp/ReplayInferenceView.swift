@@ -7,9 +7,11 @@ struct ReplayInferenceView: View {
     @State private var recordingName = ""
     @State private var sessionID = ""
     @State private var participantID = ""
+    @State private var maximumRuns = 1024
     @State private var maximumWindows = 10000
     @State private var running = false
     @State private var report: EEGReplayInferenceReport?
+    @State private var shadowCatalog: EEGShadowVerification.Catalog?
     @State private var shadowRunID = ""
     @State private var shadowReport: EEGShadowVerification.Report?
     @State private var failure: String?
@@ -34,7 +36,20 @@ struct ReplayInferenceView: View {
                 .disabled(running || model.recording || model.ready || recordingName.isEmpty || participantID.isEmpty || sessionID.isEmpty || maximumWindows <= 0)
             Divider()
             Text("Verify recorded live outputs").font(.headline)
-            TextField("Recorded shadow run ID",text:$shadowRunID)
+            TextField("Maximum runs to list",value:$maximumRuns,format:.number)
+            Button("Load recorded runs") { loadShadowRuns() }
+                .disabled(running || model.recording || model.ready || recordingName.isEmpty || maximumRuns<=0)
+            if let shadowCatalog {
+                Picker("Recorded run",selection:$shadowRunID) {
+                    Text("Choose a run").tag("")
+                    ForEach(shadowCatalog.runs.filter {$0.profileID==profile.id}) { run in
+                        Text(run.sessionID + " · " + run.id).tag(run.id)
+                    }
+                }
+                if !shadowCatalog.runs.contains(where:{$0.profileID==profile.id}) {
+                    Text("No runs for this profile in the selected recording.").font(.caption)
+                }
+            }
             Text("Replays this run from its recorded start boundary. A match checks software consistency, not physiological accuracy or authenticity.").font(.caption).foregroundStyle(.secondary)
             Button("Compare recorded outputs") { verifyShadow() }
                 .disabled(running || model.recording || model.ready || recordingName.isEmpty || shadowRunID.isEmpty || maximumWindows<=0)
@@ -68,19 +83,36 @@ struct ReplayInferenceView: View {
             }
         }
         .disabled(running)
-        .onChange(of: recordingName) { _, _ in report = nil; shadowReport=nil; failure = nil }
+        .onChange(of: recordingName) { _, _ in report = nil; shadowReport=nil; shadowCatalog=nil; shadowRunID=""; failure = nil }
         .onChange(of: shadowRunID) { _, _ in shadowReport=nil }
     }
 
+    private func loadShadowRuns() {
+        guard !running,!model.recording,!model.ready,!recordingName.isEmpty,maximumRuns>0 else {return}
+        let directory=model.directory,url=directory.appendingPathComponent(recordingName)
+        let runLimit=maximumRuns
+        running=true;shadowCatalog=nil;shadowRunID="";shadowReport=nil;failure=nil
+        Task { @MainActor in
+            let result=await Task.detached(priority:.utility) {
+                Result {try EEGShadowVerification.catalog(store:EEGRecordingStore(directory:directory),recording:url,maximumRuns:runLimit)}
+            }.value
+            running=false
+            switch result {
+            case .success(let value):shadowCatalog=value
+            case .failure(let error):failure="Run discovery rejected: \(error)"
+            }
+        }
+    }
     private func verifyShadow() {
-        guard !running,!model.recording,!model.ready else {return}
+        guard !running,!model.recording,!model.ready,let shadowCatalog,
+              shadowCatalog.runs.contains(where:{$0.id==shadowRunID && $0.profileID==profile.id}) else {return}
         let directory=model.directory,url=directory.appendingPathComponent(recordingName)
         let runID=shadowRunID,limit=maximumWindows
         running=true;shadowReport=nil;report=nil;failure=nil
         Task { @MainActor in
             let result=await Task.detached(priority:.utility) {
                 Result {try EEGShadowVerification.run(store:EEGRecordingStore(directory:directory),recording:url,
-                    profile:profile,runID:runID,maximumWindows:limit)}
+                    profile:profile,runID:runID,maximumWindows:limit,expectedRecordingSHA256:shadowCatalog.recordingSHA256)}
             }.value
             running=false
             switch result {

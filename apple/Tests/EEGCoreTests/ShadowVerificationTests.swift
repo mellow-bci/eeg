@@ -56,6 +56,31 @@ final class ShadowVerificationTests: XCTestCase {
         let mismatch=try EEGShadowVerification.run(store:store,recording:changed,profile:profile,runID:"run")
         XCTAssertFalse(mismatch.completeMatch);XCTAssertEqual(mismatch.mismatchedOrdinals,[0])
     }
+    func testCatalogPinsSelectionAndRejectsDuplicateRunIDs() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let store=try EEGRecordingStore(directory:directory),profile=try profile()
+        let url=try capture(store,profile:profile)
+        let catalog=try EEGShadowVerification.catalog(store:store,recording:url)
+        XCTAssertEqual(catalog.runs.map(\.id),["run"])
+        XCTAssertEqual(catalog.runs.first?.sessionID,"held-out")
+        XCTAssertEqual(catalog.runs.first?.profileID,profile.id)
+        XCTAssertTrue(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run",
+            expectedRecordingSHA256:catalog.recordingSHA256).completeMatch)
+        var rows=try String(contentsOf:url).split(separator:"\n").map(String.init)
+        rows.insert("{\"kind\":\"annotation\",\"text\":\"changed after discovery\"}",at:rows.count-1)
+        try (rows.joined(separator:"\n")+"\n").write(to:url,atomically:false,encoding:.utf8)
+        XCTAssertThrowsError(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run",
+            expectedRecordingSHA256:catalog.recordingSHA256))
+        XCTAssertTrue(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run").completeMatch)
+        let start=try XCTUnwrap(rows.first(where:{$0.contains("shadow_start")}))
+        rows.insert(start,at:rows.count-1)
+        try (rows.joined(separator:"\n")+"\n").write(to:url,atomically:false,encoding:.utf8)
+        XCTAssertThrowsError(try EEGShadowVerification.catalog(store:store,recording:url))
+        XCTAssertThrowsError(try EEGShadowVerification.catalog(store:store,recording:url,maximumRuns:0))
+        let empty=try store.start();try store.finish()
+        XCTAssertTrue(try EEGShadowVerification.catalog(store:store,recording:empty).runs.isEmpty)
+    }
     func testMissingOutputAndMissingStopNeverPass() throws {
         let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer {try? FileManager.default.removeItem(at:directory)}
@@ -67,6 +92,7 @@ final class ShadowVerificationTests: XCTestCase {
         XCTAssertFalse(try EEGShadowVerification.run(store:store,recording:noStop,profile:profile,runID:"run").completeMatch)
         XCTAssertThrowsError(try EEGShadowVerification.run(store:store,recording:noStop,profile:profile,runID:"absent"))
         let incomplete=try capture(store,profile:profile,finalized:false)
+        XCTAssertThrowsError(try EEGShadowVerification.catalog(store:store,recording:incomplete))
         XCTAssertThrowsError(try EEGShadowVerification.run(store:store,recording:incomplete,profile:profile,runID:"run"))
         XCTAssertThrowsError(try EEGShadowVerification.run(store:store,recording:noStop,profile:profile,runID:"run",maximumWindows:0))
     }

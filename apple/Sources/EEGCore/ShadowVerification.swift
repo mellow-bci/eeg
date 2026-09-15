@@ -16,10 +16,36 @@ public enum EEGShadowVerification {
         public var completeMatch: Bool {stopObserved && ["operator_stopped","recording_stopped","profile_view_closed"].contains(stopReason ?? "") && recordedWindows>0 && mismatchedOrdinals.isEmpty && missingOrdinals.isEmpty}
         public let systemControlEnabled=false
     }
+    public struct Run: Identifiable, Sendable {
+        public let id: String
+        public let sessionID: String
+        public let profileID: String
+    }
+    public struct Catalog: Sendable {
+        public let recordingSHA256: String
+        public let runs: [Run]
+    }
+    /// Discovery is metadata only. A listed run still requires full verification.
+    public static func catalog(store: EEGRecordingStore, recording: URL, maximumRuns: Int=1024) throws -> Catalog {
+        guard maximumRuns>0 else {throw Failure.invalidLimit}
+        var runs=[Run](),identifiers=Set<String>()
+        let digest=try store.finalizedRecords(recording:recording) {data,sample in
+            guard sample == nil else {return}
+            guard let object=try JSONSerialization.jsonObject(with:data) as? [String:Any] else {throw Failure.invalidRun}
+            guard object["kind"] as? String=="shadow_start" else {return}
+            guard runs.count<maximumRuns else {throw Failure.limitExceeded}
+            guard let id=object["shadow_run_id"] as? String,let session=object["session_id"] as? String,
+                  let profile=object["profile_id"] as? String,
+                  [id,session,profile].allSatisfy({!$0.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty && $0.utf8.count<=4096}),
+                  identifiers.insert(id).inserted else {throw Failure.invalidRun}
+            runs.append(Run(id:id,sessionID:session,profileID:profile))
+        }
+        return Catalog(recordingSHA256:digest,runs:runs)
+    }
     /// Start the same assembler/detector at the recorded run boundary, rather
     /// than comparing against differently aligned whole-recording windows.
     public static func run(store: EEGRecordingStore, recording: URL, profile: EEGMentalProfile,
-                           runID: String, maximumWindows: Int=10000) throws -> Report {
+                           runID: String, maximumWindows: Int=10000, expectedRecordingSHA256: String?=nil) throws -> Report {
         guard !runID.isEmpty else {throw Failure.invalidRun}
         guard maximumWindows>0 else {throw Failure.invalidLimit}
         var metadata: Data?
@@ -85,6 +111,7 @@ public enum EEGShadowVerification {
             default:throw Failure.invalidRun
             }
         }
+        if let expectedRecordingSHA256,expectedRecordingSHA256 != digest {throw EEGRecordingError.sourceChanged}
         guard started else {throw Failure.missingRun}
         guard !profile.trainingRecordingHashes.values.contains(try fingerprint.finalize()) else {throw Failure.trainingContent}
         return Report(recordingSHA256:digest,runID:runID,profileID:profile.id,replayWindows:expected.count,
