@@ -122,7 +122,7 @@ final class LabeledEvaluationTests: XCTestCase {
         XCTAssertEqual(receipt.data, try EEGEvaluationArtifact.make(report: report, dataset: dataset, manifest: manifest, profile: profile).data)
         let object = try JSONSerialization.jsonObject(with: receipt.data) as! [String: Any]
         XCTAssertEqual(object["controls_only"] as? Bool, true)
-        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-3")
+        XCTAssertEqual(object["algorithm_version"] as? String,"native-labeled-evaluation-4")
         let sessions = try XCTUnwrap(object["session_conditions"] as? [String: [String: [String: Any]]])
         XCTAssertEqual(Set(sessions.keys),Set(report.sessionConditions.keys))
         for (session, conditions) in report.sessionConditions {
@@ -134,6 +134,14 @@ final class LabeledEvaluationTests: XCTestCase {
         }
         if let parent = profile.parentProfileID { XCTAssertEqual(object["parent_profile_id"] as? String,parent) }
         else { XCTAssertTrue(object["parent_profile_id"] is NSNull) }
+        let trialMetrics = try XCTUnwrap(object["trial_metrics"] as? [String: [String: Any]])
+        for (label, metric) in report.trialMetrics {
+            XCTAssertEqual(trialMetrics[label]?["declared_trials"] as? Int, metric.declaredTrials)
+            XCTAssertEqual(trialMetrics[label]?["unavailable_trials"] as? Int, metric.unavailableTrials)
+            XCTAssertTrue(trialMetrics[label]?["observation_fraction"] is NSNull) // Fixture cues are absent.
+        }
+        let sessionTrials = try XCTUnwrap(object["session_trial_metrics"] as? [String: [String: [String: Any]]])
+        XCTAssertEqual(Set(sessionTrials.keys), Set(report.sessionTrialMetrics.keys))
         let metrics = object["metrics"] as! [String: [String: Any]]
         XCTAssertTrue(metrics["task"]!["recall"] is NSNull)
         XCTAssertTrue(metrics["task"]!["rejection_fraction"] is NSNull)

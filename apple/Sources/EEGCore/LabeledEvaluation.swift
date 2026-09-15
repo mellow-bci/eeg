@@ -17,6 +17,44 @@ public struct EEGLabeledEvaluation: Sendable {
     public var sessionMetrics: [String: [String: Metric]] {
         Dictionary(grouping: predictions, by: \.sessionID).mapValues { Self.summarize($0,classes:Array(metrics.keys)) }
     }
+    /// Counts whole declared cued trials, never independent windows. These are
+    /// descriptive observations with explicit unavailable evidence, not confidence bounds.
+    public struct TrialMetric: Sendable {
+        public let declaredTrials: Int, scoredTrials: Int, observedTrials: Int
+        public let trialsWithoutEligibleExposure: Int
+        public let declaredSeconds: Double, eligibleSeconds: Double
+        public var unavailableTrials: Int { declaredTrials - scoredTrials }
+        public var noCandidateObservedTrials: Int { scoredTrials - observedTrials }
+        public var observationFraction: Double? {
+            scoredTrials > 0 ? Double(observedTrials) / Double(scoredTrials) : nil
+        }
+        public var eligibleFraction: Double? {
+            declaredSeconds > 0 ? eligibleSeconds / declaredSeconds : nil
+        }
+    }
+    public var trialMetrics: [String: TrialMetric] {
+        Self.summarizeTrials(trials, classes: Array(metrics.keys))
+    }
+    public var sessionTrialMetrics: [String: [String: TrialMetric]] {
+        Dictionary(grouping: trials, by: \.sessionID).mapValues {
+            Self.summarizeTrials($0, classes: Array(metrics.keys))
+        }
+    }
+    static func summarizeTrials(_ trials: [EEGTrialTiming], classes: [String]) -> [String: TrialMetric] {
+        Dictionary(uniqueKeysWithValues: classes.map { label in
+            let selected = trials.filter {
+                $0.label == label && $0.condition == (label == "neutral" ? "cued_neutral" : "cued_task")
+            }
+            let observations = selected.compactMap {
+                label == "neutral" ? $0.scoredNeutralFalsePositive : $0.scoredTargetDetected
+            }
+            return (label, TrialMetric(declaredTrials: selected.count, scoredTrials: observations.count,
+                observedTrials: observations.filter { $0 }.count,
+                trialsWithoutEligibleExposure: selected.filter { $0.eligibleSeconds == 0 }.count,
+                declaredSeconds: selected.reduce(0) { $0 + ($1.end - $1.start) },
+                eligibleSeconds: selected.reduce(0) { $0 + $1.eligibleSeconds }))
+        })
+    }
     static func summarize(_ predictions: [Prediction], classes: [String]) -> [String: Metric] {
         var result = [String: Metric]()
         for label in classes {
@@ -45,7 +83,7 @@ public struct EEGLabeledEvaluation: Sendable {
     public var rejectionFraction: Double { Double(predictions.filter { $0.predictedLabel == nil }.count) / Double(predictions.count) }
     public enum Failure: Error { case noEvaluation, participantMismatch, trainingOverlap, insufficientClassWindows, invalidLabels, invalidTiming }
 
-    /// Window-level experimental metrics only. Correlated windows are not
+    /// Experimental window and declared-trial observations. Correlated windows are not
     /// independent physiological trials. Rejection is never a neutral prediction.
     public static func run(profile: EEGMentalProfile, dataset: EEGTrainingDataset, controlsOnly: Bool = false) throws -> EEGLabeledEvaluation {
         guard dataset.participantID == profile.participantID else { throw Failure.participantMismatch }

@@ -52,3 +52,43 @@ native protocol extension, not a claim of Python/vendor parity. Whole-trial and
 whole-session uncertainty, grouped permutation analysis, prospective session
 qualification and artifact-controlled evidence are still outstanding. No output
 control is enabled by any metric.
+
+## Version 4: pooled and per-session trial summaries
+
+`native-labeled-evaluation-4` retains the version-3 observations and adds
+`trial_metrics` and `session_trial_metrics`. Both group cued trials by declared
+class. Neutral means `cued_neutral`; non-neutral classes mean `cued_task` for that
+specific label. Blink/jaw/head/ordinary-activity controls remain in the separate
+condition-exposure reports, never silently relabeled as cued-neutral trials.
+
+| Field | Definition |
+| --- | --- |
+| `declared_trials` | Accepted, successfully loaded trials for this class and cued condition |
+| `scored_trials` | Trials with a recorded cue, including zero-eligible-exposure trials |
+| `observed_trials` | Scored trials with target detection (task) or any contained task candidate (neutral false positive) |
+| `no_candidate_observed_trials` | Scored minus observed; not proof of successful neutral classification |
+| `unavailable_trials` | Declared minus scored; currently missing cue evidence |
+| `trials_without_eligible_exposure` | Declared trials with zero armed usable duration, including missing-cue trials |
+| `observation_fraction` | Observed divided by scored; null when scored is zero |
+| `declared_seconds` | Sum of complete declared scored-interval durations, including gaps and missing cues |
+| `eligible_seconds` | Sum of armed usable duration across those declared trials |
+| `eligible_fraction` | Eligible divided by declared seconds; null for an absent class |
+
+One trial with several candidate windows contributes at most one observed trial.
+Missing-cue trials are reported as unavailable, rather than counted as known
+negative outcomes. Zero-exposure trials with cues remain in the observation
+fraction denominator; always inspect their explicit count and coverage. Missing
+cue/exposure evidence cannot satisfy prospective qualification simply because the
+remaining observation fraction is high.
+
+Session summaries use the same function as pooled summaries. An absent class is
+explicitly zero trials with null fractions. Reusing a trial ID in another session
+does not merge the two trials. The app exposes both summaries and the JSON receipt
+preserves them for independent review.
+
+Validation: `TrialMetricTests` exercise whole-trial weighting, missing/all-missing
+cues, zero eligible exposure, separate controls, absent classes and a pooled result
+that hides a failed session. Receipt tests verify counts and explicit nulls.
+The 18 selected trial/evaluation tests pass. No binomial confidence interval,
+trial/session independence, significance test, grouped permutation result,
+physiological performance or automatic qualification decision is implied.

@@ -32,6 +32,14 @@ public struct EEGEvaluationArtifact: Sendable {
         }
         let metrics = report.metrics.mapValues(metricObject)
         let sessionMetrics = report.sessionMetrics.mapValues { $0.mapValues(metricObject) }
+        func trialMetricObject(_ metric: EEGLabeledEvaluation.TrialMetric) -> [String: Any] {
+            ["declared_trials": metric.declaredTrials, "scored_trials": metric.scoredTrials,
+             "observed_trials": metric.observedTrials, "unavailable_trials": metric.unavailableTrials,
+             "no_candidate_observed_trials": metric.noCandidateObservedTrials,
+             "trials_without_eligible_exposure": metric.trialsWithoutEligibleExposure,
+             "declared_seconds": metric.declaredSeconds, "eligible_seconds": metric.eligibleSeconds,
+             "observation_fraction": nullable(metric.observationFraction), "eligible_fraction": nullable(metric.eligibleFraction)]
+        }
         func exposureObject(_ exposure: EEGConditionExposure) -> [String: Any] {
             ["eligible_seconds": exposure.eligibleSeconds, "unarmed_seconds": exposure.unarmedSeconds,
              "rejected_seconds": exposure.rejectedSeconds, "candidate_windows": exposure.candidateWindows,
@@ -60,13 +68,15 @@ public struct EEGEvaluationArtifact: Sendable {
              "rejected_windows": session.rejectedWindows]
         }
         let object: [String: Any] = [
-            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-3",
+            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-4",
             "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
             "participant_id": dataset.participantID, "controls_only": report.controlsOnly,
             "system_control_enabled": false, "hardware_validated": false,
             "manifest_base64": manifest.base64EncodedString(),
             "manifest_sha256": SHA256.hash(data: manifest).map { String(format: "%02x", $0) }.joined(),
+            "trial_metrics": report.trialMetrics.mapValues(trialMetricObject),
+            "session_trial_metrics": report.sessionTrialMetrics.mapValues { $0.mapValues(trialMetricObject) },
             "sources": sources, "predictions": predictions, "metrics": metrics, "session_metrics": sessionMetrics,
             "control_conditions_without_eligible_exposure": report.controlConditionsWithoutEligibleExposure,
             "trials": trials, "conditions": conditions, "session_conditions": sessionConditions, "rejection_fraction": report.rejectionFraction,
@@ -75,6 +85,7 @@ public struct EEGEvaluationArtifact: Sendable {
                 "prediction": "experimental candidate or explicit neutral; null is rejection, not neutral",
                 "class_rejection": "null predictions divided by windows of the actual class; includes unarmed and unusable windows; null rate when the class is absent",
                 "scored_trial": "candidate persistence evidence must start within the scored interval and at or after the recorded cue; task success requires the target label, neutral false positive accepts any task candidate; missing cue yields null; carry-ins are not credited",
+                "trial_metrics": "cued task target observations or cued neutral false positives; one observation per declared trial; missing cues counted unavailable; zero eligible exposure retained; controls reported separately; no confidence or independence claim",
                 "trial_eligible_fraction": "armed usable window duration divided by the declared scored interval; includes gaps in denominator; not confidence or physiological validity",
                 "latency": "recorded cue completion to candidate input availability, not mental onset or live response",
                 "poisson_bound": "one-sided 95% upper bound; assumes constant independent event rate; unavailable for carry-ins or zero eligible exposure",

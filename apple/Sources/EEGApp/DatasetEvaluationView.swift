@@ -53,12 +53,20 @@ struct DatasetEvaluationView: View {
                         Text("Rejected: \(metric.rejectedWindows) / \(metric.actualWindows) · \(percent(metric.rejectionFraction))").monospacedDigit()
                     }.accessibilityElement(children: .combine)
                 }
+                DisclosureGroup("Cued trial observations") {
+                    Text("One observation per trial. Missing cues are unavailable; trials with no usable exposure remain visible. Neutral observations are false positives.").font(.caption)
+                    let trialMetrics = report.trialMetrics
+                    ForEach(trialMetrics.keys.sorted(), id: \.self) { label in
+                        trialSummary(label: label, metric: trialMetrics[label]!)
+                    }
+                }
                 ForEach(report.conditions.keys.sorted(), id: \.self) { condition in
                     let exposure = report.conditions[condition]!
                     exposureSummary(condition: condition, exposure: exposure)
                 }
                 DisclosureGroup("Results by session") {
                     let metricsBySession = report.sessionMetrics
+                    let trialsBySession = report.sessionTrialMetrics
                     Text("Compare individual sessions before interpreting pooled rates.").font(.caption)
                     ForEach(report.sessionConditions.keys.sorted(), id: \.self) { session in
                         VStack(alignment: .leading, spacing: 8) {
@@ -67,6 +75,10 @@ struct DatasetEvaluationView: View {
                             ForEach(metrics.keys.sorted(),id: \.self) { label in
                                 let metric = metrics[label]!
                                 Text("\(label): precision \(percent(metric.precision)) · recall \(percent(metric.recall)) · TP \(metric.truePositive) / FP \(metric.falsePositive) / FN \(metric.falseNegative) · rejected \(metric.rejectedWindows) / \(metric.actualWindows) (\(percent(metric.rejectionFraction)))").font(.caption).monospacedDigit()
+                            }
+                            let trialMetrics = trialsBySession[session] ?? [:]
+                            ForEach(trialMetrics.keys.sorted(), id: \.self) { label in
+                                trialSummary(label: label, metric: trialMetrics[label]!)
                             }
                             ForEach(report.sessionConditions[session]!.keys.sorted(), id: \.self) { condition in
                                 exposureSummary(condition: condition, exposure: report.sessionConditions[session]![condition]!)
@@ -104,6 +116,14 @@ struct DatasetEvaluationView: View {
             case .failure(let error): failure = "Export failed: \(error.localizedDescription)"
             }
         }
+    }
+    private func trialSummary(label: String, metric: EEGLabeledEvaluation.TrialMetric) -> some View {
+        VStack(alignment: .leading) {
+            Text(label == "neutral" ? "Neutral trial false positives" : "\(label) trial target observations").font(.headline)
+            Text("Observed: \(metric.observedTrials) / \(metric.scoredTrials) · \(percent(metric.observationFraction))").monospacedDigit()
+            Text("Declared: \(metric.declaredTrials) · Missing cue: \(metric.unavailableTrials) · No eligible exposure: \(metric.trialsWithoutEligibleExposure)").monospacedDigit()
+            Text("Armed usable coverage: \(percent(metric.eligibleFraction))")
+        }.font(.caption).accessibilityElement(children: .combine)
     }
     private func exposureSummary(condition: String, exposure: EEGConditionExposure) -> some View {
                     VStack(alignment: .leading) {
