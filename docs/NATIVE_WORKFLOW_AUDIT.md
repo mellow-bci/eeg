@@ -75,3 +75,26 @@ synthetic samples, use a suspended worker to prove bounded admission and stale
 queue rejection, and verify stop rejects further input. These are software tests,
 not live headset evidence. Acquisition/profile UI integration and total-byte queue
 budgeting remain unfinished; this component alone is not a running live workflow.
+
+## Acquisition shadow integration
+
+Acquisition now submits decoded samples to `EEGLiveInference` after recording
+those measurements. `LiveShadowView` starts it explicitly for the inspected
+profile, a declared participant and a non-training session ID. Active recording
+and stable transport are required. Start metadata includes profile/feature IDs;
+window candidates/reasons and stop causes are separate recording events with
+system control explicitly disabled. Results are accepted on the main queue only
+if both the consumer token and generation still match.
+
+Loss of transport, overload, input rejection, recording failure, recording stop
+or profile-view closure stops inference and clears the displayed candidate. No
+restart occurs automatically. Samples continue recording if only inference stops.
+The producer currently runs on the main queue and raw file I/O remains synchronous;
+this is not a latency-qualified architecture yet. Window ordinals are relative to
+the shadow run, not a global recording-window index. More precise per-window
+source-range provenance remains to be added before offline/live alignment can be
+qualified. Whole-content training reuse can only be checked after capture ends.
+
+The core live/replay regression remains the current software evidence. This app
+integration has not been exercised with a physical headset or interactive profile
+controls, and no physiological accuracy or production readiness is claimed.

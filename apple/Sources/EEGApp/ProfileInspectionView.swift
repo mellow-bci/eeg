@@ -28,6 +28,7 @@ struct ProfileInspectionView: View {
                 Text("Integrity does not verify task labels or physiological accuracy. Opening this file does not change acquisition settings. An offline check can be started below.").font(.callout).foregroundStyle(.secondary)
                 DatasetEvaluationView(profile: profile, preparedManifest: preparedManifest).id(profile.id)
                 ReplayInferenceView(profile: profile).id(profile.id)
+                LiveShadowView(profile: profile).id(profile.id)
             } else {
                 Text("Open a versioned experimental profile created here or by the independent offline trainer. Inspect its provenance, then evaluate separate labeled recordings below.").foregroundStyle(.secondary)
             }

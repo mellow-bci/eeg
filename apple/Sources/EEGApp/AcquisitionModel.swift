@@ -13,6 +13,11 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     lazy var trialCues = TrialCueController(acquisition: self)
     @Published private(set) var trial: EEGTrialEvidence?
     private var trialSession: EEGTrialSession?
+    @Published private(set) var shadowActive = false
+    @Published private(set) var shadowStatus = "Stopped"
+    @Published private(set) var shadowResult: EEGWindowInferenceResult?
+    private var shadow: EEGLiveInference?
+    private var shadowToken = UUID()
     @Published var recording = false
     @Published var sampleCount = 0
     @Published var decodeErrors = 0
@@ -161,6 +166,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         do {
             for sample in decoded {
                 if recording { try store?.append(sample:sample) }
+                if let shadow,!shadow.submit(.sample(sample)) { stopShadow(reason:"inference_overload") }
                 let slot=Int(sample.counter)%64
                 if metadata[configID]==Data([1,128,0,16,32,16]),slot<14,sample.adcWords.count==15 { contactRaw[Self.channels[slot]]=sample.adcWords[7] }
             }
@@ -174,7 +180,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     private func setTransport(_ stable:Bool,reason:String,receivedAt:Double?=nil) {
         let changed=transportStable != stable
         transportStable=stable
-        if !stable { interruptTrial(reason: reason) }
+        if !stable { stopShadow(reason:reason);interruptTrial(reason: reason) }
         guard changed,recording else {return}
         do {try recordTransport(reason:reason,receivedAt:receivedAt)} catch {storageFailed(error)}
     }
@@ -187,6 +193,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         }
     }
     private func storageFailed(_ error:Error) {
+        stopShadow(reason:"recording_storage_failed",persist:false)
         event("Recording storage failed: "+error.localizedDescription)
         interruptTrial(reason: "recording_storage_failed")
         store?.abort();recording=false;refreshRecordings()
@@ -206,6 +213,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     func stopRecording() {
         guard recording else { return }
+        stopShadow(reason:"recording_stopped")
         interruptTrial(reason: "recording_stopped")
         guard recording else { return }
         do { try store?.appendEvent(kind:"transport_checkpoint",fields:["stable":String(transportStable),"decode_errors":String(decodeErrors),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]) } catch { storageFailed(error);return }
@@ -254,6 +262,44 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
             message="Trial evidence could not be saved: "+error.localizedDescription
         }
         trial=trialSession.trial
+    }
+    func startShadow(profile: EEGMentalProfile, sessionID: String, participantConfirmed: Bool) throws {
+        guard participantConfirmed,recording,ready,transportStable,!playback,!shadowActive,let store else { throw EEGTrialEvidence.Failure.readinessMissing }
+        guard !profile.trainingSessions.contains(sessionID) else { throw EEGReplayInference.Failure.trainingRecording }
+        let token=UUID();shadowToken=token
+        let consumer=try EEGLiveInference(profile:profile,participantID:profile.participantID,sessionID:sessionID) { [weak self] output in
+            DispatchQueue.main.async {
+                guard let self,self.shadowToken == token,self.shadowActive,
+                      self.shadow?.generation == output.generation else { return }
+                if let failure=output.failure { self.stopShadow(reason:failure);return }
+                guard let row=output.window else { return }
+                do {
+                    try self.store?.appendEvent(kind:"shadow_inference",fields:["profile_id":profile.id,
+                        "feature_config_id":EEGMentalFeatures.configurationID,"session_id":sessionID,
+                        "ordinal":String(row.ordinal),"candidate":row.candidate ?? "",
+                        "has_candidate":String(row.candidate != nil),"reasons":row.reasons.joined(separator:";"),
+                        "status":row.status,"system_control_enabled":"false","receivedAt":String(self.recordingClock)])
+                    self.shadowResult=row;self.shadowStatus="Experimental shadow result — no reliable command"
+                } catch { self.storageFailed(error) }
+            }
+        }
+        do {
+            try store.appendEvent(kind:"shadow_start",fields:["profile_id":profile.id,"participant_id":profile.participantID,
+                "session_id":sessionID,"feature_config_id":EEGMentalFeatures.configurationID,
+                "system_control_enabled":"false","receivedAt":String(recordingClock)])
+            let device=metadata.mapValues { $0.map { String(format:"%02x",$0) }.joined() }.merging(["kind":"device_metadata"]) { _,new in new }
+            guard consumer.submit(.event(try JSONSerialization.data(withJSONObject:device))),
+                  consumer.submit(.event(try JSONSerialization.data(withJSONObject:["kind":"transport_status","status":"stable"]))) else { throw EEGRecordingError.invalidData }
+            shadow=consumer;shadowActive=true;shadowResult=nil;shadowStatus="Waiting for validated windows"
+        } catch { consumer.stop();storageFailed(error);throw error }
+    }
+    func stopShadow(reason: String = "operator_stopped", persist: Bool = true) {
+        guard shadow != nil else { return }
+        shadow?.stop();shadow=nil;shadowToken=UUID();shadowActive=false;shadowResult=nil;shadowStatus="Stopped: "+reason
+        if persist,recording {
+            do { try store?.appendEvent(kind:"shadow_stop",fields:["reason":reason,"receivedAt":String(recordingClock)]) }
+            catch { storageFailed(error) }
+        }
     }
     func refreshRecordings() {
         libraryRequest+=1;let request=libraryRequest;let directory=self.directory
