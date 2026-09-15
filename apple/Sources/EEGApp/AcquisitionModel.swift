@@ -457,11 +457,17 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
             }
         }
     }
-    func export(_ info:EEGRecordingInfo,to destination:URL,units:EEGRecordingStore.Units = .adc,completion:@escaping(Bool)->Void = {_ in}) {
+    func export(_ info:EEGRecordingInfo,to destination:URL,format:EEGRecordingStore.ExportFormat = .csv,units:EEGRecordingStore.Units = .adc,completion:@escaping(Bool)->Void = {_ in}) {
         guard !recording,!finalizingRecording,peripheral==nil,fileOperation==nil else {message="Finish the current operation and disconnect before exporting.";completion(false);return}
-        fileOperation="Exporting CSV";let directory=self.directory
+        fileOperation="Exporting recording";let directory=self.directory
         fileQueue.async { [weak self] in
-            let result=Result {try EEGRecordingStore(directory:directory).exportCSV(recording:info.url,to:destination,units:units)}
+            let result=Result {
+                let store = try EEGRecordingStore(directory:directory)
+                switch format {
+                case .native: try store.exportNative(recording:info.url,to:destination)
+                case .csv: try store.exportCSV(recording:info.url,to:destination,units:units)
+                }
+            }
             DispatchQueue.main.async {
                 guard let self=self else {return};self.fileOperation=nil
                 switch result {

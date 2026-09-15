@@ -62,6 +62,55 @@ final class RecordingStoreTests: XCTestCase {
         XCTAssertThrowsError(try store.exportCSV(recording: file, to: destination))
         XCTAssertTrue(FileManager.default.fileExists(atPath: destination.path))
     }
+    func testNativeExportPreservesCompleteAndIncompleteBytes() throws {
+        let store = try EEGRecordingStore(directory: root)
+        for complete in [false, true] {
+            let file = try store.start()
+            try store.append(sample: sample(0))
+            try store.appendEvent(kind: "annotation", fields: ["text": "eyes open · observation", "receivedAt": "0.1"])
+            if complete { try store.finish() } else { store.abort() }
+            let destination = root.appendingPathComponent("export-\(complete).jsonl")
+            try store.exportNative(recording: file, to: destination)
+            XCTAssertEqual(try Data(contentsOf: destination), try Data(contentsOf: file))
+            let info = try XCTUnwrap(store.inventory().first { $0.name == destination.lastPathComponent })
+            XCTAssertEqual(info.complete, complete)
+            XCTAssertFalse(info.corrupt)
+            XCTAssertEqual(info.sampleCount, 1)
+            XCTAssertEqual(try FileManager.default.attributesOfItem(atPath: destination.path)[.posixPermissions] as? Int, 0o600)
+            XCTAssertThrowsError(try store.exportNative(recording: file, to: destination))
+            XCTAssertEqual(try Data(contentsOf: destination), try Data(contentsOf: file))
+        }
+    }
+    func testNativeExportRetainsRecoverableTrialJournal() throws {
+        let store = try EEGRecordingStore(directory: root)
+        let file = try store.start()
+        let plan = try EEGTrialPlan(sessionID:"session", participantID:"synthetic", seed:42)
+        try store.appendEvent(kind:"trial_plan", fields:["json":String(decoding:try JSONEncoder().encode(plan),as:UTF8.self)])
+        var trial = plan.trials[0]
+        try store.appendTrialEvidence(trial)
+        try trial.interrupt(reason:"synthetic_stop",at:2)
+        try store.appendTrialEvidence(trial)
+        try store.finish()
+        let exported = try EEGRecordingStore(directory:root.appendingPathComponent("archive"))
+        let destination = exported.directory.appendingPathComponent(file.lastPathComponent)
+        try store.exportNative(recording:file,to:destination)
+        XCTAssertEqual(try Data(contentsOf:file),try Data(contentsOf:destination))
+        let restored = try exported.recoveredTrials(recording:destination)
+        XCTAssertEqual(restored.count,1)
+        XCTAssertEqual(restored.first?.phase,.interrupted)
+        XCTAssertEqual(restored.first?.id,trial.id)
+    }
+    func testNativeExportRejectsCorruptTailAndRemovesPartialOutput() throws {
+        let store = try EEGRecordingStore(directory: root)
+        let file = try store.start()
+        try store.append(sample: sample(0)); store.abort()
+        let handle = try FileHandle(forWritingTo: file)
+        try handle.seekToEnd(); try handle.write(contentsOf: Data("broken\n".utf8)); try handle.close()
+        let destination = root.appendingPathComponent("partial.jsonl")
+        XCTAssertThrowsError(try store.exportNative(recording: file, to: destination))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: destination.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
+    }
     func testMalformedPathAndMissingUnits() throws {
         let store = try EEGRecordingStore(directory: root)
         let file = try store.start()

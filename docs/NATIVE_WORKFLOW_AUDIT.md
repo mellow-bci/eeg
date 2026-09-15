@@ -776,3 +776,26 @@ CSV does not include markers or full provenance; retain the original JSONL.
 Nine RecordingStoreTests pass, including microvolt values, unavailable-unit
 failure and partial-output cleanup. All three native platform builds pass.
 Interactive export-unit picker and hardware qualification remain unperformed.
+
+## 2026-09-15 — Original recording export
+
+Recordings now offers Original recording (JSONL), the default, alongside sample
+CSV. `exportNative` uses the existing bounded line reader and stream validator,
+retaining every original line byte and newline. Source-change checks are inherited
+from that reader. It preserves sample, marker, plan and trial journal events; it
+never adds a completion summary to an unfinished recording. This validates stream
+structure, not physiological validity or acceptance of every trial journal.
+
+The shared AcquisitionModel file-operation path dispatches the chosen exporter.
+Output is exclusive, mode 0600, synchronized and closed before success; failures
+remove partial output. Mobile exports use a private temporary directory and retain
+the original filename. Keep that filename when archiving: trial journal identity
+references it. The macOS save panel suggests it, but users may rename exports and
+must restore it for native trial recovery. Originals are not changed.
+
+Twelve RecordingStoreTests pass. New coverage checks byte equality for complete
+and incomplete files, permissions, no-overwrite behavior, corrupt-tail cleanup,
+and actual recovery of an interrupted trial journal from an exported copy in a
+separate store. macOS/iOS/visionOS builds pass. Interactive picker/share-sheet
+qualification remains outstanding. Export does not constitute a new native import
+workflow; use the existing recording-store contract for reproduction.

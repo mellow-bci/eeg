@@ -193,6 +193,7 @@ struct LibraryView: View {
     @EnvironmentObject var model: AcquisitionModel
     @State private var query = ""
     @State private var filter = "All"
+    @State private var exportFormat: EEGRecordingStore.ExportFormat = .native
     @State private var exportUnits: EEGRecordingStore.Units = .adc
     @State private var signalSelection: WaveformSelection?
     #if !os(macOS)
@@ -210,11 +211,19 @@ struct LibraryView: View {
                 Button { model.refreshRecordings() } label: { Label("Refresh", systemImage: "arrow.clockwise") }.disabled(model.fileOperation != nil)
             }
         }
+        Picker("Export format", selection: $exportFormat) {
+            Text("Original recording (JSONL)").tag(EEGRecordingStore.ExportFormat.native)
+            Text("Sample CSV").tag(EEGRecordingStore.ExportFormat.csv)
+        }.disabled(model.fileOperation != nil)
+        if exportFormat == .csv {
         Picker("CSV export units", selection: $exportUnits) {
             Text("ADC counts").tag(EEGRecordingStore.Units.adc)
             Text("Microvolts (µV)").tag(EEGRecordingStore.Units.microvolts)
         }.disabled(model.fileOperation != nil)
         Text("Microvolt export requires recorded calibrated values for every sample. CSV contains samples; retain the original recording for markers and provenance.").font(.caption).foregroundStyle(.secondary)
+        } else {
+            Text("Preserves original samples, markers, trial evidence and completion status. Keep the original filename for trial-evidence recovery. Export does not qualify the recording for analysis.").font(.caption).foregroundStyle(.secondary)
+        }
         if recordings.isEmpty { ContentUnavailableView("No matching recordings", systemImage: "tray", description: Text("Record a session or import a raw capture using the toolbar.")) }
         else {
             Panel(title: "\(recordings.count) recordings") {
@@ -228,7 +237,7 @@ struct LibraryView: View {
                         Spacer()
                         Button(model.selectedRecording == info.url ? "Selected" : "Review") { model.replay(info) }
                             .disabled(info.corrupt || model.ready || model.recording || model.fileOperation != nil)
-                        Button { export(info) } label: { Image(systemName: "square.and.arrow.up") }.help("Export recording as \(exportUnits.rawValue) CSV").accessibilityLabel("Export \(info.name) as CSV")
+                        Button { export(info) } label: { Image(systemName: "square.and.arrow.up") }.help("Export recording").accessibilityLabel("Export \(info.name)")
                             .disabled(info.corrupt || model.ready || model.recording || model.fileOperation != nil)
                     }.padding(10).background(model.selectedRecording == info.url ? Color.accentColor.opacity(0.08) : .clear, in: RoundedRectangle(cornerRadius: 10))
                     if info.id != recordings.last?.id { Divider() }
@@ -236,7 +245,7 @@ struct LibraryView: View {
             }
         }
         #if !os(macOS)
-        if let shareURL = shareURL { ShareLink(item: shareURL) { Label("Share exported CSV", systemImage: "square.and.arrow.up") } }
+        if let shareURL = shareURL { ShareLink(item: shareURL) { Label("Share exported recording", systemImage: "square.and.arrow.up") } }
         #endif
         if let info = model.recordings.first(where: { $0.url == model.selectedRecording }), model.playback {
             WaveformWorkbench(samples: model.samples, title: "Recording review", onSelectionChange: { signalSelection = $0 })
@@ -252,14 +261,19 @@ struct LibraryView: View {
         }
     }
     private func export(_ info: EEGRecordingInfo) {
-        let units = exportUnits
+        let units = exportUnits, format = exportFormat
+        let suffix = format == .native ? ".jsonl" : "-" + units.rawValue + ".csv"
         #if os(macOS)
-        let panel = NSSavePanel(); panel.allowedContentTypes = [.commaSeparatedText]; panel.nameFieldStringValue = info.url.deletingPathExtension().lastPathComponent + "-" + units.rawValue + ".csv"
-        if panel.runModal() == .OK, let url = panel.url { model.export(info, to: url, units: units) }
+        let panel = NSSavePanel(); panel.allowedContentTypes = format == .native ? [.data] : [.commaSeparatedText]; panel.nameFieldStringValue = info.url.deletingPathExtension().lastPathComponent + suffix
+        if panel.runModal() == .OK, let url = panel.url { model.export(info, to: url, format: format, units: units) }
         #else
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".csv")
         shareURL = nil
-        model.export(info, to: url, units: units) { succeeded in if succeeded { shareURL = url } }
+        do {
+            let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+            let url = directory.appendingPathComponent(info.url.deletingPathExtension().lastPathComponent + suffix)
+            model.export(info, to: url, format: format, units: units) { succeeded in if succeeded { shareURL = url } }
+        } catch { model.message = "Export failed: " + error.localizedDescription }
         #endif
     }
 }

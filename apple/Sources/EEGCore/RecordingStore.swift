@@ -31,6 +31,7 @@ public enum EEGRecordingError: Error, LocalizedError {
 /// Local append-only recording storage. No cloud, account or device entitlement dependency.
 /// Serialize calls through the lock; do not execute file I/O on a real-time audio thread.
 public final class EEGRecordingStore {
+    public enum ExportFormat: String, Sendable { case native, csv }
     public enum Units: String, Sendable { case adc, microvolts }
     public let directory: URL
     private let lock = NSLock()
@@ -260,6 +261,23 @@ public final class EEGRecordingStore {
             return EEGRecordingInfo(url: url, sampleCount: validation.samples,
                                     complete: validation.summarized && !corrupt, corrupt: corrupt)
         }
+    }
+
+    /// Byte-preserving native export, including markers and trial evidence.
+    /// Well-formed incomplete recordings remain incomplete; no summary is added.
+    public func exportNative(recording: URL, to destination: URL) throws {
+        try validate(recording)
+        let output = try Self.open(destination, writing: true)
+        var succeeded = false
+        defer { try? output.close(); if !succeeded { try? FileManager.default.removeItem(at: destination) } }
+        var validation = StreamValidation()
+        try Self.lines(recording) { data in
+            _ = try validation.consume(data)
+            var line = data; line.append(0x0a)
+            try output.write(contentsOf: line)
+        }
+        try validation.finish()
+        try output.synchronize(); try output.close(); succeeded = true
     }
 
     /// Destination is created exclusively with 0600 permissions. Any failed export is removed.
