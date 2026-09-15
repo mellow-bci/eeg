@@ -71,7 +71,8 @@ swift run --package-path apple EEGEvaluate --manifest DATASET.json --profile PRO
   --recordings RECORDING_DIRECTORY --resamples 10000 --resampling-seed 42 --central-mass 0.95
 ```
 
-`eeg.native-evaluation.v1`, `native-labeled-evaluation-5`, stores
+`eeg.native-evaluation.v1`, introduced in `native-labeled-evaluation-5` and retained
+in version 6, stores
 `session_resampling` per class with algorithm, status, sorted session IDs, options
 and available bounds. Without opt-in this field is null. Unavailable results have
 an explicit status and no bounds. Seeds are unsigned 64-bit integers; consumers

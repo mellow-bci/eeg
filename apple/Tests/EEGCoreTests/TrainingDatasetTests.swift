@@ -72,6 +72,16 @@ final class TrainingDatasetTests: XCTestCase {
             guard case EEGTrainingDataset.Failure.duplicateRecording = error else { return XCTFail("Unexpected: \(error)") }
         }
     }
+    func testDifferentLengthRecordingWithSharedSamplesIsRejected() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = try EEGRecordingStore(directory: directory)
+        let a = try recording(store, offset: 0, windows: 20)
+        let b = try recording(store, offset: 0, windows: 21)
+        XCTAssertThrowsError(try EEGTrainingDataset.load(manifest([session("a", a), session("b", b, split: "evaluation")]), store: store)) { error in
+            guard case EEGTrainingDataset.Failure.reusedRecordingExcerpt = error else { return XCTFail("Unexpected: \(error)") }
+        }
+    }
     func testUncertainOverlappingAndOutsideStoreTrialsRejected() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }

@@ -12,3 +12,8 @@ Scope: independent experimental EPOC X processing, not a recovered Cortex model.
 8. **Consumer integration boundary.** Versioned read-only application events, explicit provenance and profile versions. Apple/Cast adapters remain outside acquisition and disabled until their own authorization/safety/validation gates pass. No Cast changes in this work.
 
 Current evidence cannot satisfy step7: the latest cued sensory-state session had uncertain participant labels and mixed posterior alpha behavior. It is retained but excluded from training/evaluation. Compiler/unit-test success is not physiological validation.
+
+Native dataset loading now checks exact cross-session excerpts as well as complete
+recording hashes. See [the algorithm, boundaries and tests](DATASET_EXCERPT_CHECK.md).
+Saved profiles still cannot exclude partial reuse of historical sources absent
+from the evaluation manifest; passing the check is not an independence claim.

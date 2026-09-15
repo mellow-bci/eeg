@@ -79,7 +79,7 @@ public struct EEGEvaluationArtifact: Sendable {
             })
         }
         let object: [String: Any] = [
-            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-5",
+            "schema": "eeg.native-evaluation.v1", "algorithm_version": "native-labeled-evaluation-6",
             "profile_id": profile.id, "parent_profile_id": nullable(profile.parentProfileID), "feature_config_id": EEGMentalFeatures.configurationID,
             "processing_settings": try JSONSerialization.jsonObject(with: profile.settings.jsonData()),
             "participant_id": dataset.participantID, "controls_only": report.controlsOnly,
@@ -95,6 +95,7 @@ public struct EEGEvaluationArtifact: Sendable {
             "definitions": [
                 "time_axis": "recorded receipt-time seconds; window end is the last sample receipt",
                 "prediction": "experimental candidate or explicit neutral; null is rejection, not neutral",
+                "dataset_excerpt_check": "canonical-counter-adc-blocks-v1: scans every sample offset against 256-sample blocks of earlier manifest sessions; exact bytes confirm rolling-hash candidates; covers samples emitted by analysisWindows; no independence proof",
                 "class_rejection": "null predictions divided by windows of the actual class; includes unarmed and unusable windows; null rate when the class is absent",
                 "scored_trial": "candidate persistence evidence must start within the scored interval and at or after the recorded cue; task success requires the target label, neutral false positive accepts any task candidate; missing cue yields null; carry-ins are not credited",
                 "session_resampling": "optional exploratory whole-session pair resampling; not validated confidence coverage; assumes independent exchangeable sessions; few sessions, selection and missing exposure limit interpretation; never a qualification gate",
@@ -112,7 +113,8 @@ public struct EEGEvaluationArtifact: Sendable {
                 "No physiological accuracy or safe system control is established.",
                 "Hashes detect changes; they do not authenticate authorship.",
                 "Source files are read as streams, not locked immutable snapshots.",
-                "Training overlap checks cover this profile; parent lineage does not audit historical model-selection or evaluation reuse."]
+                "Profile hashes detect complete training-recording reuse; excerpt checks compare only source sessions present in this manifest. Short or transformed excerpts and absent historical training sources are not excluded.",
+                "Parent lineage does not audit historical model-selection or evaluation reuse."]
         ]
         let data = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys, .prettyPrinted])
         return EEGEvaluationArtifact(report: report, data: data, sessionResampling: sessionResampling)

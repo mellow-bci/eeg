@@ -23,6 +23,7 @@ extension EEGTrainingDataset.Failure: LocalizedError {
         case .invalidTrial: return "A trial has invalid labels, timing, condition or acceptance evidence. Review the source trials and rebuild the manifest."
         case .duplicateSession: return "Session identifiers must be nonempty and unique within the dataset."
         case .duplicateRecording: return "The dataset reuses EEG recording content. Use independently collected sessions for training and evaluation."
+        case .reusedRecordingExcerpt: return "Different sessions contain an identical EEG sample block. Do not split or rename reused recordings to claim independent training or evaluation. Inspect the sources; a match does not establish how it arose."
         case .trialWithoutWindows: return "A labeled interval contains no complete analysis windows. Check recording coverage and trial timing."
         }
     }

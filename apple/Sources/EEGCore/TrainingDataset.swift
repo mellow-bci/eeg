@@ -24,7 +24,7 @@ public struct EEGTrainingDataset: Sendable {
     public let records: [EEGTrainingRecord]
     public let sessions: [SessionSummary]
 
-    public enum Failure: Error { case invalidManifest, invalidTrial, duplicateSession, duplicateRecording, trialWithoutWindows }
+    public enum Failure: Error { case invalidManifest, invalidTrial, duplicateSession, duplicateRecording, reusedRecordingExcerpt, trialWithoutWindows }
     private struct Manifest: Decodable {
         let schema: String, participant_id: String
         let sessions: [Session]
@@ -53,6 +53,7 @@ public struct EEGTrainingDataset: Sendable {
         let manifest = try JSONDecoder().decode(Manifest.self, from: data)
         guard manifest.schema == "eeg.dataset.v1", !manifest.participant_id.isEmpty, !manifest.sessions.isEmpty else { throw Failure.invalidManifest }
         var seenSessions = Set<String>(), seenContent = Set<String>()
+        var overlapIndex = EEGRecordingOverlapIndex()
         var evaluation = [EvaluationWindow]()
         var training = [EEGTrainingRecord](), summaries = [SessionSummary]()
         for session in manifest.sessions {
@@ -74,12 +75,16 @@ public struct EEGTrainingDataset: Sendable {
                 intervals.append((trial.start, trial.end))
             }
             var fingerprint = EEGRecordingFingerprint(), matched = Set<String>()
+            var overlapScanner = EEGRecordingOverlapIndex.Scanner()
             var usable = 0, rejected = 0
             var pending = [(Int, String, [Double])]()
             var evaluationPending = [(EEGInferenceWindow, Trial)]()
             let fileHash = try store.analysisWindows(recording: store.directory.appendingPathComponent(session.recording)) { window in
                 try Task.checkCancellation()
-                for sample in window.samples { try fingerprint.append(sample) }
+                for sample in window.samples {
+                    try fingerprint.append(sample)
+                    try overlapIndex.append(sample, to: &overlapScanner)
+                }
                 guard let first = window.samples.first, let last = window.samples.last,
                       let trial = session.trials.first(where: { $0.start <= first.receivedAt && last.receivedAt <= $0.end }) else { return }
                 matched.insert(trial.id)
@@ -103,6 +108,8 @@ public struct EEGTrainingDataset: Sendable {
             guard matched == trialIDs else { throw Failure.trialWithoutWindows }
             let eegHash = try fingerprint.finalize()
             guard seenContent.insert(eegHash).inserted else { throw Failure.duplicateRecording }
+            guard !overlapScanner.reusedBlock else { throw Failure.reusedRecordingExcerpt }
+            overlapIndex.commit(overlapScanner)
             evaluation += evaluationPending.map { pendingInput, trial in
                 let input = EEGInferenceWindow(values: pendingInput.values, feature_config_id: pendingInput.feature_config_id,
                     artifact_flags: pendingInput.artifact_flags, usable: pendingInput.usable,
