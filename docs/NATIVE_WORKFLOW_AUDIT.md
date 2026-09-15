@@ -459,3 +459,35 @@ controller migration must preserve the observation time of speech callbacks
 before awaiting storage, serialize revisions, and invalidate pending publication
 on interruption. It must not shift physiological labels to acknowledgement time
 or start speech merely because evidence was enqueued.
+
+## Acknowledgement-aware trial state and report/review saves
+
+EEGTrialSession now has one prepare/acknowledge transition mechanism. Preparing
+creates an unpublished revision with a unique token and original observation
+time; only its matching successful acknowledgement publishes it. Existing
+synchronous calls use this same mechanism around their sink. Duplicate or stale
+callbacks reject and cannot overwrite current state or clear a failure.
+
+Report and review controls now prepare on the acquisition executor, enqueue the
+canonical trial revision, and acknowledge on that executor after storage returns.
+They retain submission-time observations rather than moving labels to I/O
+completion time. The UI displays Saving trial evidence and disables repeated
+report/review submissions. Identity/generation checks discard callbacks belonging
+to a replaced recording or session.
+
+Interrupting pending evidence invalidates publication immediately and marks an
+unpersisted interruption. Because the pending revision may already be on disk,
+the host aborts the recording rather than finalizing uncertain evidence. Late
+success cannot revive that trial. This deliberate incomplete-file outcome is
+visible; it is not a successful saved interruption. Speech callback transitions
+and initial trial start still use synchronous acknowledgement and require further
+migration with cue cancellation and timing coordination.
+
+Tests cover unpublished preparation, overlapping revision rejection, duplicate
+acknowledgement, pending interruption followed by late success, and initial-save
+failure. The existing synchronous lifecycle tests exercise the same transition
+implementation. No physiological experiment or live cue was run for this change.
+
+Validation: 116 tests, one opt-in test skipped, zero failures; macOS, iOS and
+visionOS builds passed. Report/review interaction is build-checked, with state
+semantics tested offline; it has not yet been exercised in a live hardware trial.

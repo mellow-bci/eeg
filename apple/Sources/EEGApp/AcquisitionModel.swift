@@ -10,6 +10,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     @Published var samples: [EEGSample] = []
     @Published private(set) var trialPlan: EEGTrialPlan?
     @Published private(set) var savingTrialPlan = false
+    @Published private(set) var savingTrialRevision = false
     @Published private(set) var trialsStarted = 0
     lazy var trialCues = TrialCueController(acquisition: self)
     @Published private(set) var trial: EEGTrialEvidence?
@@ -225,7 +226,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         guard ready,!recording,!finalizingRecording,!playback,fileOperation==nil,let store=store else { return }
         do {
             let url=try store.start();recording=true
-            trial=nil;trialPlan=nil;savingTrialPlan=false;trialsStarted=0;trialSession=EEGTrialSession { try store.appendTrialEvidence($0) }
+            trial=nil;trialPlan=nil;savingTrialPlan=false;savingTrialRevision=false;trialsStarted=0;trialSession=EEGTrialSession { try store.appendTrialEvidence($0) }
             try store.enqueueEvent(kind:"device_metadata",fields:metadata.mapValues{$0.map{String(format:"%02x",$0)}.joined()})
             try recordTransport(reason:"recording_start")
             event("Recording started: "+url.lastPathComponent)
@@ -300,6 +301,31 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         guard recording,let trialSession else { throw EEGRecordingError.notRecording }
         do { try trialSession.transition(at: recordingClock,change);trial=trialSession.trial }
         catch { trial=trialSession.trial;if trialSession.persistenceFailure != nil { storageFailed(error) };throw error }
+    }
+    /// Report/review observations retain their submission timestamp while storage
+    /// proceeds. The last acknowledged revision stays visible until completion.
+    func submitTrialTransition(_ change:(inout EEGTrialEvidence,Double)throws->Void) throws {
+        guard recording,let trialSession,let store else {throw EEGRecordingError.notRecording}
+        let revision=try trialSession.prepareTransition(at:recordingClock,change)
+        let generation=store.generation
+        savingTrialRevision=true
+        do {
+            try store.enqueueTrialEvidence(revision.evidence) { [weak self,weak trialSession] result in
+                DispatchQueue.main.async {
+                    guard let self,let trialSession,self.trialSession === trialSession,
+                          self.store?.generation==generation else {return}
+                    self.savingTrialRevision=false
+                    do {try trialSession.acknowledge(revision,result:result)}
+                    catch EEGTrialSession.Failure.staleAcknowledgement {return}
+                    catch {if self.recording {self.storageFailed(error)}}
+                    self.trial=trialSession.trial
+                }
+            }
+        } catch {
+            savingTrialRevision=false
+            try? trialSession.acknowledge(revision,result:.failure(error))
+            trial=trialSession.trial;storageFailed(error);throw error
+        }
     }
     private func interruptTrial(reason: String) {
         guard let trialSession,trialSession.active else { return }

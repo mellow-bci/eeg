@@ -45,4 +45,39 @@ final class TrialSessionTests: XCTestCase {
         try session.interrupt(reason: "operator_cancelled", at: 2)
         XCTAssertEqual(writes, 2)
     }
+    func testPreparedRevisionIsUnpublishedUntilAcknowledged() throws {
+        let session=EEGTrialSession {_ in XCTFail("Prepare must not invoke synchronous storage")}
+        let revision=try session.prepareBegin(planned())
+        XCTAssertNil(session.trial);XCTAssertNotNil(session.pending)
+        XCTAssertThrowsError(try session.prepareBegin(planned()))
+        try session.acknowledge(revision,result:.success(()))
+        XCTAssertEqual(session.trial?.phase,.planned);XCTAssertNil(session.pending)
+        XCTAssertThrowsError(try session.acknowledge(revision,result:.success(())))
+        XCTAssertEqual(session.trial?.phase,.planned)
+    }
+    func testPendingInterruptionCannotBeResurrectedByLateSuccess() throws {
+        let session=EEGTrialSession {_ in}
+        try session.begin(planned())
+        let revision=try session.prepareTransition(at:1) {
+            try $0.requestCue(at:$1,participantReady:true,audioCheckHeard:true,transportStable:true,recordingActive:true)
+        }
+        XCTAssertEqual(session.trial?.phase,.planned)
+        XCTAssertThrowsError(try session.interrupt(reason:"operator_stopped",at:2))
+        XCTAssertEqual(session.trial?.phase,.interrupted)
+        XCTAssertEqual(session.trial?.reviewReason,"operator_stopped")
+        XCTAssertNotNil(session.persistenceFailure);XCTAssertNil(session.pending)
+        XCTAssertThrowsError(try session.acknowledge(revision,result:.success(())))
+        XCTAssertEqual(session.trial?.phase,.interrupted)
+        XCTAssertThrowsError(try session.prepareBegin(planned()))
+        XCTAssertThrowsError(try XCTUnwrap(session.trial).datasetTrial())
+    }
+    func testFailedInitialAcknowledgementCannotEnableTrial() throws {
+        let session=EEGTrialSession {_ in}
+        let revision=try session.prepareBegin(planned())
+        XCTAssertThrowsError(try session.acknowledge(revision,result:.failure(EEGRecordingError.invalidData)))
+        XCTAssertNil(session.trial);XCTAssertNotNil(session.persistenceFailure)
+        XCTAssertNil(session.pending)
+        XCTAssertThrowsError(try session.acknowledge(revision,result:.success(())))
+    }
+
 }

@@ -21,6 +21,7 @@ struct TrialCaptureView: View {
                 catch { self.error=error.localizedDescription }
             }.disabled(!model.recording || model.trialPlan != nil || model.savingTrialPlan)
             if model.savingTrialPlan {ProgressView("Saving session plan")}
+            if model.savingTrialRevision {ProgressView("Saving trial evidence")}
             if let plan=model.trialPlan {
                 Text("Seed: " + plan.seed).font(.caption.monospaced()).textSelection(.enabled)
                 Text("Trials started: \(model.trialsStarted) / 24. At least 10 seconds rest after review; 60 seconds after each block of eight.")
@@ -54,8 +55,8 @@ struct TrialCaptureView: View {
                     TextField("Evidence and acceptance/exclusion reason", text: $reason)
                     Text("Behavioral observation: unknown. No camera or movement sensor was used.").font(.caption)
                     HStack {
-                        Button("Accept reported condition") { review(true) }.disabled(trial.participantReport != .attempted || reviewMissing)
-                        Button("Exclude trial") { review(false) }.disabled(reviewMissing)
+                        Button("Accept reported condition") { review(true) }.disabled(trial.participantReport != .attempted || reviewMissing || model.savingTrialRevision)
+                        Button("Exclude trial") { review(false) }.disabled(reviewMissing || model.savingTrialRevision)
                     }
                 }
                 if let reason=trial.reviewReason { Text(reason).font(.caption) }
@@ -66,10 +67,10 @@ struct TrialCaptureView: View {
     private var active: Bool { model.trial.map { $0.phase != .reviewed && $0.phase != .interrupted } ?? false }
     private var reviewMissing: Bool { reviewer.trimmingCharacters(in: .whitespaces).isEmpty || reason.trimmingCharacters(in: .whitespaces).isEmpty }
     private func reportButton(_ title: String, _ report: EEGTrialEvidence.ParticipantReport) -> some View {
-        Button(title) { perform { try $0.report(report, at: $1) } }
+        Button(title) { perform { try $0.report(report, at: $1) } }.disabled(model.savingTrialRevision)
     }
     private func review(_ accept: Bool) { perform { try $0.review(accept: accept, reviewer: reviewer, reason: reason, at: $1) } }
     private func perform(_ change: (inout EEGTrialEvidence, Double) throws -> Void) {
-        do { try model.transitionTrial(change);error=nil } catch { self.error=error.localizedDescription }
+        do { try model.submitTrialTransition(change);error=nil } catch { self.error=error.localizedDescription }
     }
 }
