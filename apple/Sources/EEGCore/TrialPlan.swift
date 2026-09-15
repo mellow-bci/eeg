@@ -2,6 +2,7 @@ import Foundation
 
 /// Independent, reproducible order generation for the documented v1 protocol.
 public struct EEGTrialPlan: Encodable, Sendable {
+    public static let maximumConditionRun = 3
     public let schema = "eeg.trial-plan.v1"
     public let algorithm = "splitmix64-fisher-yates-rejection-v1"
     public let controlProtocol: String?
@@ -18,7 +19,7 @@ public struct EEGTrialPlan: Encodable, Sendable {
             for i in stride(from: proposal.count-1, through: 1, by: -1) {
                 proposal.swapAt(i, rng.bounded(i+1))
             }
-            if !(3..<proposal.count).contains(where: { i in (1...3).allSatisfy { proposal[i] == proposal[i-$0] } }) {
+            if !(Self.maximumConditionRun..<proposal.count).contains(where: { i in (1...Self.maximumConditionRun).allSatisfy { proposal[i] == proposal[i-$0] } }) {
                 conditions = proposal; break
             }
         }

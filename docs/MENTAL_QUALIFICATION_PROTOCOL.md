@@ -211,9 +211,12 @@ never permute correlated individual samples. Report trial/session uncertainty an
 limitations of only three test sessions. Passing point estimates alone does not satisfy
 ordinary-activity exposure, artifact-control or neural-origin claims. The native CLI supports optional whole-session exploratory resampling, with explicit
 unavailable/degenerate outcomes; this is not validated confidence coverage. See
-[SESSION_RESAMPLING.md](SESSION_RESAMPLING.md). Grouped permutation analysis remains
-unimplemented; retain predictions for a separately reviewed analysis rather than
-inventing its result.
+[SESSION_RESAMPLING.md](SESSION_RESAMPLING.md). End-to-end grouped permutation analysis remains unimplemented. A native
+conditional schedule-counting primitive now respects the actual balanced,
+maximum-run-three plan; see [TRIAL_PLAN_ASSOCIATION.md](TRIAL_PLAN_ASSOCIATION.md).
+It is not yet connected to source-pinned trial evidence or evaluation receipts,
+and does not establish exchangeability. Retain predictions for that reviewed
+analysis rather than inventing its result.
 
 There is **no automatic pass to neural origin or output control**. Outcomes are:
 
