@@ -181,3 +181,41 @@ threshold was imposed or result discarded. The sample/replay correctness checks
 passed. This does not qualify Bluetooth throughput, application presentation,
 physical hardware, long-duration memory stability or physiological classification.
 No source code, detector settings, raw acquisition path or output gate changed.
+
+### Matched current-source Release comparison
+
+The higher Debug delay above prompted a matched Release workload on the same
+host. Source revision `b7fbdefc6d7e7b77ab261280a71deece6e6fbe92` has the same
+application/core/test source bytes as `9b2ee49`; the intervening change recorded
+only the Debug qualification. The worktree was clean. One selected Release test
+passed in 121.495 seconds on 2026-09-15.
+
+```sh
+EEG_CONCURRENT_LOAD_REPORT=/tmp/eeg-concurrent-release-120s-20260915.json \
+EEG_RECORDING_LOAD_SECONDS=120 \
+swift test --package-path apple -c release --filter RecordingLoadQualificationTests.testPacedRecordingWithInference
+```
+
+[Raw Release report](concurrent-release-120s-20260915.json). The profile ID,
+duration, verified sample count, replay window count and written input count
+match the Debug report; both have zero failures and discards.
+
+| Observed metric | Debug | Release |
+|---|---:|---:|
+| Samples preserved / windows matched to replay | 15,360 / 60 | 15,360 / 60 |
+| Admission p99 | 0.253 ms | 0.097 ms |
+| Inference availability delay p99 | 100.734 ms | 5.888 ms |
+| Maximum observed inference delay | 101.283 ms | 5.951 ms |
+| Observed inference queue peak | 13 | 3 |
+| Recording queue peak | 3 | 4 |
+| Final recording drain | 1.865 ms | 0.508 ms |
+| Baseline resident bytes | 35,635,200 | 35,110,912 |
+| Sampled peak / post-drain resident bytes | 39,206,912 | 38,109,184 |
+
+The roughly 101 ms Debug delay was not reproduced in this Release run. The
+result is consistent with the earlier Release observations, but this single
+non-randomized build pair cannot separate optimization from changing host
+conditions or prove absence of a performance regression. It establishes no
+worst-case bound, Bluetooth latency, main-thread rendering latency, long-session
+memory behavior or physiological accuracy. No runtime algorithm was changed to
+obtain the result; no further repeat is justified solely to improve these numbers.
