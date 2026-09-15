@@ -662,3 +662,17 @@ simulator targets. The save-panel/selection-change race was not reproduced on
 hardware; this change removes the mutable dependency identified in source. The
 prior interactive synthetic export qualification applies to the preceding build,
 not to a fresh interactive race test of this change.
+
+### Capability inventory reconciliation (2026-09-15)
+
+Re-read the native profile loader, detector construction and replay implementation
+and corrected capability-12's stale claim that the native learned runtime was
+pending. Capability-09 now links the synthetic UI qualification and distinguishes
+it from the still-pending physical collection/review protocol. All referenced
+software-evidence files were checked for existence. Neither capability was raised
+to hardware-validated, and vendor equivalence remains false.
+
+Re-ran `swift test --package-path apple --filter
+'MentalProfileTests|ReplayInferenceTests|ProfileCreationTests'`: 14 tests passed,
+zero failures. This substantiates the specified profile/replay software subset;
+it does not qualify sustained device execution or any participant classifier.
