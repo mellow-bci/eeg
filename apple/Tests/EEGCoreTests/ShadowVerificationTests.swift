@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import XCTest
 @testable import EEGCore
 
@@ -210,6 +211,40 @@ final class ShadowVerificationTests: XCTestCase {
             XCTAssertEqual(try EEGShadowVerification.catalog(store:store,recording:url).runs.count,2)
             XCTAssertTrue(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run").completeMatch)
             XCTAssertFalse(try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"other").completeMatch)
+        }
+    }
+    func testDeterministicReceiptPreservesResultsAndReproductionInputs() throws {
+        let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer {try? FileManager.default.removeItem(at:directory)}
+        let store=try EEGRecordingStore(directory:directory),profile=try profile()
+        for (mutate,omit,stop) in [(false,false,true),(true,false,true),(false,true,true),(false,false,false)] {
+            let url=try capture(store,profile:profile,mutate:mutate,omit:omit,stop:stop,
+                                identity:EEGShadowVerification.implementationFields)
+            let source=try Data(contentsOf:url)
+            let first=try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run",maximumWindows:1)
+            let data=try first.jsonData()
+            let second=try EEGShadowVerification.run(store:store,recording:url,profile:profile,runID:"run",maximumWindows:1)
+            XCTAssertEqual(data,try second.jsonData())
+            let object=try JSONSerialization.jsonObject(with:data) as! [String:Any]
+            XCTAssertEqual(object["schema"] as? String,"eeg.shadow-verification.v1")
+            XCTAssertEqual(object["algorithm_version"] as? String,"native-shadow-verification-1")
+            XCTAssertEqual(object["recording_sha256"] as? String,SHA256.hash(data:source).map {String(format:"%02x",$0)}.joined())
+            XCTAssertEqual(object["profile_id"] as? String,profile.id)
+            XCTAssertEqual(object["run_id"] as? String,"run")
+            XCTAssertEqual(object["maximum_windows"] as? Int,1)
+            XCTAssertEqual(object["replay_windows"] as? Int,1)
+            XCTAssertEqual(object["recorded_windows"] as? Int,omit ? 0 : 1)
+            XCTAssertEqual(object["mismatched_ordinals"] as? [Int],mutate ? [0] : [])
+            XCTAssertEqual(object["missing_ordinals"] as? [Int],omit ? [0] : [])
+            XCTAssertEqual(object["stop_observed"] as? Bool,stop)
+            if !stop {XCTAssertTrue(object["stop_reason"] is NSNull)}
+            XCTAssertEqual(object["complete_output_match"] as? Bool,!mutate && !omit && stop)
+            XCTAssertEqual(object["same_implementation_match"] as? Bool,!mutate && !omit && stop)
+            XCTAssertEqual(object["system_control_enabled"] as? Bool,false)
+            XCTAssertEqual(object["hardware_validated"] as? Bool,false)
+            let implementation=object["verification_implementation"] as! [String:Any]
+            XCTAssertEqual(implementation["sha256"] as? String,EEGSourceIdentity.sha256)
+            XCTAssertEqual(try Data(contentsOf:url),source)
         }
     }
     func testMissingOutputAndMissingStopNeverPass() throws {

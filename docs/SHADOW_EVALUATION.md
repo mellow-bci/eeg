@@ -4,6 +4,9 @@ Native live-output replay also enforces
 [recorded startup and run-boundary transport evidence](qualification/SHADOW_TRANSPORT_EVIDENCE.md).
 Matching output values alone cannot override missing stability or contradictory
 events within a live run.
+The native comparison result can be exported as a
+[deterministic verification receipt](qualification/SHADOW_VERIFICATION_RECEIPT.md)
+with source hashes, the actual processing limit and explicit failure accounting.
 
 `processing.evaluation.summarize` measures read-only proposals from the same detector used
 by replay. It does not unlock control or infer stress, attention or neural origin.

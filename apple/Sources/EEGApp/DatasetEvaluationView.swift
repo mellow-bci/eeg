@@ -303,7 +303,7 @@ struct DatasetEvaluationView: View {
     }
 }
 
-private struct EvaluationDocument: FileDocument {
+struct EvaluationDocument: FileDocument {
     static var readableContentTypes: [UTType] { [.json] }
     let data: Data
     init(data: Data) { self.data = data }

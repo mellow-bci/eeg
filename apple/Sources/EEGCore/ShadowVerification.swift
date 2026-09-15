@@ -38,6 +38,7 @@ public enum EEGShadowVerification {
         public let recordingSHA256: String
         public let runID: String
         public let profileID: String
+        public let maximumWindows: Int
         public let replayWindows: Int
         public let recordedWindows: Int
         public let mismatchedOrdinals: [Int]
@@ -49,6 +50,32 @@ public enum EEGShadowVerification {
         public var sameImplementationMatch: Bool { completeMatch && implementationStatus == .matchingSource }
         public var completeMatch: Bool {stopObserved && ["operator_stopped","recording_stopped","profile_view_closed"].contains(stopReason ?? "") && recordedWindows>0 && mismatchedOrdinals.isEmpty && missingOrdinals.isEmpty}
         public let systemControlEnabled=false
+        /// Deterministic evidence receipt, not an archive or authenticity proof.
+        public func jsonData() throws -> Data {
+            try Task.checkCancellation()
+            return try PythonCompatibleJSON.encode([
+                "schema":"eeg.shadow-verification.v1",
+                "algorithm_version":"native-shadow-verification-1",
+                "recording_sha256":recordingSHA256,"run_id":runID,"profile_id":profileID,
+                "maximum_windows":maximumWindows,
+                "replay_windows":replayWindows,"recorded_windows":recordedWindows,
+                "mismatched_ordinals":mismatchedOrdinals,"missing_ordinals":missingOrdinals,
+                "stop_observed":stopObserved,"stop_reason":stopReason as Any? ?? NSNull(),
+                "complete_output_match":completeMatch,"same_implementation_match":sameImplementationMatch,
+                "recorded_implementation_sha256":recordedImplementationSHA256 as Any? ?? NSNull(),
+                "implementation_status":implementationStatus.rawValue,
+                "verification_implementation":["schema":EEGSourceIdentity.schema,
+                    "sha256":EEGSourceIdentity.sha256,"input_file_count":EEGSourceIdentity.inputFileCount],
+                "system_control_enabled":false,"hardware_validated":false,
+                "definitions":[
+                    "comparison":"canonical replay from the recorded run boundary; exact recorded window/output fields; required recorded stability and single-active-run ordering",
+                    "maximum_windows":"caller-selected positive limit; exceeding it fails without a truncated receipt",
+                    "source_identity":"EEGCore source and build-definition fingerprint; excludes frontend, compiler, SDK and build flags; not binary identity or attestation",
+                    "reproduction":"retain the exact source recording, profile and corresponding verifier source; this receipt does not embed them",
+                    "scope":"software consistency only; no intent accuracy, neural origin, authenticity or hardware qualification"
+                ]
+            ] as [String:Any])
+        }
     }
     public struct Run: Identifiable, Sendable {
         public let id: String
@@ -178,7 +205,7 @@ public enum EEGShadowVerification {
         if let expectedRecordingSHA256,expectedRecordingSHA256 != digest {throw EEGRecordingError.sourceChanged}
         guard started else {throw Failure.missingRun}
         guard !profile.trainingRecordingHashes.values.contains(try fingerprint.finalize()) else {throw Failure.trainingContent}
-        return Report(recordingSHA256:digest,runID:runID,profileID:profile.id,replayWindows:expected.count,
+        return Report(recordingSHA256:digest,runID:runID,profileID:profile.id,maximumWindows:maximumWindows,replayWindows:expected.count,
             recordedWindows:seen.count,mismatchedOrdinals:mismatches.sorted(),
             missingOrdinals:expected.indices.filter {!seen.contains($0)},stopObserved:stopped,stopReason:stopReason,
             recordedImplementationSHA256:recordedImplementationSHA256,implementationStatus:implementationStatus)

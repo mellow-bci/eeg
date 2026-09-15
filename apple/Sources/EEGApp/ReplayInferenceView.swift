@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 import EEGCore
 
 struct ReplayInferenceView: View {
@@ -15,6 +16,9 @@ struct ReplayInferenceView: View {
     @State private var shadowRunID = ""
     @State private var shadowReport: EEGShadowVerification.Report?
     @State private var failure: String?
+    @State private var exporting = false
+    @State private var exportData = Data()
+    @State private var exportMessage: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -69,6 +73,11 @@ struct ReplayInferenceView: View {
                 LabeledContent("Stop reason",value:shadowReport.stopReason ?? "No stop recorded")
                 Text(shadowReport.recordingSHA256).font(.caption.monospaced()).textSelection(.enabled)
                 Text("System control remains disabled.").font(.caption)
+                Button("Export comparison receipt",systemImage:"square.and.arrow.up") {
+                    do { exportData=try shadowReport.jsonData();exportMessage=nil;exporting=true }
+                    catch { failure="Receipt could not be prepared: \(error)" }
+                }
+                if let exportMessage { Text(exportMessage).font(.caption).textSelection(.enabled) }
             }
             if running { ProgressView("Validating recording and extracting features…") }
             if let failure { Text(failure).foregroundStyle(.red).textSelection(.enabled) }
@@ -93,8 +102,15 @@ struct ReplayInferenceView: View {
             }
         }
         .disabled(running)
+        .fileExporter(isPresented:$exporting,document:EvaluationDocument(data:exportData),contentType:.json,
+                      defaultFilename:"eeg-shadow-verification.json") { result in
+            switch result {
+            case .success: exportMessage="Comparison receipt exported. Retain the original recording and profile for reproduction."
+            case .failure(let error): exportMessage="Export failed: \(error.localizedDescription)"
+            }
+        }
         .onChange(of: recordingName) { _, _ in report = nil; shadowReport=nil; shadowCatalog=nil; shadowRunID=""; failure = nil }
-        .onChange(of: shadowRunID) { _, _ in shadowReport=nil }
+        .onChange(of: shadowRunID) { _, _ in shadowReport=nil;exportMessage=nil }
     }
 
     private func loadShadowRuns() {
@@ -118,7 +134,7 @@ struct ReplayInferenceView: View {
               shadowCatalog.runs.contains(where:{$0.id==shadowRunID && $0.profileID==profile.id}) else {return}
         let directory=model.directory,url=directory.appendingPathComponent(recordingName)
         let runID=shadowRunID,limit=maximumWindows
-        running=true;shadowReport=nil;report=nil;failure=nil
+        running=true;shadowReport=nil;report=nil;failure=nil;exportMessage=nil
         Task { @MainActor in
             let result=await Task.detached(priority:.utility) {
                 Result {try EEGShadowVerification.run(store:EEGRecordingStore(directory:directory),recording:url,
