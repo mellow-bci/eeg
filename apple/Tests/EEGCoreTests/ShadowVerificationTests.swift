@@ -8,9 +8,17 @@ final class ShadowVerificationTests: XCTestCase {
         return try EEGMentalProfile.load(data:Data(contentsOf:root.appendingPathComponent("Fixtures/spectrum/mental-profile.json")))
     }
     private func capture(_ store:EEGRecordingStore,profile:EEGMentalProfile,mutate:Bool=false,omit:Bool=false,stop:Bool=true,finalized:Bool=true) throws -> URL {
-        let url=try store.start()
+        let writerQueue=DispatchQueue(label:"test.shadow.recording")
+        let writer=try EEGQueuedRecordingStore(store:store,queue:writerQueue) {_,reason in
+            XCTFail("Unexpected recording failure: \(reason)")
+        }
+        let url=try writer.start()
+        // Hold the real recording queue while live inference proceeds. This
+        // checks that event/sample admission order survives deferred storage.
+        writerQueue.suspend();var suspended=true
+        defer {if suspended {writerQueue.resume()};writer.abort();writerQueue.sync {}}
         let metadata=["81072f44-9f3d-11e3-a9dc-0002a5d5c51b":"018000102010"]
-        try store.appendEvent(kind:"device_metadata",fields:metadata)
+        try writer.enqueueEvent(kind:"device_metadata",fields:metadata)
         func sample(_ i:Int)->EEGSample {
             let word=UInt16(31200+Int(50*sin(Double(i)*0.5)))
             return EEGSample(index:i,counter:i%128,receivedAt:Double(i)/128,continuous:true,
@@ -19,8 +27,8 @@ final class ShadowVerificationTests: XCTestCase {
                 electrodesMicrovolts:Dictionary(uniqueKeysWithValues:EEGRecordingStore.channels.map {($0,Double(word)/7.8)}),
                 notificationSlot:0,recordFlag:0)
         }
-        for i in 0..<13 {try store.append(sample:sample(i))}
-        try store.appendEvent(kind:"shadow_start",fields:["shadow_run_id":"run","profile_id":profile.id,
+        for i in 0..<13 {try writer.enqueue(sample:sample(i))}
+        try writer.enqueueEvent(kind:"shadow_start",fields:["shadow_run_id":"run","profile_id":profile.id,
             "participant_id":profile.participantID,"session_id":"held-out","feature_config_id":EEGMentalFeatures.configurationID,
             "system_control_enabled":"false"])
         let queue=DispatchQueue(label:"test.shadow.reference")
@@ -29,11 +37,11 @@ final class ShadowVerificationTests: XCTestCase {
             maximumPendingInputs:512,queue:queue) {if let row=$0.window {results.append(row)}}
         live.submit(.event(try JSONSerialization.data(withJSONObject:metadata.merging(["kind":"device_metadata"]) {_,v in v})))
         live.submit(.event(Data("{\"kind\":\"transport_status\",\"status\":\"stable\"}".utf8)))
-        for i in 13..<269 {let row=sample(i);try store.append(sample:row);XCTAssertTrue(live.submit(.sample(row)))}
+        for i in 13..<269 {let row=sample(i);try writer.enqueue(sample:row);XCTAssertTrue(live.submit(.sample(row)))}
         queue.sync {};live.stop()
         XCTAssertEqual(results.count,1)
         if !omit,let row=results.first {
-            try store.appendEvent(kind:"shadow_inference",fields:["shadow_run_id":"run","profile_id":profile.id,
+            try writer.enqueueEvent(kind:"shadow_inference",fields:["shadow_run_id":"run","profile_id":profile.id,
                 "session_id":"held-out","feature_config_id":EEGMentalFeatures.configurationID,"generation":"0",
                 "ordinal":String(row.ordinal),"candidate":mutate ? "fabricated" : (row.candidate ?? ""),
                 "has_candidate":String(row.candidate != nil),"status":row.status,"system_control_enabled":"false",
@@ -41,8 +49,9 @@ final class ShadowVerificationTests: XCTestCase {
                 "last_sample_index":String(row.lastSampleIndex!),"sample_count":String(row.sampleCount),
                 "input_start":String(row.inputStart!),"input_end":String(row.inputEnd!),"time_basis":"recorded_receipt_seconds"])
         }
-        if stop {try store.appendEvent(kind:"shadow_stop",fields:["shadow_run_id":"run","reason":"operator_stopped"])}
-        if finalized {try store.finish()} else {store.abort()};return url
+        if stop {try writer.enqueueEvent(kind:"shadow_stop",fields:["shadow_run_id":"run","reason":"operator_stopped"])}
+        writerQueue.resume();suspended=false
+        if finalized {try writer.finish()} else {writer.abort();writerQueue.sync {}};return url
     }
     func testLiveRunBoundaryAlignmentAndChangedOutput() throws {
         let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

@@ -380,3 +380,29 @@ completion is not reported early, then releases it and verifies the finalized
 sample and summary. Seven focused recording-queue tests passed. All three native
 targets built. The app pending-state interaction has not yet been hardware-tested;
 no participant trial or headset connection was started for this change.
+
+## Ordered asynchronous operational events
+
+Device metadata, stop checkpoints, annotations and shadow start/result/stop events
+now use the same bounded admission queue as samples and transport events. Their
+order is established on the acquisition executor; the final storage barrier
+still drains all accepted inputs before producing a summary. Queue admission is
+not durability. Marker feedback says queued, and shadow-result status explicitly
+says recording queued. An asynchronous storage failure aborts the capture through
+the existing generation-scoped failure handler; a failed finalization remains
+an explicit failure.
+
+Trial-plan publication and trial revision persistence retain their synchronous
+contracts. Those controls still need an asynchronous acknowledgement lifecycle;
+this change does not weaken their acceptance semantics or move them onto a
+parallel evidence path.
+
+The three shadow-verification tests now record through the queued store, with
+its worker suspended while live inference processes the synthetic samples. They
+release storage before finalization, then check exact run-boundary replay,
+changed/missing output rejection, missing stop rejection, catalog/source pinning
+and incomplete input rejection. All three passed. This is software ordering
+validation; it is not a physiological or live Bluetooth timing qualification.
+
+macOS, iOS and visionOS native builds passed. The new queued-status wording is
+build-checked; no hardware run was initiated for this change.

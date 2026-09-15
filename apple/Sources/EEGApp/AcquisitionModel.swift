@@ -225,7 +225,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         do {
             let url=try store.start();recording=true
             trial=nil;trialPlan=nil;trialsStarted=0;trialSession=EEGTrialSession { try store.appendTrialEvidence($0) }
-            try store.appendEvent(kind:"device_metadata",fields:metadata.mapValues{$0.map{String(format:"%02x",$0)}.joined()})
+            try store.enqueueEvent(kind:"device_metadata",fields:metadata.mapValues{$0.map{String(format:"%02x",$0)}.joined()})
             try recordTransport(reason:"recording_start")
             event("Recording started: "+url.lastPathComponent)
         } catch { storageFailed(error) }
@@ -235,7 +235,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         stopShadow(reason:"recording_stopped")
         interruptTrial(reason: "recording_stopped")
         guard recording else { return }
-        do { try store?.appendEvent(kind:"transport_checkpoint",fields:["stable":String(transportStable),"decode_errors":String(decodeErrors),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]) } catch { storageFailed(error);return }
+        do { try store?.enqueueEvent(kind:"transport_checkpoint",fields:["stable":String(transportStable),"decode_errors":String(decodeErrors),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]) } catch { storageFailed(error);return }
         guard let store else {return}
         // Admission is stopped on the acquisition executor before ownership of
         // the final barrier transfers to the finalization queue. Restart and
@@ -313,7 +313,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
                 if let failure=output.failure { self.stopShadow(reason:failure);return }
                 guard let row=output.window else { return }
                 do {
-                    try self.store?.appendEvent(kind:"shadow_inference",fields:["profile_id":profile.id,
+                    try self.store?.enqueueEvent(kind:"shadow_inference",fields:["profile_id":profile.id,
                         "feature_config_id":EEGMentalFeatures.configurationID,"session_id":sessionID,
                         "ordinal":String(row.ordinal),"candidate":row.candidate ?? "",
                         "shadow_run_id":token.uuidString,"generation":String(output.generation),
@@ -325,7 +325,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
                         "time_basis":"recorded_receipt_seconds",
                         "has_candidate":String(row.candidate != nil),"reasons":row.reasons.joined(separator:";"),
                         "status":row.status,"system_control_enabled":"false","receivedAt":String(self.recordingClock)])
-                    self.shadowResult=row;self.shadowStatus="Experimental shadow result — no reliable command"
+                    self.shadowResult=row;self.shadowStatus="Experimental shadow result — recording queued; no reliable command"
                 } catch { self.storageFailed(error) }
             }
         }
@@ -336,7 +336,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
                   consumer.submit(.event(try JSONSerialization.data(withJSONObject:["kind":"transport_status","status":"stable"]))) else { throw EEGLiveInference.Failure.invalidCapacity }
         } catch { consumer.stop();throw error }
         do {
-            try store.appendEvent(kind:"shadow_start",fields:["profile_id":profile.id,"participant_id":profile.participantID,
+            try store.enqueueEvent(kind:"shadow_start",fields:["profile_id":profile.id,"participant_id":profile.participantID,
                 "session_id":sessionID,"feature_config_id":EEGMentalFeatures.configurationID,"shadow_run_id":token.uuidString,
                 "maximum_pending_inputs":String(maximumPendingInputs),
                 "maximum_pending_event_bytes":String(maximumPendingEventBytes),
@@ -349,7 +349,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         let stoppedRun=shadowToken
         shadow?.stop();shadow=nil;shadowToken=UUID();shadowActive=false;shadowResult=nil;shadowStatus="Stopped: "+reason
         if persist,recording {
-            do { try store?.appendEvent(kind:"shadow_stop",fields:["shadow_run_id":stoppedRun.uuidString,"reason":reason,"receivedAt":String(recordingClock)]) }
+            do { try store?.enqueueEvent(kind:"shadow_stop",fields:["shadow_run_id":stoppedRun.uuidString,"reason":reason,"receivedAt":String(recordingClock)]) }
             catch { storageFailed(error) }
         }
     }
@@ -393,7 +393,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     }
     func annotate(_ text:String) {
         guard recording,!text.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty else { return }
-        do { try store?.appendEvent(kind:"annotation",fields:["text":String(text.prefix(1000)),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]);event("Marker: "+text) } catch { storageFailed(error) }
+        do { try store?.enqueueEvent(kind:"annotation",fields:["text":String(text.prefix(1000)),"receivedAt":String(ProcessInfo.processInfo.systemUptime-origin)]);event("Marker queued: "+text) } catch { storageFailed(error) }
     }
     /// Import work is isolated from main-thread interaction and Bluetooth callbacks.
     func importRawCapture(_ url:URL) {
