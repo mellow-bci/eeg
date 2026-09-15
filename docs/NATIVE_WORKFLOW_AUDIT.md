@@ -345,3 +345,14 @@ closed-file state because notification no longer implies closure.
 Validation for this change: 105 Swift tests passed; macOS, iOS and visionOS native
 builds passed. The new pending-cleanup message is build-checked, not interactively
 verified against a physically stalled disk.
+
+## Paced recording load qualification
+
+An opt-in release-build test now exercises the canonical queued recording store
+with paced synthetic samples plus events, then verifies every sample through the
+full finalized-recording reader. The first harness attempt used the preview
+replay default (1280 samples) and failed its stress-run count assertion; this was
+a harness paging error, not evidence of writer loss. It was replaced with the
+streaming full-reader before accepting results. See qualification/RECORDING_LOAD.md
+for reproduction and measurement scope. This leaves asynchronous trial/finish
+lifecycle integration and hardware qualification outstanding.
