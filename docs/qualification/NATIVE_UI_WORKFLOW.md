@@ -94,3 +94,32 @@ recording, audio cue or physiological experiment was performed.
 These checks establish UI/CLI consistency and observable cancellation for this
 synthetic workflow. They do not establish confidence coverage, valid cue labels,
 mental-command accuracy, independent human sessions or production readiness.
+
+## Follow-up: source coverage and neutral baseline (2026-09-15)
+
+Exercised the macOS build at `d72ef1a` while disconnected, using the same
+four synthetic recordings and external profile. No acquisition, audio cues,
+hardware connection or physiological experiment was started.
+
+1. Opened the exact profile through the native file panel. The app reported
+   verified integrity and supported structure, participant `synthetic`, two
+   training sessions, and command output disabled.
+2. Evaluated the complete four-session manifest. The app showed training-source
+   coverage `2 / 2`, 40 evaluation windows and 5% rejection.
+3. Expanded Always-neutral baseline. The accessible UI displayed neutral recall
+   100% for both rules and task recall 90% for the detector versus 0% for the
+   baseline, together with the class-imbalance and correlated-window limitations.
+   These are synthetic outcomes, not measured human performance.
+4. Evaluated the manifest containing only evaluation sessions c and d. Coverage
+   changed to `0 / 2`, explicitly naming missing original sources `a, b` and
+   explaining that historical excerpt reuse cannot be checked against them.
+   The 40-window evaluation remained available without claiming source coverage.
+5. Closed the synthetic profile and quit. Moved only the four hash-verified
+   synthetic library additions into a temporary archive. Both preexisting user
+   recordings retained their exact SHA256 hashes.
+
+This is focused native UI/accessibility-tree workflow verification. No new
+export comparison or complete visual/accessibility audit was performed in this
+follow-up. CI for `d72ef1a` also passed (run `34932076804`). Source coverage and
+baseline comparisons do not establish independent sessions, physiological
+validity, Cortex parity or production readiness.
