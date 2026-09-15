@@ -6,6 +6,22 @@ import Foundation
 /// without a completion marker. Never call a control method from onFailure.
 public final class EEGQueuedRecordingStore {
     public enum Failure: Error { case invalidCapacity, admissionRejected, aborted }
+    public struct Statistics: Sendable, Equatable {
+        public let generation: UInt64
+        public let pendingInputs: Int
+        public let pendingPayloadBytes: Int
+        public let admittedInputs: Int
+        public let writtenInputs: Int
+        public let discardedInputs: Int
+        public let failedWrites: Int
+        public let peakPendingInputs: Int
+        public let peakPendingPayloadBytes: Int
+        public let maximumQueueWaitSeconds: Double
+        public let maximumWriteSeconds: Double
+        public let failed: Bool
+    }
+    private var admitted=0, written=0, discarded=0, writeFailures=0, peakInputs=0, peakBytes=0
+    private var maximumWait=0.0, maximumWrite=0.0
     private enum Input { case sample(EEGSample), event(String,[String:String]) }
     private let store: EEGRecordingStore
     private let queue: DispatchQueue
@@ -32,12 +48,21 @@ public final class EEGQueuedRecordingStore {
     public var generation: UInt64 { lock.lock();defer {lock.unlock()};return epoch }
     public var pendingInputs: Int { lock.lock();defer {lock.unlock()};return pending }
     public var pendingPayloadBytes: Int { lock.lock();defer {lock.unlock()};return bytes }
+    public var statistics: Statistics {
+        lock.lock();defer {lock.unlock()}
+        return Statistics(generation:epoch,pendingInputs:pending,pendingPayloadBytes:bytes,
+            admittedInputs:admitted,writtenInputs:written,discardedInputs:discarded,failedWrites:writeFailures,
+            peakPendingInputs:peakInputs,peakPendingPayloadBytes:peakBytes,
+            maximumQueueWaitSeconds:maximumWait,maximumWriteSeconds:maximumWrite,failed:failed)
+    }
     @discardableResult public func start() throws -> URL {
         try queue.sync {
             lock.lock();let already=active;lock.unlock()
             guard !already else { throw EEGRecordingError.alreadyRecording }
             let url=try store.start()
-            lock.lock();epoch &+= 1;failed=false;active=true;lock.unlock()
+            lock.lock();epoch &+= 1;failed=false;active=true
+            admitted=0;written=0;discarded=0;writeFailures=0;peakInputs=0;peakBytes=0;maximumWait=0;maximumWrite=0
+            lock.unlock()
             return url
         }
     }
@@ -68,17 +93,25 @@ public final class EEGQueuedRecordingStore {
         guard pending<capacity,cost<=byteCapacity-bytes else {
             lock.unlock();reject("recording_queue_overload");throw Failure.admissionRejected
         }
-        pending+=1;bytes+=cost
+        pending+=1;bytes+=cost;admitted+=1
+        peakInputs=max(peakInputs,pending);peakBytes=max(peakBytes,bytes)
+        let submittedAt=ProcessInfo.processInfo.systemUptime
         queue.async { [self] in
             defer {lock.lock();pending-=1;bytes-=cost;lock.unlock()}
             lock.lock();let usable=active && !failed;lock.unlock()
-            guard usable else { return }
+            guard usable else {lock.lock();discarded+=1;lock.unlock();return}
+            let startedAt=ProcessInfo.processInfo.systemUptime
+            lock.lock();maximumWait=max(maximumWait,startedAt-submittedAt);lock.unlock()
             do {
                 switch input {
                 case .sample(let sample): try store.append(sample:sample)
                 case .event(let kind,let fields): try store.appendEvent(kind:kind,fields:fields)
                 }
-            } catch { reject("recording_write_failed: \(error)") }
+                lock.lock();written+=1;maximumWrite=max(maximumWrite,ProcessInfo.processInfo.systemUptime-startedAt);lock.unlock()
+            } catch {
+                lock.lock();writeFailures+=1;maximumWrite=max(maximumWrite,ProcessInfo.processInfo.systemUptime-startedAt);lock.unlock()
+                reject("recording_write_failed: \(error)")
+            }
         }
         lock.unlock()
     }
@@ -104,6 +137,15 @@ public final class EEGQueuedRecordingStore {
     }
     public func finish() throws {
         try barrier {
+            let stats=statistics
+            try store.appendEvent(kind:"writer_statistics",fields:[
+                "schema":"eeg.writer-statistics.v1","generation":String(stats.generation),
+                "maximum_pending_inputs":String(capacity),"maximum_pending_payload_bytes":String(byteCapacity),
+                "admitted_inputs":String(stats.admittedInputs),"written_inputs":String(stats.writtenInputs),
+                "discarded_inputs":String(stats.discardedInputs),"failed_writes":String(stats.failedWrites),
+                "peak_pending_inputs":String(stats.peakPendingInputs),"peak_pending_payload_bytes":String(stats.peakPendingPayloadBytes),
+                "maximum_queue_wait_seconds":String(stats.maximumQueueWaitSeconds),"maximum_write_seconds":String(stats.maximumWriteSeconds),
+                "timing_basis":"process_monotonic","scope":"asynchronous_inputs_only"])
             try store.finish()
             lock.lock();active=false;lock.unlock()
         }

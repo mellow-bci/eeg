@@ -18,6 +18,7 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
     @Published private(set) var shadowResult: EEGWindowInferenceResult?
     private var shadow: EEGLiveInference?
     private var shadowToken = UUID()
+    @Published private(set) var writerStatistics: EEGQueuedRecordingStore.Statistics?
     @Published var recording = false
     @Published var sampleCount = 0
     @Published var decodeErrors = 0
@@ -71,7 +72,10 @@ final class AcquisitionModel: NSObject, ObservableObject, CBCentralManagerDelega
         } catch { message=error.localizedDescription }
         // Bluetooth is initialized only when the user chooses Find headset.
         freshnessTimer=Timer.scheduledTimer(withTimeInterval:0.25,repeats:true) { [weak self] _ in
-            guard let self=self, let last=self.lastArrival, self.ready else { return }
+            guard let self=self else {return}
+            let snapshot=self.store?.statistics
+            if snapshot != self.writerStatistics {self.writerStatistics=snapshot}
+            guard let last=self.lastArrival,self.ready else {return}
             if ProcessInfo.processInfo.systemUptime-last>0.5 {
                 self.setTransport(false,reason:"stale_input");self.stableSince=nil;self.contiguous=0
                 if self.phase != "Signal stale" { self.phase="Signal stale";self.event("No recent samples; transport stability reset") }

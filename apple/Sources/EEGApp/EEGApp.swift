@@ -315,6 +315,21 @@ struct SystemView: View {
             LabeledContent("Qualification", value: "Research build")
             Text(model.directory.path).font(.caption.monospaced()).textSelection(.enabled)
         }
+        Panel(title: "Recording writer") {
+            if let stats=model.writerStatistics {
+                LabeledContent("Recording generation",value:String(stats.generation))
+                LabeledContent("Pending inputs",value:String(stats.pendingInputs))
+                LabeledContent("Pending logical bytes",value:String(stats.pendingPayloadBytes))
+                LabeledContent("Peak pending inputs",value:String(stats.peakPendingInputs))
+                LabeledContent("Written / admitted inputs",value:"\(stats.writtenInputs) / \(stats.admittedInputs)")
+                LabeledContent("Discarded inputs",value:String(stats.discardedInputs))
+                LabeledContent("Failed writes",value:String(stats.failedWrites))
+                LabeledContent("Maximum queue wait",value:stats.writtenInputs+stats.failedWrites>0 ? String(format:"%.3f ms",stats.maximumQueueWaitSeconds*1000) : "No writes observed")
+                LabeledContent("Maximum write duration",value:stats.writtenInputs+stats.failedWrites>0 ? String(format:"%.3f ms",stats.maximumWriteSeconds*1000) : "No writes observed")
+                if stats.failed {Text("Writer failed; capture is incomplete.").foregroundStyle(.red)}
+            }
+            Text("Per-recording asynchronous input measurements. Logical bytes are not process memory. Control barriers and filesystem synchronization are excluded; these values do not establish end-to-end signal latency.").font(.caption).foregroundStyle(.secondary)
+        }
         Panel(title: "Qualification remaining") { Text("Physical Apple-device acquisition, long-duration durability, radio interruptions, signed distribution and validated physiological interpretation remain release gates. Decoder parity against archived captures does not replace these checks.").foregroundStyle(.secondary) }
         Panel(title: "Session events") {
             if model.events.isEmpty { ContentUnavailableView("No events", systemImage: "list.bullet.rectangle") }

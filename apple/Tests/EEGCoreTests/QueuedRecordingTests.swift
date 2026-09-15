@@ -20,6 +20,8 @@ final class QueuedRecordingTests: XCTestCase {
         try writer.enqueueEvent(kind:"annotation",fields:["text":"before"])
         for index in 0..<20 {try writer.enqueue(sample:sample(index))}
         XCTAssertEqual(writer.pendingInputs,21)
+        XCTAssertEqual(writer.statistics.peakPendingInputs,21)
+        XCTAssertEqual(writer.statistics.admittedInputs,21)
         queue.resume()
         let trial=try EEGTrialEvidence(id:"trial",sessionID:"session",participantID:"synthetic",
             condition:.silentSerialSubtraction,startingNumber:613)
@@ -36,6 +38,14 @@ final class QueuedRecordingTests: XCTestCase {
         XCTAssertEqual(rows[22]["sample_count_at_write"] as? Int,20)
         XCTAssertEqual(rows[23]["text"] as? String,"after")
         XCTAssertEqual(rows.last?["kind"] as? String,"summary")
+        let telemetry=rows[rows.count-2]
+        XCTAssertEqual(telemetry["kind"] as? String,"writer_statistics")
+        XCTAssertEqual(telemetry["written_inputs"] as? String,"21")
+        XCTAssertEqual(telemetry["scope"] as? String,"asynchronous_inputs_only")
+        XCTAssertEqual(writer.statistics.writtenInputs,21)
+        XCTAssertEqual(writer.statistics.discardedInputs,0)
+        XCTAssertGreaterThanOrEqual(writer.statistics.maximumQueueWaitSeconds,0)
+        XCTAssertGreaterThanOrEqual(writer.statistics.maximumWriteSeconds,0)
     }
     func testOverloadAbortsInsteadOfFinalizingPartialCapture() throws {
         let directory=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -55,7 +65,12 @@ final class QueuedRecordingTests: XCTestCase {
         XCTAssertThrowsError(try writer.finish())
         XCTAssertFalse(try String(contentsOf:url).contains("\"summary\""))
         XCTAssertEqual(writer.pendingInputs,0);XCTAssertEqual(writer.pendingPayloadBytes,0)
+        XCTAssertEqual(writer.statistics.discardedInputs,2)
+        XCTAssertTrue(writer.statistics.failed)
         let next=try writer.start()
+        XCTAssertEqual(writer.statistics.admittedInputs,0)
+        XCTAssertEqual(writer.statistics.maximumWriteSeconds,0)
+        XCTAssertFalse(writer.statistics.failed)
         XCTAssertEqual(writer.generation,2)
         try writer.enqueue(sample:sample(0));try writer.finish()
         XCTAssertEqual(try raw.replay(recording:next).count,1)
@@ -99,6 +114,9 @@ final class QueuedRecordingTests: XCTestCase {
         let url=try writer.start()
         try writer.enqueue(sample:sample(0))
         wait(for:[failure],timeout:3)
+        XCTAssertEqual(writer.statistics.failedWrites,1)
+        XCTAssertEqual(writer.statistics.writtenInputs,0)
+        XCTAssertTrue(writer.statistics.failed)
         XCTAssertThrowsError(try writer.appendEvent(kind:"annotation",fields:["text":"not persisted"]))
         XCTAssertThrowsError(try writer.finish())
         XCTAssertFalse(try String(contentsOf:url).contains("\"summary\""))

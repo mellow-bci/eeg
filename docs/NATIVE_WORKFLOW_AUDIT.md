@@ -214,3 +214,35 @@ completion marker, accounting release and a new generation after abort. The full
 suite passed 100 tests; the strengthened trial-order check was then rerun in the
 focused queue suite. Three platform builds passed. Physical stream throughput,
 long-duration memory, stalls, shutdown and cue timing require qualification.
+
+## Recording writer observability
+
+`EEGQueuedRecordingStore.statistics` provides one lock-consistent snapshot per
+recording generation: admitted, written, discarded and failed asynchronous
+inputs; current/peak queue occupancy and logical bytes; maximum queue wait and
+write duration. Start resets measurements. Discarded means admitted work skipped
+after invalidation; rejected admission is not counted as admitted. A write that
+throws is counted separately, since a partial write may have reached the file.
+
+Durations use `ProcessInfo.systemUptime`: admission to worker start, and worker
+start to the underlying append return, respectively. They exclude synchronous
+control operations, final filesystem synchronization, radio/decoder delays and
+consumer latency. Maximum values are neither percentiles nor an acquisition
+latency claim. Payload accounting is not heap/RSS measurement.
+
+Before successful completion, the writer persists `writer_statistics` with
+schema `eeg.writer-statistics.v1`, configured limits, counters and timing basis.
+The completion marker follows only if that event and completion succeed. An
+aborted recording need not contain final statistics; diagnostics retain the
+in-memory snapshot until the next start. The Diagnostics view polls snapshots
+and shows unavailable timing as “No writes observed”. It never converts absent
+measurements to a successful throughput claim.
+
+Tests verify suspended-queue high-water counts, persisted written counts,
+invalidated work accounting, injected failed-write counts and generation reset.
+The full 100-test suite passed; no hardware-rate benchmark was performed.
+
+The rebuilt macOS Diagnostics page was inspected with acquisition disconnected:
+all counters were zero and both duration fields showed “No writes observed”. No
+recording was started during this UI check. Snapshot publication skips unchanged
+values to avoid unnecessary idle view invalidation. Platform builds passed.
