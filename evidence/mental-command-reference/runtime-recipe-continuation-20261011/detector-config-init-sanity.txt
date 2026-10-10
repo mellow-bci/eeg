@@ -1,0 +1,464 @@
+(lldb) command source -s 0 '/dev/stdin'
+Executing commands in '/dev/stdin'.
+(lldb) target create "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -n Cortex::MentalCommands::CognitivDetection::configure
+CortexService`Cortex::MentalCommands::CognitivDetection::configure:
+CortexService[0x100b26bdc] <+0>:   stp    x24, x23, [sp, #-0x40]!
+CortexService[0x100b26be0] <+4>:   stp    x22, x21, [sp, #0x10]
+CortexService[0x100b26be4] <+8>:   stp    x20, x19, [sp, #0x20]
+CortexService[0x100b26be8] <+12>:  stp    x29, x30, [sp, #0x30]
+CortexService[0x100b26bec] <+16>:  add    x29, sp, #0x30
+CortexService[0x100b26bf0] <+20>:  mov    x19, x4
+CortexService[0x100b26bf4] <+24>:  mov    x20, x3
+CortexService[0x100b26bf8] <+28>:  mov    x21, x2
+CortexService[0x100b26bfc] <+32>:  mov    x22, x1
+CortexService[0x100b26c00] <+36>:  mov    x23, x0
+CortexService[0x100b26c04] <+40>:  sub    w8, w1, #0x1
+CortexService[0x100b26c08] <+44>:  cmp    w8, #0x9
+CortexService[0x100b26c0c] <+48>:  b.hi   0x100b26c20               ; <+68>
+CortexService[0x100b26c10] <+52>:  adrp   x9, 9746
+CortexService[0x100b26c14] <+56>:  add    x9, x9, #0x3c0            ; typeinfo for Cortex::MentalCommands::CognitivDetection + 24
+CortexService[0x100b26c18] <+60>:  ldr    x1, [x9, w8, sxtw #3]
+CortexService[0x100b26c1c] <+64>:  b      0x100b26c28               ; <+76>
+CortexService[0x100b26c20] <+68>:  adrp   x1, 10366
+CortexService[0x100b26c24] <+72>:  add    x1, x1, #0x3d0
+CortexService[0x100b26c28] <+76>:  mov    x0, x23
+CortexService[0x100b26c2c] <+80>:  bl     0x101234778               ; Cortex::DetectionCore::Detection::setTargetChan(QList<Cortex::Core::Channel_t> const&)
+CortexService[0x100b26c30] <+84>:  mov    x0, x23
+CortexService[0x100b26c34] <+88>:  mov    x1, x22
+CortexService[0x100b26c38] <+92>:  mov    x2, x21
+CortexService[0x100b26c3c] <+96>:  mov    x3, x20
+CortexService[0x100b26c40] <+100>: mov    x4, x19
+CortexService[0x100b26c44] <+104>: ldp    x29, x30, [sp, #0x30]
+CortexService[0x100b26c48] <+108>: ldp    x20, x19, [sp, #0x20]
+CortexService[0x100b26c4c] <+112>: ldp    x22, x21, [sp, #0x10]
+CortexService[0x100b26c50] <+116>: ldp    x24, x23, [sp], #0x40
+CortexService[0x100b26c54] <+120>: b      0x1012341b0               ; Cortex::DetectionCore::Detection::configure(Cortex::Core::HeadsetType, QList<Cortex::Core::Channel_t> const&, Cortex::DetectionCore::EmoProfile*, Cortex::DetectionCore::DetectionState*)
+(lldb) disassemble -n Cortex::MentalCommands::CognitivDetection::detect
+CortexService`Cortex::MentalCommands::CognitivDetection::detect:
+CortexService[0x100b26c58] <+0>:  stp    x22, x21, [sp, #-0x30]!
+CortexService[0x100b26c5c] <+4>:  stp    x20, x19, [sp, #0x10]
+CortexService[0x100b26c60] <+8>:  stp    x29, x30, [sp, #0x20]
+CortexService[0x100b26c64] <+12>: add    x29, sp, #0x20
+CortexService[0x100b26c68] <+16>: mov    x19, x1
+CortexService[0x100b26c6c] <+20>: mov    x20, x0
+CortexService[0x100b26c70] <+24>: add    x21, x0, #0xc0
+CortexService[0x100b26c74] <+28>: bl     0x1012346d4               ; Cortex::DetectionCore::Detection::emoProfile()
+CortexService[0x100b26c78] <+32>: mov    x22, x0
+CortexService[0x100b26c7c] <+36>: mov    x0, x20
+CortexService[0x100b26c80] <+40>: bl     0x1012346dc               ; Cortex::DetectionCore::Detection::detectionState()
+CortexService[0x100b26c84] <+44>: mov    x3, x0
+CortexService[0x100b26c88] <+48>: mov    x0, x21
+CortexService[0x100b26c8c] <+52>: mov    x1, x19
+CortexService[0x100b26c90] <+56>: mov    x2, x22
+CortexService[0x100b26c94] <+60>: bl     0x100b2d5f4               ; Cortex::MentalCommands::CognitivDetectionManager::run(Cortex::Math::Matrix const&, Cortex::DetectionCore::EmoProfile*, Cortex::DetectionCore::DetectionState*)
+CortexService[0x100b26c98] <+64>: mov    w0, #0x0                  ; =0
+CortexService[0x100b26c9c] <+68>: ldp    x29, x30, [sp, #0x20]
+CortexService[0x100b26ca0] <+72>: ldp    x20, x19, [sp, #0x10]
+CortexService[0x100b26ca4] <+76>: ldp    x22, x21, [sp], #0x30
+CortexService[0x100b26ca8] <+80>: ret
+(lldb) disassemble -n Cortex::MentalCommands::CognitivDetection::init
+CortexService`Cortex::MentalCommands::CognitivDetection::init:
+CortexService[0x100b26cac] <+0>:   sub    sp, sp, #0x90
+CortexService[0x100b26cb0] <+4>:   stp    x22, x21, [sp, #0x60]
+CortexService[0x100b26cb4] <+8>:   stp    x20, x19, [sp, #0x70]
+CortexService[0x100b26cb8] <+12>:  stp    x29, x30, [sp, #0x80]
+CortexService[0x100b26cbc] <+16>:  add    x29, sp, #0x80
+CortexService[0x100b26cc0] <+20>:  mov    x19, x0
+CortexService[0x100b26cc4] <+24>:  adrp   x8, 9720
+CortexService[0x100b26cc8] <+28>:  ldr    x8, [x8, #0xcf0]
+CortexService[0x100b26ccc] <+32>:  ldr    x8, [x8]
+CortexService[0x100b26cd0] <+36>:  stur   x8, [x29, #-0x28]
+CortexService[0x100b26cd4] <+40>:  bl     0x1012346d4               ; Cortex::DetectionCore::Detection::emoProfile()
+CortexService[0x100b26cd8] <+44>:  mov    x20, x0
+CortexService[0x100b26cdc] <+48>:  adrp   x1, 9511
+CortexService[0x100b26ce0] <+52>:  add    x1, x1, #0x92e            ; "cognitiv-version"
+CortexService[0x100b26ce4] <+56>:  add    x8, sp, #0x20
+CortexService[0x100b26ce8] <+60>:  mov    w0, #0x10                 ; =16
+CortexService[0x100b26cec] <+64>:  bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x100b26cf0] <+68>:  ldr    q0, [sp, #0x20]
+CortexService[0x100b26cf4] <+72>:  str    q0, [sp]
+CortexService[0x100b26cf8] <+76>:  ldr    x8, [sp, #0x30]
+CortexService[0x100b26cfc] <+80>:  str    x8, [sp, #0x10]
+CortexService[0x100b26d00] <+84>:  add    x8, sp, #0x38
+CortexService[0x100b26d04] <+88>:  mov    x1, sp
+CortexService[0x100b26d08] <+92>:  mov    x0, x20
+CortexService[0x100b26d0c] <+96>:  bl     0x10123558c               ; Cortex::DetectionCore::EmoProfile::get(QString const&) const
+CortexService[0x100b26d10] <+100>: ldr    x8, [sp]
+CortexService[0x100b26d14] <+104>: cbz    x8, 0x100b26d3c           ; <+144>
+CortexService[0x100b26d18] <+108>: mov    w9, #-0x1                 ; =-1
+CortexService[0x100b26d1c] <+112>: ldaddal w9, w8, [x8]
+CortexService[0x100b26d20] <+116>: cmp    w8, #0x1
+CortexService[0x100b26d24] <+120>: b.ne   0x100b26d3c               ; <+144>
+CortexService[0x100b26d28] <+124>: ldr    x0, [sp]
+CortexService[0x100b26d2c] <+128>: cbz    x0, 0x100b26e04           ; <+344>
+CortexService[0x100b26d30] <+132>: ldr    w8, [x0]
+CortexService[0x100b26d34] <+136>: cbnz   w8, 0x100b26e0c           ; <+352>
+CortexService[0x100b26d38] <+140>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b26d3c] <+144>: ldr    x8, [sp, #0x50]
+CortexService[0x100b26d40] <+148>: and    x8, x8, #0xfffffffffffffffc
+CortexService[0x100b26d44] <+152>: str    x8, [sp, #0x20]
+CortexService[0x100b26d48] <+156>: add    x0, sp, #0x20
+CortexService[0x100b26d4c] <+160>: bl     0x1024b6c7c               ; symbol stub for: QMetaType::isValid() const
+CortexService[0x100b26d50] <+164>: cbz    w0, 0x100b26da4           ; <+248>
+CortexService[0x100b26d54] <+168>: add    x8, sp, #0x20
+CortexService[0x100b26d58] <+172>: add    x0, sp, #0x38
+CortexService[0x100b26d5c] <+176>: bl     0x1024b6a9c               ; symbol stub for: QVariant::toString() const
+CortexService[0x100b26d60] <+180>: adrp   x1, 10366
+CortexService[0x100b26d64] <+184>: add    x1, x1, #0x430
+CortexService[0x100b26d68] <+188>: add    x0, sp, #0x20
+CortexService[0x100b26d6c] <+192>: bl     0x10000df44               ; ___lldb_unnamed_symbol_10000df44
+CortexService[0x100b26d70] <+196>: mov    x21, x0
+CortexService[0x100b26d74] <+200>: ldr    x8, [sp, #0x20]
+CortexService[0x100b26d78] <+204>: cbz    x8, 0x100b26da0           ; <+244>
+CortexService[0x100b26d7c] <+208>: mov    w9, #-0x1                 ; =-1
+CortexService[0x100b26d80] <+212>: ldaddal w9, w8, [x8]
+CortexService[0x100b26d84] <+216>: cmp    w8, #0x1
+CortexService[0x100b26d88] <+220>: b.ne   0x100b26da0               ; <+244>
+CortexService[0x100b26d8c] <+224>: ldr    x0, [sp, #0x20]
+CortexService[0x100b26d90] <+228>: cbz    x0, 0x100b26e14           ; <+360>
+CortexService[0x100b26d94] <+232>: ldr    w8, [x0]
+CortexService[0x100b26d98] <+236>: cbnz   w8, 0x100b26e1c           ; <+368>
+CortexService[0x100b26d9c] <+240>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b26da0] <+244>: tbnz   w21, #0x0, 0x100b26dac    ; <+256>
+CortexService[0x100b26da4] <+248>: mov    x0, x20
+CortexService[0x100b26da8] <+252>: bl     0x100b26e54               ; Cortex::MentalCommands::CognitivDetection::loadDefaultProfile(Cortex::DetectionCore::EmoProfile*)
+CortexService[0x100b26dac] <+256>: mov    x0, x19
+CortexService[0x100b26db0] <+260>: bl     0x1012346cc               ; Cortex::DetectionCore::Detection::samplingRate() const
+CortexService[0x100b26db4] <+264>: add    x8, x19, #0xc0
+CortexService[0x100b26db8] <+268>: sxtw   x2, w0
+CortexService[0x100b26dbc] <+272>: mov    x0, x8
+CortexService[0x100b26dc0] <+276>: mov    x1, x20
+CortexService[0x100b26dc4] <+280>: bl     0x100b37bf0               ; Cortex::MentalCommands::CognitivDetectionManager::init(Cortex::DetectionCore::EmoProfile*, unsigned long)
+CortexService[0x100b26dc8] <+284>: add    x0, sp, #0x38
+CortexService[0x100b26dcc] <+288>: bl     0x1024b5b30               ; symbol stub for: QVariant::~QVariant()
+CortexService[0x100b26dd0] <+292>: ldur   x8, [x29, #-0x28]
+CortexService[0x100b26dd4] <+296>: adrp   x9, 9720
+CortexService[0x100b26dd8] <+300>: ldr    x9, [x9, #0xcf0]
+CortexService[0x100b26ddc] <+304>: ldr    x9, [x9]
+CortexService[0x100b26de0] <+308>: cmp    x9, x8
+CortexService[0x100b26de4] <+312>: b.ne   0x100b26e00               ; <+340>
+CortexService[0x100b26de8] <+316>: mov    w0, #0x0                  ; =0
+CortexService[0x100b26dec] <+320>: ldp    x29, x30, [sp, #0x80]
+CortexService[0x100b26df0] <+324>: ldp    x20, x19, [sp, #0x70]
+CortexService[0x100b26df4] <+328>: ldp    x22, x21, [sp, #0x60]
+CortexService[0x100b26df8] <+332>: add    sp, sp, #0x90
+CortexService[0x100b26dfc] <+336>: ret
+CortexService[0x100b26e00] <+340>: bl     0x1024b77f8               ; symbol stub for: __stack_chk_fail
+CortexService[0x100b26e04] <+344>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x100b26e08] <+348>: b      0x100b26e20               ; <+372>
+CortexService[0x100b26e0c] <+352>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100b26e10] <+356>: b      0x100b26e20               ; <+372>
+CortexService[0x100b26e14] <+360>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x100b26e18] <+364>: b      0x100b26e20               ; <+372>
+CortexService[0x100b26e1c] <+368>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100b26e20] <+372>: brk    #0x1
+CortexService[0x100b26e24] <+376>: b      0x100b26e40               ; <+404>
+CortexService[0x100b26e28] <+380>: mov    x19, x0
+CortexService[0x100b26e2c] <+384>: mov    x0, sp
+CortexService[0x100b26e30] <+388>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x100b26e34] <+392>: mov    x0, x19
+CortexService[0x100b26e38] <+396>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+CortexService[0x100b26e3c] <+400>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+CortexService[0x100b26e40] <+404>: mov    x19, x0
+CortexService[0x100b26e44] <+408>: add    x0, sp, #0x38
+CortexService[0x100b26e48] <+412>: bl     0x1024b5b30               ; symbol stub for: QVariant::~QVariant()
+CortexService[0x100b26e4c] <+416>: mov    x0, x19
+CortexService[0x100b26e50] <+420>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+(lldb) disassemble -n Cortex::MentalCommands::CognitivDetection::stop
+CortexService`Cortex::MentalCommands::CognitivDetection::stop:
+CortexService[0x100b29308] <+0>:  stp    x20, x19, [sp, #-0x20]!
+CortexService[0x100b2930c] <+4>:  stp    x29, x30, [sp, #0x10]
+CortexService[0x100b29310] <+8>:  add    x29, sp, #0x10
+CortexService[0x100b29314] <+12>: add    x19, x0, #0xc0
+CortexService[0x100b29318] <+16>: bl     0x1012346d4               ; Cortex::DetectionCore::Detection::emoProfile()
+CortexService[0x100b2931c] <+20>: mov    x1, x0
+CortexService[0x100b29320] <+24>: mov    x0, x19
+CortexService[0x100b29324] <+28>: bl     0x100b33024               ; Cortex::MentalCommands::CognitivDetectionManager::stop(Cortex::DetectionCore::EmoProfile*)
+CortexService[0x100b29328] <+32>: mov    w0, #0x0                  ; =0
+CortexService[0x100b2932c] <+36>: ldp    x29, x30, [sp, #0x10]
+CortexService[0x100b29330] <+40>: ldp    x20, x19, [sp], #0x20
+CortexService[0x100b29334] <+44>: ret
+(lldb) disassemble -s 0x100b29338 -e 0x100b29750
+CortexService`Cortex::MentalCommands::CognitivDetection::parameterSanityCheck:
+CortexService[0x100b29338] <+0>:   stp    x22, x21, [sp, #-0x30]!
+CortexService[0x100b2933c] <+4>:   stp    x20, x19, [sp, #0x10]
+CortexService[0x100b29340] <+8>:   stp    x29, x30, [sp, #0x20]
+CortexService[0x100b29344] <+12>:  add    x29, sp, #0x20
+CortexService[0x100b29348] <+16>:  mov    x19, x1
+CortexService[0x100b2934c] <+20>:  mov    x20, x0
+CortexService[0x100b29350] <+24>:  ldr    x8, [x1]
+CortexService[0x100b29354] <+28>:  cbz    x8, 0x100b29360           ; <+40>
+CortexService[0x100b29358] <+32>:  ldr    x21, [x8, #0x8]
+CortexService[0x100b2935c] <+36>:  b      0x100b29364               ; <+44>
+CortexService[0x100b29360] <+40>:  mov    x21, #0x0                 ; =0
+CortexService[0x100b29364] <+44>:  add    x9, x8, #0x10
+CortexService[0x100b29368] <+48>:  cmp    x8, #0x0
+CortexService[0x100b2936c] <+52>:  csel   x8, xzr, x9, eq
+CortexService[0x100b29370] <+56>:  cmp    x21, x8
+CortexService[0x100b29374] <+60>:  b.ne   0x100b293a4               ; <+108>
+CortexService[0x100b29378] <+64>:  mov    w0, #0x0                  ; =0
+CortexService[0x100b2937c] <+68>:  ldp    x29, x30, [sp, #0x20]
+CortexService[0x100b29380] <+72>:  ldp    x20, x19, [sp, #0x10]
+CortexService[0x100b29384] <+76>:  ldp    x22, x21, [sp], #0x30
+CortexService[0x100b29388] <+80>:  ret
+CortexService[0x100b2938c] <+84>:  ldr    x9, [x19]
+CortexService[0x100b29390] <+88>:  add    x10, x9, #0x10
+CortexService[0x100b29394] <+92>:  cmp    x9, #0x0
+CortexService[0x100b29398] <+96>:  ccmp   x10, x8, #0x0, ne
+CortexService[0x100b2939c] <+100>: mov    x21, x8
+CortexService[0x100b293a0] <+104>: b.eq   0x100b29378               ; <+64>
+CortexService[0x100b293a4] <+108>: add    x1, x21, #0x20
+CortexService[0x100b293a8] <+112>: add    x2, x21, #0x38
+CortexService[0x100b293ac] <+116>: mov    x0, x20
+CortexService[0x100b293b0] <+120>: bl     0x100b293e8               ; Cortex::MentalCommands::CognitivDetection::parameterSanityCheck(Cortex::DetectionCore::EmoProfile const*, QString const&, QVariant const&)
+CortexService[0x100b293b4] <+124>: cbnz   w0, 0x100b2937c           ; <+68>
+CortexService[0x100b293b8] <+128>: ldr    x9, [x21, #0x8]
+CortexService[0x100b293bc] <+132>: cbz    x9, 0x100b293d0           ; <+152>
+CortexService[0x100b293c0] <+136>: mov    x8, x9
+CortexService[0x100b293c4] <+140>: ldr    x9, [x9]
+CortexService[0x100b293c8] <+144>: cbnz   x9, 0x100b293c0           ; <+136>
+CortexService[0x100b293cc] <+148>: b      0x100b2938c               ; <+84>
+CortexService[0x100b293d0] <+152>: ldr    x8, [x21, #0x10]
+CortexService[0x100b293d4] <+156>: ldr    x9, [x8]
+CortexService[0x100b293d8] <+160>: cmp    x9, x21
+CortexService[0x100b293dc] <+164>: mov    x21, x8
+CortexService[0x100b293e0] <+168>: b.ne   0x100b293d0               ; <+152>
+CortexService[0x100b293e4] <+172>: b      0x100b2938c               ; <+84>
+
+CortexService`Cortex::MentalCommands::CognitivDetection::parameterSanityCheck:
+CortexService[0x100b293e8] <+0>:   sub    sp, sp, #0x100
+CortexService[0x100b293ec] <+4>:   stp    x26, x25, [sp, #0xb0]
+CortexService[0x100b293f0] <+8>:   stp    x24, x23, [sp, #0xc0]
+CortexService[0x100b293f4] <+12>:  stp    x22, x21, [sp, #0xd0]
+CortexService[0x100b293f8] <+16>:  stp    x20, x19, [sp, #0xe0]
+CortexService[0x100b293fc] <+20>:  stp    x29, x30, [sp, #0xf0]
+CortexService[0x100b29400] <+24>:  add    x29, sp, #0xf0
+CortexService[0x100b29404] <+28>:  adrp   x8, 9717
+CortexService[0x100b29408] <+32>:  ldr    x8, [x8, #0xcf0]
+CortexService[0x100b2940c] <+36>:  ldr    x8, [x8]
+CortexService[0x100b29410] <+40>:  stur   x8, [x29, #-0x48]
+CortexService[0x100b29414] <+44>:  cbz    x0, 0x100b29f9c           ; <+2996>
+CortexService[0x100b29418] <+48>:  mov    x20, x2
+CortexService[0x100b2941c] <+52>:  mov    x21, x1
+CortexService[0x100b29420] <+56>:  mov    x19, x0
+CortexService[0x100b29424] <+60>:  ldr    x8, [x2, #0x18]
+CortexService[0x100b29428] <+64>:  and    x8, x8, #0xfffffffffffffffc
+CortexService[0x100b2942c] <+68>:  stur   x8, [x29, #-0x68]
+CortexService[0x100b29430] <+72>:  sub    x0, x29, #0x68
+CortexService[0x100b29434] <+76>:  bl     0x1024b6c7c               ; symbol stub for: QMetaType::isValid() const
+CortexService[0x100b29438] <+80>:  cbz    w0, 0x100b29fa4           ; <+3004>
+CortexService[0x100b2943c] <+84>:  adrp   x24, 9716
+CortexService[0x100b29440] <+88>:  ldr    x24, [x24, #0xdc0]
+CortexService[0x100b29444] <+92>:  ldp    x8, x1, [x21, #0x8]
+CortexService[0x100b29448] <+96>:  cmp    x8, #0x0
+CortexService[0x100b2944c] <+100>: csel   x0, x24, x8, eq
+CortexService[0x100b29450] <+104>: adrp   x2, 9454
+CortexService[0x100b29454] <+108>: add    x2, x2, #0x27e            ; "cognitiv-activeActions"
+CortexService[0x100b29458] <+112>: mov    w3, #0x16                 ; =22
+CortexService[0x100b2945c] <+116>: mov    w4, #0x1                  ; =1
+CortexService[0x100b29460] <+120>: bl     0x1024b5710               ; symbol stub for: QString::compare_helper(QChar const*, long long, char const*, long long, Qt::CaseSensitivity)
+CortexService[0x100b29464] <+124>: cbz    w0, 0x100b29498           ; <+176>
+CortexService[0x100b29468] <+128>: mov    x23, x22
+CortexService[0x100b2946c] <+132>: ldp    x8, x1, [x21, #0x8]
+CortexService[0x100b29470] <+136>: cmp    x8, #0x0
+CortexService[0x100b29474] <+140>: csel   x0, x24, x8, eq
+CortexService[0x100b29478] <+144>: adrp   x2, 9454
+CortexService[0x100b2947c] <+148>: add    x2, x2, #0x4c7            ; "cognitiv-trainingControl"
+CortexService[0x100b29480] <+152>: mov    w3, #0x18                 ; =24
+CortexService[0x100b29484] <+156>: mov    w4, #0x1                  ; =1
+CortexService[0x100b29488] <+160>: bl     0x1024b5710               ; symbol stub for: QString::compare_helper(QChar const*, long long, char const*, long long, Qt::CaseSensitivity)
+CortexService[0x100b2948c] <+164>: cbz    w0, 0x100b294dc           ; <+244>
+CortexService[0x100b29490] <+168>: mov    w22, #0x0                 ; =0
+CortexService[0x100b29494] <+172>: b      0x100b29ad4               ; <+1772>
+CortexService[0x100b29498] <+176>: ldr    x8, [x20, #0x18]
+CortexService[0x100b2949c] <+180>: and    x0, x8, #0xfffffffffffffffc
+CortexService[0x100b294a0] <+184>: adrp   x1, 9879
+CortexService[0x100b294a4] <+188>: add    x1, x1, #0x138            ; guard variable for bool QMetaType::registerConverterImpl<QSharedPointer<Cortex::Detections::ConnectedHeadset>, QObject*>(std::__1::function<bool (void const*, void*)>, QMetaType, QMetaType)::unregister + 344
+CortexService[0x100b294a8] <+192>: bl     0x1024b5cc8               ; symbol stub for: QMetaType::canConvert(QMetaType, QMetaType)
+CortexService[0x100b294ac] <+196>: tbz    w0, #0x0, 0x100b29fb0     ; <+3016>
+CortexService[0x100b294b0] <+200>: sub    x8, x29, #0x68
+CortexService[0x100b294b4] <+204>: mov    x0, x20
+CortexService[0x100b294b8] <+208>: bl     0x100b1b164               ; ___lldb_unnamed_symbol_100b1b164
+CortexService[0x100b294bc] <+212>: sub    x0, x29, #0x68
+CortexService[0x100b294c0] <+216>: bl     0x1021350b0               ; Cortex::Math::Matrix::isEmpty() const
+CortexService[0x100b294c4] <+220>: tbz    w0, #0x0, 0x100b295fc     ; <+532>
+CortexService[0x100b294c8] <+224>: mov    w22, #0x0                 ; =0
+CortexService[0x100b294cc] <+228>: mov    w23, #0x1                 ; =1
+CortexService[0x100b294d0] <+232>: ldur   x8, [x29, #-0x68]
+CortexService[0x100b294d4] <+236>: cbnz   x8, 0x100b29980           ; <+1432>
+CortexService[0x100b294d8] <+240>: b      0x100b299a4               ; <+1468>
+CortexService[0x100b294dc] <+244>: mov    x0, x20
+CortexService[0x100b294e0] <+248>: mov    x1, #0x0                  ; =0
+CortexService[0x100b294e4] <+252>: bl     0x1024b6a24               ; symbol stub for: QVariant::toInt(bool*) const
+CortexService[0x100b294e8] <+256>: mov    x20, x0
+CortexService[0x100b294ec] <+260>: adrp   x1, 9454
+CortexService[0x100b294f0] <+264>: add    x1, x1, #0x4c7            ; "cognitiv-trainingControl"
+CortexService[0x100b294f4] <+268>: add    x8, sp, #0x60
+CortexService[0x100b294f8] <+272>: mov    w0, #0x18                 ; =24
+CortexService[0x100b294fc] <+276>: bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x100b29500] <+280>: ldr    q0, [sp, #0x60]
+CortexService[0x100b29504] <+284>: str    q0, [sp, #0x40]
+CortexService[0x100b29508] <+288>: ldr    x8, [sp, #0x70]
+CortexService[0x100b2950c] <+292>: str    x8, [sp, #0x50]
+CortexService[0x100b29510] <+296>: sub    x8, x29, #0x68
+CortexService[0x100b29514] <+300>: add    x1, sp, #0x40
+CortexService[0x100b29518] <+304>: mov    x0, x19
+CortexService[0x100b2951c] <+308>: bl     0x10123558c               ; Cortex::DetectionCore::EmoProfile::get(QString const&) const
+CortexService[0x100b29520] <+312>: sub    x0, x29, #0x68
+CortexService[0x100b29524] <+316>: mov    x1, #0x0                  ; =0
+CortexService[0x100b29528] <+320>: bl     0x1024b6a24               ; symbol stub for: QVariant::toInt(bool*) const
+CortexService[0x100b2952c] <+324>: mov    x21, x0
+CortexService[0x100b29530] <+328>: sub    x0, x29, #0x68
+CortexService[0x100b29534] <+332>: bl     0x1024b5b30               ; symbol stub for: QVariant::~QVariant()
+CortexService[0x100b29538] <+336>: ldr    x8, [sp, #0x40]
+CortexService[0x100b2953c] <+340>: cbz    x8, 0x100b29564           ; <+380>
+CortexService[0x100b29540] <+344>: mov    w9, #-0x1                 ; =-1
+CortexService[0x100b29544] <+348>: ldaddal w9, w8, [x8]
+CortexService[0x100b29548] <+352>: cmp    w8, #0x1
+CortexService[0x100b2954c] <+356>: b.ne   0x100b29564               ; <+380>
+CortexService[0x100b29550] <+360>: ldr    x0, [sp, #0x40]
+CortexService[0x100b29554] <+364>: cbz    x0, 0x100b29fe0           ; <+3064>
+CortexService[0x100b29558] <+368>: ldr    w8, [x0]
+CortexService[0x100b2955c] <+372>: cbnz   w8, 0x100b29fe8           ; <+3072>
+CortexService[0x100b29560] <+376>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b29564] <+380>: cmp    w20, #0x5
+CortexService[0x100b29568] <+384>: b.hi   0x100b2a020               ; <+3128>
+CortexService[0x100b2956c] <+388>: mov    w22, #0x0                 ; =0
+CortexService[0x100b29570] <+392>: mov    w8, w20
+CortexService[0x100b29574] <+396>: adrp   x9, 6942
+CortexService[0x100b29578] <+400>: add    x9, x9, #0xc38            ; typeinfo name for Cortex::Detections::BandPowerDetection + 2776
+CortexService[0x100b2957c] <+404>: adr    x10, 0x100b2958c          ; <+420>
+CortexService[0x100b29580] <+408>: ldrh   w11, [x9, x8, lsl #1]
+CortexService[0x100b29584] <+412>: add    x10, x10, x11, lsl #2
+CortexService[0x100b29588] <+416>: br     x10
+CortexService[0x100b2958c] <+420>: cmp    w21, #0x1
+CortexService[0x100b29590] <+424>: b.eq   0x100b29490               ; <+168>
+CortexService[0x100b29594] <+428>: adrp   x8, 6866
+CortexService[0x100b29598] <+432>: ldr    d0, [x8, #0xaf0]
+CortexService[0x100b2959c] <+436>: adrp   x8, 9508
+CortexService[0x100b295a0] <+440>: add    x8, x8, #0xb6b            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/MentalCommands/CognitivDetection.cpp"
+CortexService[0x100b295a4] <+444>: adrp   x9, 9508
+CortexService[0x100b295a8] <+448>: add    x9, x9, #0xbf4            ; "static ErrorCode Cortex::MentalCommands::CognitivDetection::parameterSanityCheck(const EmoProfile *, const QString &, const QVariant &)"
+CortexService[0x100b295ac] <+452>: stur   d0, [x29, #-0x68]
+CortexService[0x100b295b0] <+456>: stp    x8, x9, [x29, #-0x60]
+CortexService[0x100b295b4] <+460>: adrp   x8, 9446
+CortexService[0x100b295b8] <+464>: add    x8, x8, #0xa              ; "default"
+CortexService[0x100b295bc] <+468>: stur   x8, [x29, #-0x50]
+CortexService[0x100b295c0] <+472>: add    x8, sp, #0x60
+CortexService[0x100b295c4] <+476>: sub    x0, x29, #0x68
+CortexService[0x100b295c8] <+480>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x100b295cc] <+484>: adrp   x1, 6942
+CortexService[0x100b295d0] <+488>: add    x1, x1, #0xd38            ; typeinfo name for Cortex::Detections::BandPowerDetection + 3032
+CortexService[0x100b295d4] <+492>: add    x0, sp, #0x60
+CortexService[0x100b295d8] <+496>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100b295dc] <+500>: adrp   x8, 9508
+CortexService[0x100b295e0] <+504>: add    x8, x8, #0xd43            ; "COG_REJECT"
+CortexService[0x100b295e4] <+508>: adrp   x9, 9508
+CortexService[0x100b295e8] <+512>: add    x9, x9, #0xd38            ; "COG_ACCEPT"
+CortexService[0x100b295ec] <+516>: cmp    w20, #0x2
+CortexService[0x100b295f0] <+520>: csel   x1, x9, x8, eq
+CortexService[0x100b295f4] <+524>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100b295f8] <+528>: b      0x100b29ac4               ; <+1756>
+CortexService[0x100b295fc] <+532>: sub    x0, x29, #0x68
+CortexService[0x100b29600] <+536>: bl     0x10213505c               ; Cortex::Math::Matrix::vector()
+CortexService[0x100b29604] <+540>: ldr    q0, [x0]
+CortexService[0x100b29608] <+544>: str    q0, [sp, #0x20]
+CortexService[0x100b2960c] <+548>: ldr    x8, [x0, #0x10]
+CortexService[0x100b29610] <+552>: str    x8, [sp, #0x30]
+CortexService[0x100b29614] <+556>: fmov   x8, d0
+CortexService[0x100b29618] <+560>: cbz    x8, 0x100b29624           ; <+572>
+CortexService[0x100b2961c] <+564>: mov    w9, #0x1                  ; =1
+CortexService[0x100b29620] <+568>: ldaddal w9, w8, [x8]
+CortexService[0x100b29624] <+572>: adrp   x1, 9454
+CortexService[0x100b29628] <+576>: add    x1, x1, #0x264            ; "cognitiv-maxActiveActions"
+CortexService[0x100b2962c] <+580>: add    x8, sp, #0x40
+CortexService[0x100b29630] <+584>: mov    w0, #0x19                 ; =25
+CortexService[0x100b29634] <+588>: bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x100b29638] <+592>: ldr    q0, [sp, #0x40]
+CortexService[0x100b2963c] <+596>: str    q0, [sp]
+CortexService[0x100b29640] <+600>: ldr    x8, [sp, #0x50]
+CortexService[0x100b29644] <+604>: str    x8, [sp, #0x10]
+CortexService[0x100b29648] <+608>: add    x8, sp, #0x60
+CortexService[0x100b2964c] <+612>: mov    x1, sp
+CortexService[0x100b29650] <+616>: mov    x0, x19
+CortexService[0x100b29654] <+620>: bl     0x10123558c               ; Cortex::DetectionCore::EmoProfile::get(QString const&) const
+CortexService[0x100b29658] <+624>: add    x0, sp, #0x60
+CortexService[0x100b2965c] <+628>: mov    x1, #0x0                  ; =0
+CortexService[0x100b29660] <+632>: bl     0x1024b6a24               ; symbol stub for: QVariant::toInt(bool*) const
+CortexService[0x100b29664] <+636>: mov    x22, x0
+CortexService[0x100b29668] <+640>: add    x0, sp, #0x60
+CortexService[0x100b2966c] <+644>: bl     0x1024b5b30               ; symbol stub for: QVariant::~QVariant()
+CortexService[0x100b29670] <+648>: ldr    x8, [sp]
+CortexService[0x100b29674] <+652>: cbz    x8, 0x100b2969c           ; <+692>
+CortexService[0x100b29678] <+656>: mov    w9, #-0x1                 ; =-1
+CortexService[0x100b2967c] <+660>: ldaddal w9, w8, [x8]
+CortexService[0x100b29680] <+664>: cmp    w8, #0x1
+CortexService[0x100b29684] <+668>: b.ne   0x100b2969c               ; <+692>
+CortexService[0x100b29688] <+672>: ldr    x0, [sp]
+CortexService[0x100b2968c] <+676>: cbz    x0, 0x100b29ff0           ; <+3080>
+CortexService[0x100b29690] <+680>: ldr    w8, [x0]
+CortexService[0x100b29694] <+684>: cbnz   w8, 0x100b29ff8           ; <+3088>
+CortexService[0x100b29698] <+688>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100b2969c] <+692>: add    x0, sp, #0x60
+CortexService[0x100b296a0] <+696>: mov    w1, #0x8                  ; =8
+CortexService[0x100b296a4] <+700>: mov    w2, #0x8                  ; =8
+CortexService[0x100b296a8] <+704>: mov    w3, #0xd                  ; =13
+CortexService[0x100b296ac] <+708>: mov    w4, #0x1                  ; =1
+CortexService[0x100b296b0] <+712>: bl     0x1024b42c4               ; symbol stub for: QArrayData::allocate(QArrayData**, long long, long long, long long, QArrayData::AllocationOption)
+CortexService[0x100b296b4] <+716>: ldr    x8, [sp, #0x60]
+CortexService[0x100b296b8] <+720>: stp    x8, x0, [sp, #0x40]
+CortexService[0x100b296bc] <+724>: str    xzr, [sp, #0x50]
+CortexService[0x100b296c0] <+728>: cbz    x8, 0x100b29fb8           ; <+3024>
+CortexService[0x100b296c4] <+732>: ldr    w9, [x8]
+CortexService[0x100b296c8] <+736>: cmp    w9, #0x1
+CortexService[0x100b296cc] <+740>: b.ne   0x100b29fc0               ; <+3032>
+CortexService[0x100b296d0] <+744>: ldr    x9, [x8, #0x8]
+CortexService[0x100b296d4] <+748>: add    x8, x8, #0x17
+CortexService[0x100b296d8] <+752>: and    x8, x8, #0xfffffffffffffff8
+CortexService[0x100b296dc] <+756>: sub    x8, x0, x8
+CortexService[0x100b296e0] <+760>: sub    x8, x9, x8, asr #3
+CortexService[0x100b296e4] <+764>: cmp    x8, #0xc
+CortexService[0x100b296e8] <+768>: b.le   0x100b29fc8               ; <+3040>
+CortexService[0x100b296ec] <+772>: adrp   x8, 6942
+CortexService[0x100b296f0] <+776>: add    x8, x8, #0xde0            ; typeinfo name for Cortex::Detections::BandPowerDetection + 3200
+CortexService[0x100b296f4] <+780>: ldp    q0, q1, [x8, #0x40]
+CortexService[0x100b296f8] <+784>: stp    q0, q1, [x0, #0x40]
+CortexService[0x100b296fc] <+788>: ldr    x9, [x8, #0x60]
+CortexService[0x100b29700] <+792>: str    x9, [x0, #0x60]
+CortexService[0x100b29704] <+796>: ldp    q0, q1, [x8]
+CortexService[0x100b29708] <+800>: stp    q0, q1, [x0]
+CortexService[0x100b2970c] <+804>: ldp    q1, q0, [x8, #0x20]
+CortexService[0x100b29710] <+808>: stp    q1, q0, [x0, #0x20]
+CortexService[0x100b29714] <+812>: mov    w8, #0xd                  ; =13
+CortexService[0x100b29718] <+816>: str    x8, [sp, #0x50]
+CortexService[0x100b2971c] <+820>: ldr    x8, [sp, #0x20]
+CortexService[0x100b29720] <+824>: cbz    x8, 0x100b29730           ; <+840>
+CortexService[0x100b29724] <+828>: ldr    w9, [x8]
+CortexService[0x100b29728] <+832>: cmp    w9, #0x1
+CortexService[0x100b2972c] <+836>: b.le   0x100b29750               ; <+872>
+CortexService[0x100b29730] <+840>: add    x0, sp, #0x20
+CortexService[0x100b29734] <+844>: mov    w1, #0x0                  ; =0
+CortexService[0x100b29738] <+848>: mov    x2, #0x0                  ; =0
+CortexService[0x100b2973c] <+852>: mov    x3, #0x0                  ; =0
+CortexService[0x100b29740] <+856>: bl     0x10015232c               ; ___lldb_unnamed_symbol_10015232c
+CortexService[0x100b29744] <+860>: ldp    x8, x23, [sp, #0x20]
+CortexService[0x100b29748] <+864>: cbnz   x8, 0x100b29754           ; <+876>
+CortexService[0x100b2974c] <+868>: b      0x100b29764               ; <+892>
+(lldb) image lookup -rn CognitivDetectionManager::.*(update|reset|init)
+7 matches found in /Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService:
+        Address: CortexService[0x0000000100b32e88] (CortexService.__TEXT.__text + 11697800)
+        Summary: CortexService`Cortex::MentalCommands::CognitivDetectionManager::resetTrainingState(Cortex::DetectionCore::EmoProfile*)
+        Address: CortexService[0x0000000100b33f00] (CortexService.__TEXT.__text + 11702016)
+        Summary: CortexService`Cortex::MentalCommands::CognitivDetectionManager::updateTrainedSigActions(Cortex::DetectionCore::EmoProfile*)
+        Address: CortexService[0x0000000100b36c64] (CortexService.__TEXT.__text + 11713636)
+        Summary: CortexService`Cortex::MentalCommands::CognitivDetectionManager::resetBrainMapCoordinates(Cortex::DetectionCore::EmoProfile*, Cortex::Core::EE_CognitivAction_t)
+        Address: CortexService[0x0000000100b343c0] (CortexService.__TEXT.__text + 11703232)
+        Summary: CortexService`Cortex::MentalCommands::CognitivDetectionManager::updateBrainMapCoordinates(Cortex::DetectionCore::EmoProfile*, QList<double> const&)
+        Address: CortexService[0x0000000100b36934] (CortexService.__TEXT.__text + 11712820)
+        Summary: CortexService`Cortex::MentalCommands::CognitivDetectionManager::resetNumberOfTimesTraining(Cortex::DetectionCore::EmoProfile*, Cortex::Core::EE_CognitivAction_t)
+        Address: CortexService[0x0000000100b30d5c] (CortexService.__TEXT.__text + 11689308)
+        Summary: CortexService`Cortex::MentalCommands::CognitivDetectionManager::updateTrainingThresholdAndScore(Cortex::DetectionCore::EmoProfile*, double, double)
+        Address: CortexService[0x0000000100b37bf0] (CortexService.__TEXT.__text + 11717616)
+        Summary: CortexService`Cortex::MentalCommands::CognitivDetectionManager::init(Cortex::DetectionCore::EmoProfile*, unsigned long)

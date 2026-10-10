@@ -1,0 +1,51 @@
+(lldb) target create --arch arm64 /Applications/EmotivApps/EMOTIV\ Launcher.app/Contents/MacOS/CortexService
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -n _ZN6Cortex10Detections19DetectionsForDevice14processNewDataEv
+CortexService`Cortex::Detections::DetectionsForDevice::processNewData:
+CortexService[0x100ae9e8c] <+0>:  stp    x20, x19, [sp, #-0x20]!
+CortexService[0x100ae9e90] <+4>:  stp    x29, x30, [sp, #0x10]
+CortexService[0x100ae9e94] <+8>:  add    x29, sp, #0x10
+CortexService[0x100ae9e98] <+12>: mov    x19, x0
+CortexService[0x100ae9e9c] <+16>: add    x0, x0, #0x770
+CortexService[0x100ae9ea0] <+20>: bl     0x10122bbc0               ; Cortex::DataCache::SynchronisedSubscription::processNewData()
+CortexService[0x100ae9ea4] <+24>: add    x0, x19, #0x610
+CortexService[0x100ae9ea8] <+28>: bl     0x10122bbc0               ; Cortex::DataCache::SynchronisedSubscription::processNewData()
+CortexService[0x100ae9eac] <+32>: add    x0, x19, #0x668
+CortexService[0x100ae9eb0] <+36>: bl     0x10122bbc0               ; Cortex::DataCache::SynchronisedSubscription::processNewData()
+CortexService[0x100ae9eb4] <+40>: add    x0, x19, #0x6c0
+CortexService[0x100ae9eb8] <+44>: bl     0x10122bbc0               ; Cortex::DataCache::SynchronisedSubscription::processNewData()
+CortexService[0x100ae9ebc] <+48>: add    x0, x19, #0x718
+CortexService[0x100ae9ec0] <+52>: bl     0x10122bbc0               ; Cortex::DataCache::SynchronisedSubscription::processNewData()
+CortexService[0x100ae9ec4] <+56>: add    x0, x19, #0x7c8
+CortexService[0x100ae9ec8] <+60>: ldp    x29, x30, [sp, #0x10]
+CortexService[0x100ae9ecc] <+64>: ldp    x20, x19, [sp], #0x20
+CortexService[0x100ae9ed0] <+68>: b      0x10122bbc0               ; Cortex::DataCache::SynchronisedSubscription::processNewData()
+(lldb) disassemble -n _ZN6Cortex10Detections19DetectionsForDevice16newDetectionDataERKNS_4Core22InputDeviceInformationENS_9DataCache10DataStreamERKNS_4Math6MatrixE
+CortexService`Cortex::Detections::DetectionsForDevice::newDetectionData:
+CortexService[0x100abe6dc] <+0>:   sub    sp, sp, #0x40
+CortexService[0x100abe6e0] <+4>:   stp    x29, x30, [sp, #0x30]
+CortexService[0x100abe6e4] <+8>:   add    x29, sp, #0x30
+CortexService[0x100abe6e8] <+12>:  adrp   x8, 9824
+CortexService[0x100abe6ec] <+16>:  ldr    x8, [x8, #0xcf0]
+CortexService[0x100abe6f0] <+20>:  ldr    x8, [x8]
+CortexService[0x100abe6f4] <+24>:  stur   x8, [x29, #-0x8]
+CortexService[0x100abe6f8] <+28>:  str    w2, [sp, #0x4]
+CortexService[0x100abe6fc] <+32>:  stp    xzr, x1, [sp, #0x8]
+CortexService[0x100abe700] <+36>:  add    x8, sp, #0x4
+CortexService[0x100abe704] <+40>:  stp    x8, x3, [sp, #0x18]
+CortexService[0x100abe708] <+44>:  adrp   x1, 9849
+CortexService[0x100abe70c] <+48>:  add    x1, x1, #0xc88            ; Cortex::Detections::DetectionsForDevice::staticMetaObject
+CortexService[0x100abe710] <+52>:  add    x3, sp, #0x8
+CortexService[0x100abe714] <+56>:  mov    w2, #0x0                  ; =0
+CortexService[0x100abe718] <+60>:  bl     0x1024b4804               ; symbol stub for: QMetaObject::activate(QObject*, QMetaObject const*, int, void**)
+CortexService[0x100abe71c] <+64>:  ldur   x8, [x29, #-0x8]
+CortexService[0x100abe720] <+68>:  adrp   x9, 9824
+CortexService[0x100abe724] <+72>:  ldr    x9, [x9, #0xcf0]
+CortexService[0x100abe728] <+76>:  ldr    x9, [x9]
+CortexService[0x100abe72c] <+80>:  cmp    x9, x8
+CortexService[0x100abe730] <+84>:  b.ne   0x100abe740               ; <+100>
+CortexService[0x100abe734] <+88>:  ldp    x29, x30, [sp, #0x30]
+CortexService[0x100abe738] <+92>:  add    sp, sp, #0x40
+CortexService[0x100abe73c] <+96>:  ret
+CortexService[0x100abe740] <+100>: bl     0x1024b77f8               ; symbol stub for: __stack_chk_fail
+(lldb) quit

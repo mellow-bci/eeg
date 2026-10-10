@@ -1,0 +1,449 @@
+(lldb) command source -s 0 '/dev/stdin'
+Executing commands in '/dev/stdin'.
+(lldb) target create "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -n Cortex::FacialExpressions::NTExpressivDetection::parameterSanityCheck
+CortexService`Cortex::FacialExpressions::NTExpressivDetection::parameterSanityCheck:
+CortexService[0x100f2f838] <+0>:   stp    x22, x21, [sp, #-0x30]!
+CortexService[0x100f2f83c] <+4>:   stp    x20, x19, [sp, #0x10]
+CortexService[0x100f2f840] <+8>:   stp    x29, x30, [sp, #0x20]
+CortexService[0x100f2f844] <+12>:  add    x29, sp, #0x20
+CortexService[0x100f2f848] <+16>:  mov    x19, x1
+CortexService[0x100f2f84c] <+20>:  mov    x20, x0
+CortexService[0x100f2f850] <+24>:  ldr    x8, [x1]
+CortexService[0x100f2f854] <+28>:  cbz    x8, 0x100f2f860           ; <+40>
+CortexService[0x100f2f858] <+32>:  ldr    x21, [x8, #0x8]
+CortexService[0x100f2f85c] <+36>:  b      0x100f2f864               ; <+44>
+CortexService[0x100f2f860] <+40>:  mov    x21, #0x0                 ; =0
+CortexService[0x100f2f864] <+44>:  add    x9, x8, #0x10
+CortexService[0x100f2f868] <+48>:  cmp    x8, #0x0
+CortexService[0x100f2f86c] <+52>:  csel   x8, xzr, x9, eq
+CortexService[0x100f2f870] <+56>:  cmp    x21, x8
+CortexService[0x100f2f874] <+60>:  b.ne   0x100f2f8a4               ; <+108>
+CortexService[0x100f2f878] <+64>:  mov    w0, #0x0                  ; =0
+CortexService[0x100f2f87c] <+68>:  ldp    x29, x30, [sp, #0x20]
+CortexService[0x100f2f880] <+72>:  ldp    x20, x19, [sp, #0x10]
+CortexService[0x100f2f884] <+76>:  ldp    x22, x21, [sp], #0x30
+CortexService[0x100f2f888] <+80>:  ret
+CortexService[0x100f2f88c] <+84>:  ldr    x9, [x19]
+CortexService[0x100f2f890] <+88>:  add    x10, x9, #0x10
+CortexService[0x100f2f894] <+92>:  cmp    x9, #0x0
+CortexService[0x100f2f898] <+96>:  ccmp   x10, x8, #0x0, ne
+CortexService[0x100f2f89c] <+100>: mov    x21, x8
+CortexService[0x100f2f8a0] <+104>: b.eq   0x100f2f878               ; <+64>
+CortexService[0x100f2f8a4] <+108>: add    x1, x21, #0x20
+CortexService[0x100f2f8a8] <+112>: add    x2, x21, #0x38
+CortexService[0x100f2f8ac] <+116>: mov    x0, x20
+CortexService[0x100f2f8b0] <+120>: bl     0x100f2f8e8               ; Cortex::FacialExpressions::NTExpressivDetection::parameterSanityCheck(Cortex::DetectionCore::EmoProfile const*, QString const&, QVariant const&)
+CortexService[0x100f2f8b4] <+124>: cbnz   w0, 0x100f2f87c           ; <+68>
+CortexService[0x100f2f8b8] <+128>: ldr    x9, [x21, #0x8]
+CortexService[0x100f2f8bc] <+132>: cbz    x9, 0x100f2f8d0           ; <+152>
+CortexService[0x100f2f8c0] <+136>: mov    x8, x9
+CortexService[0x100f2f8c4] <+140>: ldr    x9, [x9]
+CortexService[0x100f2f8c8] <+144>: cbnz   x9, 0x100f2f8c0           ; <+136>
+CortexService[0x100f2f8cc] <+148>: b      0x100f2f88c               ; <+84>
+CortexService[0x100f2f8d0] <+152>: ldr    x8, [x21, #0x10]
+CortexService[0x100f2f8d4] <+156>: ldr    x9, [x8]
+CortexService[0x100f2f8d8] <+160>: cmp    x9, x21
+CortexService[0x100f2f8dc] <+164>: mov    x21, x8
+CortexService[0x100f2f8e0] <+168>: b.ne   0x100f2f8d0               ; <+152>
+CortexService[0x100f2f8e4] <+172>: b      0x100f2f88c               ; <+84>
+
+CortexService`Cortex::FacialExpressions::NTExpressivDetection::parameterSanityCheck:
+CortexService[0x100f2f8e8] <+0>:    sub    sp, sp, #0xf0
+CortexService[0x100f2f8ec] <+4>:    stp    x22, x21, [sp, #0xc0]
+CortexService[0x100f2f8f0] <+8>:    stp    x20, x19, [sp, #0xd0]
+CortexService[0x100f2f8f4] <+12>:   stp    x29, x30, [sp, #0xe0]
+CortexService[0x100f2f8f8] <+16>:   add    x29, sp, #0xe0
+CortexService[0x100f2f8fc] <+20>:   mov    x19, x2
+CortexService[0x100f2f900] <+24>:   mov    x21, x1
+CortexService[0x100f2f904] <+28>:   mov    x20, x0
+CortexService[0x100f2f908] <+32>:   adrp   x8, 8687
+CortexService[0x100f2f90c] <+36>:   ldr    x8, [x8, #0xcf0]
+CortexService[0x100f2f910] <+40>:   ldr    x8, [x8]
+CortexService[0x100f2f914] <+44>:   stur   x8, [x29, #-0x28]
+CortexService[0x100f2f918] <+48>:   adrp   x22, 8686
+CortexService[0x100f2f91c] <+52>:   ldr    x22, [x22, #0xdc0]
+CortexService[0x100f2f920] <+56>:   ldp    x8, x1, [x1, #0x8]
+CortexService[0x100f2f924] <+60>:   cmp    x8, #0x0
+CortexService[0x100f2f928] <+64>:   csel   x0, x22, x8, eq
+CortexService[0x100f2f92c] <+68>:   adrp   x2, 8424
+CortexService[0x100f2f930] <+72>:   add    x2, x2, #0x474            ; "ntexpressiv-trainingControl"
+CortexService[0x100f2f934] <+76>:   mov    w3, #0x1b                 ; =27
+CortexService[0x100f2f938] <+80>:   mov    w4, #0x1                  ; =1
+CortexService[0x100f2f93c] <+84>:   bl     0x1024b5710               ; symbol stub for: QString::compare_helper(QChar const*, long long, char const*, long long, Qt::CaseSensitivity)
+CortexService[0x100f2f940] <+88>:   cbz    w0, 0x100f2f9d8           ; <+240>
+CortexService[0x100f2f944] <+92>:   ldp    x8, x1, [x21, #0x8]
+CortexService[0x100f2f948] <+96>:   cmp    x8, #0x0
+CortexService[0x100f2f94c] <+100>:  csel   x0, x22, x8, eq
+CortexService[0x100f2f950] <+104>:  adrp   x2, 8424
+CortexService[0x100f2f954] <+108>:  add    x2, x2, #0x490            ; "ntexpressiv-trainingExpression"
+CortexService[0x100f2f958] <+112>:  mov    w3, #0x1e                 ; =30
+CortexService[0x100f2f95c] <+116>:  mov    w4, #0x1                  ; =1
+CortexService[0x100f2f960] <+120>:  bl     0x1024b5710               ; symbol stub for: QString::compare_helper(QChar const*, long long, char const*, long long, Qt::CaseSensitivity)
+CortexService[0x100f2f964] <+124>:  cbnz   w0, 0x100f2fcc4           ; <+988>
+CortexService[0x100f2f968] <+128>:  mov    x0, x19
+CortexService[0x100f2f96c] <+132>:  mov    x1, #0x0                  ; =0
+CortexService[0x100f2f970] <+136>:  bl     0x1024b6a24               ; symbol stub for: QVariant::toInt(bool*) const
+CortexService[0x100f2f974] <+140>:  bl     0x100f373bc               ; Cortex::FacialExpressions::NTExpressivDetectionManager::expressionToClass(Cortex::Core::EE_ExpressivAlgo_t)
+CortexService[0x100f2f978] <+144>:  cmn    w0, #0x1
+CortexService[0x100f2f97c] <+148>:  b.ne   0x100f2fcc4               ; <+988>
+CortexService[0x100f2f980] <+152>:  adrp   x8, 5836
+CortexService[0x100f2f984] <+156>:  ldr    d0, [x8, #0x798]
+CortexService[0x100f2f988] <+160>:  adrp   x8, 8503
+CortexService[0x100f2f98c] <+164>:  add    x8, x8, #0x4ed            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/FacialExpressions/NTExpressivDetection.cpp"
+CortexService[0x100f2f990] <+168>:  adrp   x9, 8503
+CortexService[0x100f2f994] <+172>:  add    x9, x9, #0x553            ; "static ErrorCode Cortex::FacialExpressions::NTExpressivDetection::parameterSanityCheck(const EmoProfile *, const QString &, const QVariant &)"
+CortexService[0x100f2f998] <+176>:  str    d0, [sp, #0x60]
+CortexService[0x100f2f99c] <+180>:  stp    x8, x9, [sp, #0x68]
+CortexService[0x100f2f9a0] <+184>:  adrp   x8, 8416
+CortexService[0x100f2f9a4] <+188>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x100f2f9a8] <+192>:  str    x8, [sp, #0x78]
+CortexService[0x100f2f9ac] <+196>:  add    x8, sp, #0x40
+CortexService[0x100f2f9b0] <+200>:  add    x0, sp, #0x60
+CortexService[0x100f2f9b4] <+204>:  bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x100f2f9b8] <+208>:  adrp   x1, 8503
+CortexService[0x100f2f9bc] <+212>:  add    x1, x1, #0x6b2            ; "NTExpressivDetection:  parameterSanityCheck failed. Expression not valid for training."
+CortexService[0x100f2f9c0] <+216>:  add    x0, sp, #0x40
+CortexService[0x100f2f9c4] <+220>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100f2f9c8] <+224>:  add    x0, sp, #0x40
+CortexService[0x100f2f9cc] <+228>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x100f2f9d0] <+232>:  mov    w0, #0x6101               ; =24833
+CortexService[0x100f2f9d4] <+236>:  b      0x100f2fcc8               ; <+992>
+CortexService[0x100f2f9d8] <+240>:  mov    x0, x19
+CortexService[0x100f2f9dc] <+244>:  mov    x1, #0x0                  ; =0
+CortexService[0x100f2f9e0] <+248>:  bl     0x1024b6a24               ; symbol stub for: QVariant::toInt(bool*) const
+CortexService[0x100f2f9e4] <+252>:  mov    x19, x0
+CortexService[0x100f2f9e8] <+256>:  adrp   x1, 8424
+CortexService[0x100f2f9ec] <+260>:  add    x1, x1, #0x474            ; "ntexpressiv-trainingControl"
+CortexService[0x100f2f9f0] <+264>:  add    x8, sp, #0x40
+CortexService[0x100f2f9f4] <+268>:  mov    w0, #0x1b                 ; =27
+CortexService[0x100f2f9f8] <+272>:  bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x100f2f9fc] <+276>:  ldr    q0, [sp, #0x40]
+CortexService[0x100f2fa00] <+280>:  str    q0, [sp, #0x20]
+CortexService[0x100f2fa04] <+284>:  ldr    x8, [sp, #0x50]
+CortexService[0x100f2fa08] <+288>:  str    x8, [sp, #0x30]
+CortexService[0x100f2fa0c] <+292>:  add    x8, sp, #0x60
+CortexService[0x100f2fa10] <+296>:  add    x1, sp, #0x20
+CortexService[0x100f2fa14] <+300>:  mov    x0, x20
+CortexService[0x100f2fa18] <+304>:  bl     0x10123558c               ; Cortex::DetectionCore::EmoProfile::get(QString const&) const
+CortexService[0x100f2fa1c] <+308>:  add    x0, sp, #0x60
+CortexService[0x100f2fa20] <+312>:  mov    x1, #0x0                  ; =0
+CortexService[0x100f2fa24] <+316>:  bl     0x1024b6a24               ; symbol stub for: QVariant::toInt(bool*) const
+CortexService[0x100f2fa28] <+320>:  mov    x21, x0
+CortexService[0x100f2fa2c] <+324>:  add    x0, sp, #0x60
+CortexService[0x100f2fa30] <+328>:  bl     0x1024b5b30               ; symbol stub for: QVariant::~QVariant()
+CortexService[0x100f2fa34] <+332>:  ldr    x8, [sp, #0x20]
+CortexService[0x100f2fa38] <+336>:  cbz    x8, 0x100f2fa60           ; <+376>
+CortexService[0x100f2fa3c] <+340>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x100f2fa40] <+344>:  ldaddal w9, w8, [x8]
+CortexService[0x100f2fa44] <+348>:  cmp    w8, #0x1
+CortexService[0x100f2fa48] <+352>:  b.ne   0x100f2fa60               ; <+376>
+CortexService[0x100f2fa4c] <+356>:  ldr    x0, [sp, #0x20]
+CortexService[0x100f2fa50] <+360>:  cbz    x0, 0x100f2fd48           ; <+1120>
+CortexService[0x100f2fa54] <+364>:  ldr    w8, [x0]
+CortexService[0x100f2fa58] <+368>:  cbnz   w8, 0x100f2fd50           ; <+1128>
+CortexService[0x100f2fa5c] <+372>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100f2fa60] <+376>:  adrp   x8, 8503
+CortexService[0x100f2fa64] <+380>:  add    x8, x8, #0x497            ; "NTExpressivDetection: parameterSanityCheck failed.  Unexpected training control flag:"
+CortexService[0x100f2fa68] <+384>:  ldp    q0, q1, [x8, #0x20]
+CortexService[0x100f2fa6c] <+388>:  stp    q0, q1, [sp, #0x80]
+CortexService[0x100f2fa70] <+392>:  ldr    q0, [x8, #0x40]
+CortexService[0x100f2fa74] <+396>:  str    q0, [sp, #0xa0]
+CortexService[0x100f2fa78] <+400>:  ldur   x9, [x8, #0x4e]
+CortexService[0x100f2fa7c] <+404>:  stur   x9, [sp, #0xae]
+CortexService[0x100f2fa80] <+408>:  ldp    q0, q1, [x8]
+CortexService[0x100f2fa84] <+412>:  stp    q0, q1, [sp, #0x60]
+CortexService[0x100f2fa88] <+416>:  cmp    w19, #0x5
+CortexService[0x100f2fa8c] <+420>:  b.hi   0x100f2fd58               ; <+1136>
+CortexService[0x100f2fa90] <+424>:  mov    w8, w19
+CortexService[0x100f2fa94] <+428>:  adrp   x9, 6165
+CortexService[0x100f2fa98] <+432>:  add    x9, x9, #0xb48            ; typeinfo name for Cortex::FacialExpressions::HorizontalEyeDetection + 71036
+CortexService[0x100f2fa9c] <+436>:  adr    x10, 0x100f2faac          ; <+452>
+CortexService[0x100f2faa0] <+440>:  ldrb   w11, [x9, x8]
+CortexService[0x100f2faa4] <+444>:  add    x10, x10, x11, lsl #2
+CortexService[0x100f2faa8] <+448>:  br     x10
+CortexService[0x100f2faac] <+452>:  cmp    w21, #0x1
+CortexService[0x100f2fab0] <+456>:  b.eq   0x100f2fcc4               ; <+988>
+CortexService[0x100f2fab4] <+460>:  adrp   x8, 5909
+CortexService[0x100f2fab8] <+464>:  ldr    d0, [x8, #0x548]
+CortexService[0x100f2fabc] <+468>:  adrp   x8, 8503
+CortexService[0x100f2fac0] <+472>:  add    x8, x8, #0x4ed            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/FacialExpressions/NTExpressivDetection.cpp"
+CortexService[0x100f2fac4] <+476>:  adrp   x9, 8503
+CortexService[0x100f2fac8] <+480>:  add    x9, x9, #0x553            ; "static ErrorCode Cortex::FacialExpressions::NTExpressivDetection::parameterSanityCheck(const EmoProfile *, const QString &, const QVariant &)"
+CortexService[0x100f2facc] <+484>:  str    d0, [sp, #0x40]
+CortexService[0x100f2fad0] <+488>:  stp    x8, x9, [sp, #0x48]
+CortexService[0x100f2fad4] <+492>:  adrp   x8, 8416
+CortexService[0x100f2fad8] <+496>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x100f2fadc] <+500>:  str    x8, [sp, #0x58]
+CortexService[0x100f2fae0] <+504>:  add    x8, sp, #0x20
+CortexService[0x100f2fae4] <+508>:  add    x0, sp, #0x40
+CortexService[0x100f2fae8] <+512>:  bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x100f2faec] <+516>:  add    x0, sp, #0x20
+CortexService[0x100f2faf0] <+520>:  add    x1, sp, #0x60
+CortexService[0x100f2faf4] <+524>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100f2faf8] <+528>:  adrp   x8, 8503
+CortexService[0x100f2fafc] <+532>:  add    x8, x8, #0x646            ; "EXP_REJECT"
+CortexService[0x100f2fb00] <+536>:  adrp   x9, 8503
+CortexService[0x100f2fb04] <+540>:  add    x9, x9, #0x63b            ; "EXP_ACCEPT"
+CortexService[0x100f2fb08] <+544>:  cmp    w19, #0x2
+CortexService[0x100f2fb0c] <+548>:  csel   x1, x9, x8, eq
+CortexService[0x100f2fb10] <+552>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100f2fb14] <+556>:  b      0x100f2fbcc               ; <+740>
+CortexService[0x100f2fb18] <+560>:  cmp    w21, #0x1
+CortexService[0x100f2fb1c] <+564>:  b.ne   0x100f2fc3c               ; <+852>
+CortexService[0x100f2fb20] <+568>:  adrp   x8, 5836
+CortexService[0x100f2fb24] <+572>:  ldr    d0, [x8, #0x430]
+CortexService[0x100f2fb28] <+576>:  adrp   x8, 8503
+CortexService[0x100f2fb2c] <+580>:  add    x8, x8, #0x4ed            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/FacialExpressions/NTExpressivDetection.cpp"
+CortexService[0x100f2fb30] <+584>:  adrp   x9, 8503
+CortexService[0x100f2fb34] <+588>:  add    x9, x9, #0x553            ; "static ErrorCode Cortex::FacialExpressions::NTExpressivDetection::parameterSanityCheck(const EmoProfile *, const QString &, const QVariant &)"
+CortexService[0x100f2fb38] <+592>:  str    d0, [sp, #0x40]
+CortexService[0x100f2fb3c] <+596>:  stp    x8, x9, [sp, #0x48]
+CortexService[0x100f2fb40] <+600>:  adrp   x8, 8416
+CortexService[0x100f2fb44] <+604>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x100f2fb48] <+608>:  str    x8, [sp, #0x58]
+CortexService[0x100f2fb4c] <+612>:  add    x8, sp, #0x20
+CortexService[0x100f2fb50] <+616>:  add    x0, sp, #0x40
+CortexService[0x100f2fb54] <+620>:  bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x100f2fb58] <+624>:  add    x0, sp, #0x20
+CortexService[0x100f2fb5c] <+628>:  add    x1, sp, #0x60
+CortexService[0x100f2fb60] <+632>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100f2fb64] <+636>:  adrp   x1, 8503
+CortexService[0x100f2fb68] <+640>:  add    x1, x1, #0x5ea            ; "EXP_START"
+CortexService[0x100f2fb6c] <+644>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100f2fb70] <+648>:  b      0x100f2fbcc               ; <+740>
+CortexService[0x100f2fb74] <+652>:  cmp    w21, #0x1
+CortexService[0x100f2fb78] <+656>:  b.ne   0x100f2fcc4               ; <+988>
+CortexService[0x100f2fb7c] <+660>:  adrp   x8, 6165
+CortexService[0x100f2fb80] <+664>:  ldr    d0, [x8, #0xb40]
+CortexService[0x100f2fb84] <+668>:  adrp   x8, 8503
+CortexService[0x100f2fb88] <+672>:  add    x8, x8, #0x4ed            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/FacialExpressions/NTExpressivDetection.cpp"
+CortexService[0x100f2fb8c] <+676>:  adrp   x9, 8503
+CortexService[0x100f2fb90] <+680>:  add    x9, x9, #0x553            ; "static ErrorCode Cortex::FacialExpressions::NTExpressivDetection::parameterSanityCheck(const EmoProfile *, const QString &, const QVariant &)"
+CortexService[0x100f2fb94] <+684>:  str    d0, [sp, #0x40]
+CortexService[0x100f2fb98] <+688>:  stp    x8, x9, [sp, #0x48]
+CortexService[0x100f2fb9c] <+692>:  adrp   x8, 8416
+CortexService[0x100f2fba0] <+696>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x100f2fba4] <+700>:  str    x8, [sp, #0x58]
+CortexService[0x100f2fba8] <+704>:  add    x8, sp, #0x20
+CortexService[0x100f2fbac] <+708>:  add    x0, sp, #0x40
+CortexService[0x100f2fbb0] <+712>:  bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x100f2fbb4] <+716>:  add    x0, sp, #0x20
+CortexService[0x100f2fbb8] <+720>:  add    x1, sp, #0x60
+CortexService[0x100f2fbbc] <+724>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100f2fbc0] <+728>:  adrp   x1, 8503
+CortexService[0x100f2fbc4] <+732>:  add    x1, x1, #0x5e1            ; "EXP_NONE"
+CortexService[0x100f2fbc8] <+736>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100f2fbcc] <+740>:  add    x0, sp, #0x20
+CortexService[0x100f2fbd0] <+744>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x100f2fbd4] <+748>:  mov    w0, #0x6100               ; =24832
+CortexService[0x100f2fbd8] <+752>:  b      0x100f2fcc8               ; <+992>
+CortexService[0x100f2fbdc] <+756>:  cbz    w21, 0x100f2fcc4          ; <+988>
+CortexService[0x100f2fbe0] <+760>:  adrp   x8, 5836
+CortexService[0x100f2fbe4] <+764>:  ldr    d0, [x8, #0xed8]
+CortexService[0x100f2fbe8] <+768>:  adrp   x8, 8503
+CortexService[0x100f2fbec] <+772>:  add    x8, x8, #0x4ed            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/FacialExpressions/NTExpressivDetection.cpp"
+CortexService[0x100f2fbf0] <+776>:  adrp   x9, 8503
+CortexService[0x100f2fbf4] <+780>:  add    x9, x9, #0x553            ; "static ErrorCode Cortex::FacialExpressions::NTExpressivDetection::parameterSanityCheck(const EmoProfile *, const QString &, const QVariant &)"
+CortexService[0x100f2fbf8] <+784>:  str    d0, [sp, #0x40]
+CortexService[0x100f2fbfc] <+788>:  stp    x8, x9, [sp, #0x48]
+CortexService[0x100f2fc00] <+792>:  adrp   x8, 8416
+CortexService[0x100f2fc04] <+796>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x100f2fc08] <+800>:  str    x8, [sp, #0x58]
+CortexService[0x100f2fc0c] <+804>:  add    x8, sp, #0x20
+CortexService[0x100f2fc10] <+808>:  add    x0, sp, #0x40
+CortexService[0x100f2fc14] <+812>:  bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x100f2fc18] <+816>:  add    x0, sp, #0x20
+CortexService[0x100f2fc1c] <+820>:  add    x1, sp, #0x60
+CortexService[0x100f2fc20] <+824>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100f2fc24] <+828>:  adrp   x1, 8503
+CortexService[0x100f2fc28] <+832>:  add    x1, x1, #0x651            ; "EXP_ERASE"
+CortexService[0x100f2fc2c] <+836>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100f2fc30] <+840>:  add    x0, sp, #0x20
+CortexService[0x100f2fc34] <+844>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x100f2fc38] <+848>:  b      0x100f2fcc4               ; <+988>
+CortexService[0x100f2fc3c] <+852>:  adrp   x1, 8424
+CortexService[0x100f2fc40] <+856>:  add    x1, x1, #0x490            ; "ntexpressiv-trainingExpression"
+CortexService[0x100f2fc44] <+860>:  add    x8, sp, #0x20
+CortexService[0x100f2fc48] <+864>:  mov    w0, #0x1e                 ; =30
+CortexService[0x100f2fc4c] <+868>:  bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x100f2fc50] <+872>:  ldr    q0, [sp, #0x20]
+CortexService[0x100f2fc54] <+876>:  str    q0, [sp]
+CortexService[0x100f2fc58] <+880>:  ldr    x8, [sp, #0x30]
+CortexService[0x100f2fc5c] <+884>:  str    x8, [sp, #0x10]
+CortexService[0x100f2fc60] <+888>:  add    x8, sp, #0x40
+CortexService[0x100f2fc64] <+892>:  mov    x1, sp
+CortexService[0x100f2fc68] <+896>:  mov    x0, x20
+CortexService[0x100f2fc6c] <+900>:  bl     0x10123558c               ; Cortex::DetectionCore::EmoProfile::get(QString const&) const
+CortexService[0x100f2fc70] <+904>:  add    x0, sp, #0x40
+CortexService[0x100f2fc74] <+908>:  mov    x1, #0x0                  ; =0
+CortexService[0x100f2fc78] <+912>:  bl     0x1024b6a24               ; symbol stub for: QVariant::toInt(bool*) const
+CortexService[0x100f2fc7c] <+916>:  mov    x19, x0
+CortexService[0x100f2fc80] <+920>:  add    x0, sp, #0x40
+CortexService[0x100f2fc84] <+924>:  bl     0x1024b5b30               ; symbol stub for: QVariant::~QVariant()
+CortexService[0x100f2fc88] <+928>:  ldr    x8, [sp]
+CortexService[0x100f2fc8c] <+932>:  cbz    x8, 0x100f2fcb4           ; <+972>
+CortexService[0x100f2fc90] <+936>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x100f2fc94] <+940>:  ldaddal w9, w8, [x8]
+CortexService[0x100f2fc98] <+944>:  cmp    w8, #0x1
+CortexService[0x100f2fc9c] <+948>:  b.ne   0x100f2fcb4               ; <+972>
+CortexService[0x100f2fca0] <+952>:  ldr    x0, [sp]
+CortexService[0x100f2fca4] <+956>:  cbz    x0, 0x100f2fdb8           ; <+1232>
+CortexService[0x100f2fca8] <+960>:  ldr    w8, [x0]
+CortexService[0x100f2fcac] <+964>:  cbnz   w8, 0x100f2fdc0           ; <+1240>
+CortexService[0x100f2fcb0] <+968>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x100f2fcb4] <+972>:  mov    x0, x19
+CortexService[0x100f2fcb8] <+976>:  bl     0x100f373bc               ; Cortex::FacialExpressions::NTExpressivDetectionManager::expressionToClass(Cortex::Core::EE_ExpressivAlgo_t)
+CortexService[0x100f2fcbc] <+980>:  cmn    w0, #0x1
+CortexService[0x100f2fcc0] <+984>:  b.eq   0x100f2fcf4               ; <+1036>
+CortexService[0x100f2fcc4] <+988>:  mov    w0, #0x0                  ; =0
+CortexService[0x100f2fcc8] <+992>:  ldur   x8, [x29, #-0x28]
+CortexService[0x100f2fccc] <+996>:  adrp   x9, 8687
+CortexService[0x100f2fcd0] <+1000>: ldr    x9, [x9, #0xcf0]
+CortexService[0x100f2fcd4] <+1004>: ldr    x9, [x9]
+CortexService[0x100f2fcd8] <+1008>: cmp    x9, x8
+CortexService[0x100f2fcdc] <+1012>: b.ne   0x100f2fd44               ; <+1116>
+CortexService[0x100f2fce0] <+1016>: ldp    x29, x30, [sp, #0xe0]
+CortexService[0x100f2fce4] <+1020>: ldp    x20, x19, [sp, #0xd0]
+CortexService[0x100f2fce8] <+1024>: ldp    x22, x21, [sp, #0xc0]
+CortexService[0x100f2fcec] <+1028>: add    sp, sp, #0xf0
+CortexService[0x100f2fcf0] <+1032>: ret
+CortexService[0x100f2fcf4] <+1036>: adrp   x8, 5836
+CortexService[0x100f2fcf8] <+1040>: ldr    d0, [x8, #0x660]
+CortexService[0x100f2fcfc] <+1044>: adrp   x8, 8503
+CortexService[0x100f2fd00] <+1048>: add    x8, x8, #0x4ed            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/FacialExpressions/NTExpressivDetection.cpp"
+CortexService[0x100f2fd04] <+1052>: adrp   x9, 8503
+CortexService[0x100f2fd08] <+1056>: add    x9, x9, #0x553            ; "static ErrorCode Cortex::FacialExpressions::NTExpressivDetection::parameterSanityCheck(const EmoProfile *, const QString &, const QVariant &)"
+CortexService[0x100f2fd0c] <+1060>: str    d0, [sp, #0x40]
+CortexService[0x100f2fd10] <+1064>: stp    x8, x9, [sp, #0x48]
+CortexService[0x100f2fd14] <+1068>: adrp   x8, 8416
+CortexService[0x100f2fd18] <+1072>: add    x8, x8, #0xa              ; "default"
+CortexService[0x100f2fd1c] <+1076>: str    x8, [sp, #0x58]
+CortexService[0x100f2fd20] <+1080>: add    x8, sp, #0x20
+CortexService[0x100f2fd24] <+1084>: add    x0, sp, #0x40
+CortexService[0x100f2fd28] <+1088>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x100f2fd2c] <+1092>: adrp   x1, 8503
+CortexService[0x100f2fd30] <+1096>: add    x1, x1, #0x5f4            ; "NTExpressivDetction:  parameterSanityCheck failed. Unknown expression."
+CortexService[0x100f2fd34] <+1100>: add    x0, sp, #0x20
+CortexService[0x100f2fd38] <+1104>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100f2fd3c] <+1108>: add    x0, sp, #0x20
+CortexService[0x100f2fd40] <+1112>: b      0x100f2f9cc               ; <+228>
+CortexService[0x100f2fd44] <+1116>: bl     0x1024b77f8               ; symbol stub for: __stack_chk_fail
+CortexService[0x100f2fd48] <+1120>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x100f2fd4c] <+1124>: b      0x100f2fdc4               ; <+1244>
+CortexService[0x100f2fd50] <+1128>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100f2fd54] <+1132>: b      0x100f2fdc4               ; <+1244>
+CortexService[0x100f2fd58] <+1136>: adrp   x8, 5815
+CortexService[0x100f2fd5c] <+1140>: ldr    d0, [x8, #0x9a8]
+CortexService[0x100f2fd60] <+1144>: adrp   x8, 8503
+CortexService[0x100f2fd64] <+1148>: add    x8, x8, #0x4ed            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/FacialExpressions/NTExpressivDetection.cpp"
+CortexService[0x100f2fd68] <+1152>: adrp   x9, 8503
+CortexService[0x100f2fd6c] <+1156>: add    x9, x9, #0x553            ; "static ErrorCode Cortex::FacialExpressions::NTExpressivDetection::parameterSanityCheck(const EmoProfile *, const QString &, const QVariant &)"
+CortexService[0x100f2fd70] <+1160>: str    d0, [sp, #0x40]
+CortexService[0x100f2fd74] <+1164>: stp    x8, x9, [sp, #0x48]
+CortexService[0x100f2fd78] <+1168>: adrp   x8, 8416
+CortexService[0x100f2fd7c] <+1172>: add    x8, x8, #0xa              ; "default"
+CortexService[0x100f2fd80] <+1176>: str    x8, [sp, #0x58]
+CortexService[0x100f2fd84] <+1180>: add    x8, sp, #0x20
+CortexService[0x100f2fd88] <+1184>: add    x0, sp, #0x40
+CortexService[0x100f2fd8c] <+1188>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x100f2fd90] <+1192>: adrp   x1, 8503
+CortexService[0x100f2fd94] <+1196>: add    x1, x1, #0x65b            ; "NTExpressivDetction:  parameterSanityCheck failed. Unknown training control parameter."
+CortexService[0x100f2fd98] <+1200>: add    x0, sp, #0x20
+CortexService[0x100f2fd9c] <+1204>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x100f2fda0] <+1208>: mov    x1, x19
+CortexService[0x100f2fda4] <+1212>: bl     0x1002464fc               ; ___lldb_unnamed_symbol_1002464fc
+CortexService[0x100f2fda8] <+1216>: add    x0, sp, #0x20
+CortexService[0x100f2fdac] <+1220>: add    x1, sp, #0x40
+CortexService[0x100f2fdb0] <+1224>: bl     0x10243acc0               ; ___lldb_unnamed_symbol_10243acc0
+CortexService[0x100f2fdb4] <+1228>: b      0x100f2fdc4               ; <+1244>
+CortexService[0x100f2fdb8] <+1232>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x100f2fdbc] <+1236>: b      0x100f2fdc4               ; <+1244>
+CortexService[0x100f2fdc0] <+1240>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x100f2fdc4] <+1244>: brk    #0x1
+CortexService[0x100f2fdc8] <+1248>: b      0x100f2fe04               ; <+1308>
+CortexService[0x100f2fdcc] <+1252>: b      0x100f2fe04               ; <+1308>
+CortexService[0x100f2fdd0] <+1256>: mov    x19, x0
+CortexService[0x100f2fdd4] <+1260>: add    x0, sp, #0x40
+CortexService[0x100f2fdd8] <+1264>: bl     0x1024b5b30               ; symbol stub for: QVariant::~QVariant()
+CortexService[0x100f2fddc] <+1268>: b      0x100f2fde4               ; <+1276>
+CortexService[0x100f2fde0] <+1272>: mov    x19, x0
+CortexService[0x100f2fde4] <+1276>: mov    x0, sp
+CortexService[0x100f2fde8] <+1280>: b      0x100f2fe30               ; <+1352>
+CortexService[0x100f2fdec] <+1284>: b      0x100f2fe04               ; <+1308>
+CortexService[0x100f2fdf0] <+1288>: b      0x100f2fe04               ; <+1308>
+CortexService[0x100f2fdf4] <+1292>: b      0x100f2fe04               ; <+1308>
+CortexService[0x100f2fdf8] <+1296>: mov    x19, x0
+CortexService[0x100f2fdfc] <+1300>: add    x0, sp, #0x40
+CortexService[0x100f2fe00] <+1304>: b      0x100f2fe0c               ; <+1316>
+CortexService[0x100f2fe04] <+1308>: mov    x19, x0
+CortexService[0x100f2fe08] <+1312>: add    x0, sp, #0x20
+CortexService[0x100f2fe0c] <+1316>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x100f2fe10] <+1320>: mov    x0, x19
+CortexService[0x100f2fe14] <+1324>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+CortexService[0x100f2fe18] <+1328>: mov    x19, x0
+CortexService[0x100f2fe1c] <+1332>: add    x0, sp, #0x60
+CortexService[0x100f2fe20] <+1336>: bl     0x1024b5b30               ; symbol stub for: QVariant::~QVariant()
+CortexService[0x100f2fe24] <+1340>: b      0x100f2fe2c               ; <+1348>
+CortexService[0x100f2fe28] <+1344>: mov    x19, x0
+CortexService[0x100f2fe2c] <+1348>: add    x0, sp, #0x20
+CortexService[0x100f2fe30] <+1352>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x100f2fe34] <+1356>: mov    x0, x19
+CortexService[0x100f2fe38] <+1360>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+CortexService[0x100f2fe3c] <+1364>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+
+(lldb) disassemble -s 0x102420338 -e 0x1024203e0
+CortexService`___lldb_unnamed_symbol_102420338:
+CortexService[0x102420338] <+0>:  stp    x29, x30, [sp, #-0x10]!
+CortexService[0x10242033c] <+4>:  mov    x29, sp
+CortexService[0x102420340] <+8>:  adrp   x0, 3057
+CortexService[0x102420344] <+12>: add    x0, x0, #0x8e5            ; "profile"
+CortexService[0x102420348] <+16>: adrp   x1, 3117
+CortexService[0x10242034c] <+20>: add    x1, x1, #0xb6b            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/MentalCommands/CognitivDetection.cpp"
+CortexService[0x102420350] <+24>: mov    w2, #0xb6                 ; =182
+CortexService[0x102420354] <+28>: bl     0x1024b42a0               ; symbol stub for: qt_assert(char const*, char const*, int)
+
+CortexService`___lldb_unnamed_symbol_102420358:
+CortexService[0x102420358] <+0>:  stp    x29, x30, [sp, #-0x10]!
+CortexService[0x10242035c] <+4>:  mov    x29, sp
+CortexService[0x102420360] <+8>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x102420364] <+12>: adrp   x0, 3176
+CortexService[0x102420368] <+16>: add    x0, x0, #0xa4c            ; "false"
+CortexService[0x10242036c] <+20>: adrp   x1, 3117
+CortexService[0x102420370] <+24>: add    x1, x1, #0xb6b            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/MentalCommands/CognitivDetection.cpp"
+CortexService[0x102420374] <+28>: mov    w2, #0x13e                ; =318
+CortexService[0x102420378] <+32>: bl     0x1024b42a0               ; symbol stub for: qt_assert(char const*, char const*, int)
+
+CortexService`___lldb_unnamed_symbol_10242037c:
+CortexService[0x10242037c] <+0>:  stp    x29, x30, [sp, #-0x10]!
+CortexService[0x102420380] <+4>:  mov    x29, sp
+CortexService[0x102420384] <+8>:  adrp   x0, 3117
+CortexService[0x102420388] <+12>: add    x0, x0, #0xd25            ; "matrix.rows() == 1"
+CortexService[0x10242038c] <+16>: adrp   x1, 3117
+CortexService[0x102420390] <+20>: add    x1, x1, #0xb6b            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/MentalCommands/CognitivDetection.cpp"
+CortexService[0x102420394] <+24>: mov    w2, #0x10f                ; =271
+CortexService[0x102420398] <+28>: bl     0x1024b42a0               ; symbol stub for: qt_assert(char const*, char const*, int)
+
+CortexService`___lldb_unnamed_symbol_10242039c:
+CortexService[0x10242039c] <+0>:  stp    x29, x30, [sp, #-0x10]!
+CortexService[0x1024203a0] <+4>:  mov    x29, sp
+CortexService[0x1024203a4] <+8>:  adrp   x0, 3117
+CortexService[0x1024203a8] <+12>: add    x0, x0, #0xbda            ; "data.canConvert<Matrix>()"
+CortexService[0x1024203ac] <+16>: adrp   x1, 3117
+CortexService[0x1024203b0] <+20>: add    x1, x1, #0xb6b            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/MentalCommands/CognitivDetection.cpp"
+CortexService[0x1024203b4] <+24>: mov    w2, #0xbc                 ; =188
+CortexService[0x1024203b8] <+28>: bl     0x1024b42a0               ; symbol stub for: qt_assert(char const*, char const*, int)
+
+CortexService`___lldb_unnamed_symbol_1024203bc:
+CortexService[0x1024203bc] <+0>:  stp    x29, x30, [sp, #-0x10]!
+CortexService[0x1024203c0] <+4>:  mov    x29, sp
+CortexService[0x1024203c4] <+8>:  adrp   x0, 3117
+CortexService[0x1024203c8] <+12>: add    x0, x0, #0xbcb            ; "data.isValid()"
+CortexService[0x1024203cc] <+16>: adrp   x1, 3117
+CortexService[0x1024203d0] <+20>: add    x1, x1, #0xb6b            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/MentalCommands/CognitivDetection.cpp"
+CortexService[0x1024203d4] <+24>: mov    w2, #0xb7                 ; =183
+CortexService[0x1024203d8] <+28>: bl     0x1024b42a0               ; symbol stub for: qt_assert(char const*, char const*, int)
+
+CortexService`___lldb_unnamed_symbol_1024203dc:
+CortexService[0x1024203dc] <+0>:  stp    x29, x30, [sp, #-0x10]!

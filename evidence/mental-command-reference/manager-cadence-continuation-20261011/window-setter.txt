@@ -1,0 +1,19 @@
+(lldb) target create --arch arm64 /Applications/EmotivApps/EMOTIV\ Launcher.app/Contents/MacOS/CortexService
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -n Cortex::DetectionCore::Detection::setWindowAndStepSize
+CortexService`Cortex::DetectionCore::Detection::setWindowAndStepSize:
+CortexService[0x1012347e4] <+0>:  stp    x29, x30, [sp, #-0x10]!
+CortexService[0x1012347e8] <+4>:  mov    x29, sp
+CortexService[0x1012347ec] <+8>:  fcmp   d0, #0.0
+CortexService[0x1012347f0] <+12>: b.le   0x101234810               ; <+44>
+CortexService[0x1012347f4] <+16>: fcmp   d1, #0.0
+CortexService[0x1012347f8] <+20>: b.le   0x101234814               ; <+48>
+CortexService[0x1012347fc] <+24>: fcmp   d0, d1
+CortexService[0x101234800] <+28>: b.lt   0x101234818               ; <+52>
+CortexService[0x101234804] <+32>: stp    d0, d1, [x0, #0x60]
+CortexService[0x101234808] <+36>: ldp    x29, x30, [sp], #0x10
+CortexService[0x10123480c] <+40>: ret
+CortexService[0x101234810] <+44>: bl     0x10246ce5c               ; ___lldb_unnamed_symbol_10246ce5c
+CortexService[0x101234814] <+48>: bl     0x10246ce3c               ; ___lldb_unnamed_symbol_10246ce3c
+CortexService[0x101234818] <+52>: bl     0x10246ce1c               ; ___lldb_unnamed_symbol_10246ce1c
+(lldb) quit

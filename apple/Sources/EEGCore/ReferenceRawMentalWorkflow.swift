@@ -7,7 +7,7 @@ import Foundation
 /// Actual deployed bands, coordinates, step, quality and profile remain supplied.
 struct ReferenceRawMentalWorkflow {
     enum Failure: Error { case invalidRecipe, invalidBlock, incompatibleRuntime }
-    enum Status: Equatable { case waiting, qualityRejected, featuresOnly, inferred }
+    enum Status: Equatable { case waiting, consumedWithoutFeatures, qualityRejected, featuresOnly, inferred }
     struct Recipe {
         let sampleRate: Int
         let selectedChannelCount: Int
@@ -40,13 +40,12 @@ struct ReferenceRawMentalWorkflow {
 
     let recipe: Recipe
     let runtime: ReferenceRuntimeProfile.Runtime?
-    private var inputFilter: ReferenceDeployedFilter
-    private var stream: ReferenceEpochStream
+    private var cadence: ReferenceManagerCadence
     private var processed = ReferenceProcessedEpoch()
     private var posteriorFilters: [ReferenceScoringLowpass]
     private var scorer: ReferenceCommandScoring
     private(set) var segment: UInt64 = 0
-    var bufferedSamples: Int { stream.bufferedSamples }
+    var bufferedSamples: Int { cadence.bufferedSamples }
 
     init(recipe: Recipe, runtime: ReferenceRuntimeProfile.Runtime?) throws {
         guard recipe.selectedChannelCount > 0, recipe.selectedChannelCount <= 70,
@@ -75,9 +74,8 @@ struct ReferenceRawMentalWorkflow {
                 throw Failure.incompatibleRuntime
             }
         }
-        self.recipe = recipe; self.runtime = runtime; self.stream = stream
-        inputFilter = try .deployed(maximumChannels: recipe.selectedChannelCount,
-                                   maximumSamplesPerBlock: recipe.maximumSamplesPerBlock)
+        self.recipe = recipe; self.runtime = runtime
+        cadence = try ReferenceManagerCadence(configuration: Self.cadenceConfiguration(recipe))
         scorer = try ReferenceCommandScoring(actions: recipe.actions, activationSetting: recipe.activationSetting)
         posteriorFilters = Array(repeating: .init(), count: recipe.actions.count + 2)
     }
@@ -86,8 +84,15 @@ struct ReferenceRawMentalWorkflow {
     /// background and scoring history together. This is not a recovered automatic
     /// vendor gap detector. Caller must mark transport gaps or changed calibration.
     mutating func resetForGap() {
-        inputFilter.reset(); stream.reset(); processed = ReferenceProcessedEpoch()
+        cadence.resetForGap()
+        processed = ReferenceProcessedEpoch()
         resetScoring(); segment &+= 1
+    }
+
+    private static func cadenceConfiguration(_ recipe: Recipe) -> ReferenceManagerCadence.Configuration {
+        .init(sampleRate: recipe.sampleRate, windowSeconds: recipe.windowSeconds, stepSeconds: recipe.stepSeconds,
+              selectedChannelCount: recipe.selectedChannelCount, maximumBufferedSamples: recipe.maximumBufferedSamples,
+              maximumSamplesPerBlock: recipe.maximumSamplesPerBlock)
     }
 
     private mutating func resetScoring() {
@@ -100,25 +105,26 @@ struct ReferenceRawMentalWorkflow {
     /// Quality applies to the emitted epoch, not every sample in the new block.
     /// It must be provided on the reference numeric scale; no quality decoding is
     /// fabricated. Numeric/input failures reject the invocation atomically (ours).
-    mutating func process(selectedChannelSamples: [[Double]], overallContactQuality: Double) throws -> Frame {
+    mutating func process(selectedChannelSamples: [[Double]], overallContactQuality: Double,
+                          managerControl: ReferenceManagerCadence.Control? = nil) throws -> Frame {
         guard overallContactQuality.isFinite else { throw Failure.invalidBlock }
         var next = self
-        let result = try next.processUnchecked(selectedChannelSamples, quality: overallContactQuality)
+        let result = try next.processUnchecked(selectedChannelSamples, quality: overallContactQuality, control: managerControl)
         self = next
         return result
     }
 
-    private mutating func processUnchecked(_ input: [[Double]], quality: Double) throws -> Frame {
-        let filtered: [[Double]]
-        if input.isEmpty { filtered = [] }
-        else {
-            guard input.count == recipe.selectedChannelCount else { throw Failure.invalidBlock }
-            filtered = try inputFilter.apply(input)
-            try stream.append(filtered)
-        }
-        guard let epoch = stream.nextWithRemoval() else {
-            return Frame(status: .waiting, segment: segment, selectedChannelSamples: input,
-                filteredBlock: filtered, filteredEpoch: nil, preprocessedEpoch: nil, spectra: nil,
+    /// nil control selects the existing diagnostic feature path. Explicit controls
+    /// opt into the recovered manager feature-consumption gate. No model is invented.
+    private mutating func processUnchecked(_ input: [[Double]], quality: Double,
+                                          control: ReferenceManagerCadence.Control?) throws -> Frame {
+        let tick = try cadence.detectorCall(selectedChannels: input, control: control ??
+            .init(classifierEmpty: runtime == nil, autoSamplingNeutral: false, trainingControl: 1))
+        let filtered = tick.filteredBlock
+        guard let epoch = tick.featureInput else {
+            return Frame(status: tick.route == .consumedWithoutFeatures ? .consumedWithoutFeatures : .waiting,
+                segment: segment, selectedChannelSamples: input,
+                filteredBlock: filtered, filteredEpoch: tick.consumedEpoch, preprocessedEpoch: nil, spectra: nil,
                 bandPowers: nil, features: nil, classification: nil, filteredPosterior: nil, command: nil)
         }
         let preprocessed = try ReferenceSpectralPipeline.preprocess(epoch)

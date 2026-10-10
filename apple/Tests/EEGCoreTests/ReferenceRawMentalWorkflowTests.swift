@@ -3,6 +3,25 @@ import XCTest
 
 /// Authored mathematical inputs, not participant EEG or observed Cortex results.
 final class ReferenceRawMentalWorkflowTests: XCTestCase {
+    func testExplicitManagerGateConsumesEpochWithoutInventingFeatures() throws {
+        var workflow = try ReferenceRawMentalWorkflow(recipe: recipe(), runtime: nil)
+        let idle = ReferenceManagerCadence.Control(classifierEmpty: true,
+            autoSamplingNeutral: false, trainingControl: 0)
+        let consumed = try workflow.process(selectedChannelSamples: data(count: 16),
+            overallContactQuality: 100, managerControl: idle)
+        XCTAssertEqual(consumed.status, .consumedWithoutFeatures)
+        XCTAssertNotNil(consumed.filteredEpoch)
+        XCTAssertNil(consumed.features)
+        XCTAssertNil(consumed.command)
+        XCTAssertEqual(workflow.bufferedSamples, 8)
+        let train = ReferenceManagerCadence.Control(classifierEmpty: true,
+            autoSamplingNeutral: false, trainingControl: 1)
+        let extracted = try workflow.process(selectedChannelSamples: data(count: 8),
+            overallContactQuality: 100, managerControl: train)
+        XCTAssertEqual(extracted.status, .featuresOnly)
+        XCTAssertNotNil(extracted.features)
+        XCTAssertNil(extracted.command)
+    }
     private typealias Workflow = ReferenceRawMentalWorkflow
     private func recipe(background: Bool = false) -> Workflow.Recipe {
         .init(sampleRate: 16, selectedChannelCount: 3, windowSeconds: 1, stepSeconds: 0.5,
