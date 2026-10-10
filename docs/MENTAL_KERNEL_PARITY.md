@@ -484,3 +484,23 @@ identified embedded salt, excluded from this deliverable. Trained vendor
 parameters/reference outputs remain optional comparison inputs, not runtime
 dependencies or bundled assets. Full Cortex or physiological parity is not
 claimed.
+
+
+## Full metadata and real local storage — 2026-10-11
+
+The ten metadata keys and conditional eegChannels initializer are body traced.
+Typed wire handling distinguishes raw timestamps/channels and unsupported Qt
+coercions. CouchDriver transaction guards and document parse failures are traced;
+commit-error propagation and cross-file atomicity are not inferred.
+
+The independent authenticated SQLite research repository now stores metadata,
+full fitted classifier and explicit runtime settings atomically. Existing fitting,
+codec and inference kernels are reused. Restart/reopen, actual killed-writer
+recovery, contention, revisions, authentication and fault boundaries are tested.
+This does not replace the live trainer or qualify physiological commands.
+See [complete storage contract and reproduction](REFERENCE_LOCAL_STORAGE.md).
+
+Evidence: metadata-schema-continuation-20261011,
+database-driver-continuation-20261011, local-storage-continuation-20261011.
+No new vendor assets were needed. Qt date/channel normalization, exact trained
+Cortex outputs and physical power-loss qualification remain explicit gates.

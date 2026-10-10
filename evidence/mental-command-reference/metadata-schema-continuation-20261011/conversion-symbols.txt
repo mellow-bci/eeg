@@ -1,0 +1,110 @@
+(lldb) target create "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) memory read -s 8 -f x -c 3 0x1034bcd10
+0x1034bcd10: 0x0000000000000000 0x0000000000000000
+0x1034bcd20: 0x0000000000000000
+(lldb) disassemble -n Cortex::Core::datetime2String
+CortexService`Cortex::Core::datetime2String:
+CortexService[0x101f2498c] <+0>:   sub    sp, sp, #0x30
+CortexService[0x101f24990] <+4>:   stp    x20, x19, [sp, #0x10]
+CortexService[0x101f24994] <+8>:   stp    x29, x30, [sp, #0x20]
+CortexService[0x101f24998] <+12>:  add    x29, sp, #0x20
+CortexService[0x101f2499c] <+16>:  mov    x20, x0
+CortexService[0x101f249a0] <+20>:  mov    x19, x8
+CortexService[0x101f249a4] <+24>:  bl     0x1024b6b5c               ; symbol stub for: QDateTime::isValid() const
+CortexService[0x101f249a8] <+28>:  cbz    w0, 0x101f249ec           ; <+96>
+CortexService[0x101f249ac] <+32>:  mov    x0, x20
+CortexService[0x101f249b0] <+36>:  bl     0x1024b6ac0               ; symbol stub for: QDateTime::offsetFromUtc() const
+CortexService[0x101f249b4] <+40>:  mov    x1, x0
+CortexService[0x101f249b8] <+44>:  add    x0, sp, #0x8
+CortexService[0x101f249bc] <+48>:  bl     0x1024b5ddc               ; symbol stub for: QTimeZone::QTimeZone(int)
+CortexService[0x101f249c0] <+52>:  add    x1, sp, #0x8
+CortexService[0x101f249c4] <+56>:  mov    x0, x20
+CortexService[0x101f249c8] <+60>:  mov    w2, #0x1                  ; =1
+CortexService[0x101f249cc] <+64>:  bl     0x1024b5b6c               ; symbol stub for: QDateTime::setTimeZone(QTimeZone const&, QDateTime::TransitionResolution)
+CortexService[0x101f249d0] <+68>:  add    x0, sp, #0x8
+CortexService[0x101f249d4] <+72>:  bl     0x1024b5df4               ; symbol stub for: QTimeZone::~QTimeZone()
+CortexService[0x101f249d8] <+76>:  mov    x8, x19
+CortexService[0x101f249dc] <+80>:  mov    x0, x20
+CortexService[0x101f249e0] <+84>:  mov    w1, #0x9                  ; =9
+CortexService[0x101f249e4] <+88>:  bl     0x1024b6b98               ; symbol stub for: QDateTime::toString(Qt::DateFormat) const
+CortexService[0x101f249e8] <+92>:  b      0x101f249f4               ; <+104>
+CortexService[0x101f249ec] <+96>:  stp    xzr, xzr, [x19]
+CortexService[0x101f249f0] <+100>: str    xzr, [x19, #0x10]
+CortexService[0x101f249f4] <+104>: ldp    x29, x30, [sp, #0x20]
+CortexService[0x101f249f8] <+108>: ldp    x20, x19, [sp, #0x10]
+CortexService[0x101f249fc] <+112>: add    sp, sp, #0x30
+CortexService[0x101f24a00] <+116>: ret
+CortexService[0x101f24a04] <+120>: mov    x19, x0
+CortexService[0x101f24a08] <+124>: add    x0, sp, #0x8
+CortexService[0x101f24a0c] <+128>: bl     0x1024b5df4               ; symbol stub for: QTimeZone::~QTimeZone()
+CortexService[0x101f24a10] <+132>: mov    x0, x19
+CortexService[0x101f24a14] <+136>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+(lldb) disassemble -n Cortex::Core::string2Datetime
+CortexService`Cortex::Core::string2Datetime:
+CortexService[0x101f24a18] <+0>:  stp    x29, x30, [sp, #-0x10]!
+CortexService[0x101f24a1c] <+4>:  mov    x29, sp
+CortexService[0x101f24a20] <+8>:  mov    x9, x0
+CortexService[0x101f24a24] <+12>: ldr    x0, [x0, #0x10]
+CortexService[0x101f24a28] <+16>: tbnz   x0, #0x3f, 0x101f24a48    ; <+48>
+CortexService[0x101f24a2c] <+20>: ldr    x1, [x9, #0x8]
+CortexService[0x101f24a30] <+24>: cmp    x1, #0x0
+CortexService[0x101f24a34] <+28>: ccmp   x0, #0x0, #0x4, eq
+CortexService[0x101f24a38] <+32>: b.ne   0x101f24a4c               ; <+52>
+CortexService[0x101f24a3c] <+36>: mov    w2, #0x9                  ; =9
+CortexService[0x101f24a40] <+40>: ldp    x29, x30, [sp], #0x10
+CortexService[0x101f24a44] <+44>: b      0x1024b5b54               ; symbol stub for: QDateTime::fromString(QStringView, Qt::DateFormat)
+CortexService[0x101f24a48] <+48>: bl     0x1022f6c10               ; ___lldb_unnamed_symbol_1022f6c10
+CortexService[0x101f24a4c] <+52>: bl     0x1022f6bf4               ; ___lldb_unnamed_symbol_1022f6bf4
+(lldb) image lookup -r -n "channel.*String|String.*channel|str.*channel"
+2 matches found in /Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService:
+        Address: CortexService[0x0000000100fea5f0] (CortexService.__TEXT.__text + 16643568)
+        Summary: CortexService`Cortex::DeviceManager::InputDevice::channelListToString(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x0000000101fc6898] (CortexService.__TEXT.__text + 33274008)
+        Summary: CortexService`Cortex::Core::channel2StringDb(Cortex::Core::Channel_t)
+1 match found in /System/Library/Frameworks/CoreBluetooth.framework/Versions/A/CoreBluetooth:
+        Address: CoreBluetooth[0x000000019c24e26c] (CoreBluetooth.__TEXT.__text + 876300)
+        Summary: CoreBluetooth`+[CBTDSAdvertisingData constructTDSPacketWithAddress:tdsFlags:bloomFilter:bloomFilterSize:channelInfo:headerFlags:TIK:]
+3 matches found in /System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libJP2.dylib:
+        Address: libJP2.dylib[0x0000000193628f30] (libJP2.dylib.__TEXT.__text + 497064)
+        Summary: libJP2.dylib`jx_registration::finalize(j2_channels*)
+        Address: libJP2.dylib[0x000000019363332c] (libJP2.dylib.__TEXT.__text + 539044)
+        Summary: libJP2.dylib`kdu_region_decompressor::get_rendered_image_dims(kdu_codestream, kdu_channel_mapping*, int, int, kdu_coords, kdu_coords, kdu_component_access_mode)
+        Address: libJP2.dylib[0x0000000193633498] (libJP2.dylib.__TEXT.__text + 539408)
+        Summary: libJP2.dylib`kdu_region_decompressor::start(kdu_codestream, kdu_channel_mapping*, int, int, int, kdu_dims, kdu_coords, kdu_coords, bool, kdu_component_access_mode, bool)
+1 match found in /System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libPng.dylib:
+        Address: libPng.dylib[0x0000000193ca79c8] (libPng.dylib.__TEXT.__text + 135680)
+        Summary: libPng.dylib`png_do_strip_channel
+2 matches found in /System/Library/Frameworks/CoreAudio.framework/Versions/A/CoreAudio:
+        Address: CoreAudio[0x0000000183eb49f4] (CoreAudio.__TEXT.__text + 3464932)
+        Summary: CoreAudio`AMCP::IOAudio1::get_stream_starting_channel(applesauce::CF::DictionaryRef const&)
+        Address: CoreAudio[0x0000000183fd95d0] (CoreAudio.__TEXT.__text + 4664000)
+        Summary: CoreAudio`AMCP::IOAudio2::get_stream_starting_channel(applesauce::CF::DictionaryRef const&)
+10 matches found in /usr/lib/swift/libswiftAccelerate.dylib:
+        Address: libswiftAccelerate.dylib[0x00000001c92e86c4] (libswiftAccelerate.dylib.__TEXT.__text + 430716)
+        Summary: libswiftAccelerate.dylib`static Accelerate.vDSP.BiquadFunctions.destroySetup<τ_0_0 where τ_0_0: Accelerate.vDSP_FloatingPointBiquadFilterable>(ofType: τ_0_0.Type, channelCount: Swift.UInt, biquadSetup: Swift.OpaquePointer) -> ()
+        Address: libswiftAccelerate.dylib[0x00000001c92e8c74] (libswiftAccelerate.dylib.__TEXT.__text + 432172)
+        Summary: libswiftAccelerate.dylib`protocol witness for static Accelerate.vDSP_BiquadFunctions.destroySetup(channelCount: Swift.UInt, biquadSetup: Swift.OpaquePointer) -> () in conformance Accelerate.vDSP.VectorizableFloat : Accelerate.vDSP_BiquadFunctions in Accelerate
+        Address: libswiftAccelerate.dylib[0x00000001c92e8da0] (libswiftAccelerate.dylib.__TEXT.__text + 432472)
+        Summary: libswiftAccelerate.dylib`merged static Accelerate.vDSP.VectorizableFloat.destroySetup(channelCount: Swift.UInt, biquadSetup: Swift.OpaquePointer) -> ()
+        Address: libswiftAccelerate.dylib[0x00000001c92e8e94] (libswiftAccelerate.dylib.__TEXT.__text + 432716)
+        Summary: libswiftAccelerate.dylib`protocol witness for static Accelerate.vDSP_BiquadFunctions.destroySetup(channelCount: Swift.UInt, biquadSetup: Swift.OpaquePointer) -> () in conformance Accelerate.vDSP.VectorizableDouble : Accelerate.vDSP_BiquadFunctions in Accelerate
+        Address: libswiftAccelerate.dylib[0x00000001c92e8ec0] (libswiftAccelerate.dylib.__TEXT.__text + 432760)
+        Summary: libswiftAccelerate.dylib`merged protocol witness for static Accelerate.vDSP_BiquadFunctions.destroySetup(channelCount: Swift.UInt, biquadSetup: Swift.OpaquePointer) -> () in conformance Accelerate.vDSP.VectorizableFloat : Accelerate.vDSP_BiquadFunctions in Accelerate
+        Address: libswiftAccelerate.dylib[0x00000001c92e9068] (libswiftAccelerate.dylib.__TEXT.__text + 433184)
+        Summary: libswiftAccelerate.dylib`dispatch thunk of static Accelerate.vDSP_BiquadFunctions.destroySetup(channelCount: Swift.UInt, biquadSetup: Swift.OpaquePointer) -> ()
+        Address: libswiftAccelerate.dylib[0x00000001c92e8bc0] (libswiftAccelerate.dylib.__TEXT.__text + 431992)
+        Summary: libswiftAccelerate.dylib`static Accelerate.vDSP.VectorizableFloat.destroySetup(channelCount: Swift.UInt, biquadSetup: Swift.OpaquePointer) -> ()
+        Address: libswiftAccelerate.dylib[0x00000001c92e8d74] (libswiftAccelerate.dylib.__TEXT.__text + 432428)
+        Summary: libswiftAccelerate.dylib`static Accelerate.vDSP.VectorizableDouble.destroySetup(channelCount: Swift.UInt, biquadSetup: Swift.OpaquePointer) -> ()
+        Address: libswiftAccelerate.dylib[0x00000001c92eb738] (libswiftAccelerate.dylib.__TEXT.__text + 443120)
+        Summary: libswiftAccelerate.dylib`__C.BNNSPoolingLayerParameters.init(x_stride: Swift.Int, y_stride: Swift.Int, x_padding: Swift.Int, y_padding: Swift.Int, k_width: Swift.Int, k_height: Swift.Int, in_channels: Swift.Int, out_channels: Swift.Int, pooling_function: __C.BNNSPoolingFunction) -> __C.BNNSPoolingLayerParameters
+        Address: libswiftAccelerate.dylib[0x00000001c92eb6d4] (libswiftAccelerate.dylib.__TEXT.__text + 443020)
+        Summary: libswiftAccelerate.dylib`__C.BNNSConvolutionLayerParameters.init(x_stride: Swift.Int, y_stride: Swift.Int, x_padding: Swift.Int, y_padding: Swift.Int, k_width: Swift.Int, k_height: Swift.Int, in_channels: Swift.Int, out_channels: Swift.Int, weights: __C.BNNSLayerData) -> __C.BNNSConvolutionLayerParameters
+1 match found in /System/Library/Frameworks/CoreImage.framework/Versions/A/CoreImage:
+        Address: CoreImage[0x000000018e5737ec] (CoreImage.__TEXT.__text + 703804)
+        Summary: CoreImage`channelCountOfName(MLModel*, NSString*, CICoreMLLayer)
+1 match found in /System/Library/Frameworks/MetalPerformanceShaders.framework/Versions/A/Frameworks/MPSNDArray.framework/Versions/A/MPSNDArray:
+        Address: MPSNDArray[0x0000000190c3cedc] (MPSNDArray.__TEXT.__text + 539316)
+        Summary: MPSNDArray`-[MPSPluginNDArrayConvolutionDescriptor initWithKernelSizes:inputFeatureChannels:outputFeatureChannels:strides:dilationRates:groups:channelMultiplier:subPixelScaleFactor:dataFormat:weightsFormat:]
+(lldb) quit
