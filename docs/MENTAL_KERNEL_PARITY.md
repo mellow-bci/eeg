@@ -365,3 +365,47 @@ It preceded the final PSD-intermediate runtime projection adjustment; the final
 171-test focused run covers every affected reference kernel, including both new
 complete singular fitted-workflow and runtime-subspace cases. Original
 measurements and final singular-density rejection remain intact.
+
+## Ordinary noisy-miss rebuild and training persistence — 2026-10-11
+
+The noisy overload calls the ordinary builder with append=false. The builder
+has no noisy-ID argument or demonstrated channel mask; it may reuse the ordinary
+action cache. `ReferenceClassifierRebuild` now composes the actual fitting kernels
+and models inactive-action, missing-class, fitted, rejected-fit and cache-hit
+routes. It loads feature slots before Gaussian slots and writes no new epochs.
+Its own numerical limits and value-cache representation are explicit boundaries.
+
+`ReferenceTrainingDatabase` implements ordered typed Gaussian/feature loading,
+empty placeholders, append/pooling, transposed matrix storage, latest-row
+retention and sequential partial writes. It deliberately owns no vendor disk
+codec. The true-append builder saves features then Gaussian data before fitting;
+that full branch remains an orchestration gate.
+
+Classifier persistence uses a typed `cognitiv-classifier` profile property,
+separate from both caches and the explicit ten-field JSON converter. Load clears
+the previous classifier before checking the property. JSON exports UInt64 counts
+as doubles but imports signed integers; lossless interchange is not assumed.
+Nested conversions and actual profile encoding remain open. No mock save/load
+success is introduced.
+
+Evidence: `refit-builder-continuation-20261011`,
+`training-persistence-continuation-20261011`,
+`persistence-cache-continuation-20261011`. Focused reproduction executed180
+tests:178 passed,2 absent matched-Cortex fixtures skipped,0 failures. Typed
+store→actual fit→Gaussian scoring→cache reuse is analytically checked.
+No vendor learned assets were required. Matched trained-profile predictions
+and complete disk roundtrip remain unverified; acquisition/live trainer unchanged.
+
+Broad core regression executed370 tests:366 passed,4 skipped,0 failures
+in154.24seconds. Final focused180-test run additionally covered the last two
+rebuild failure/noisy-miss composition checks added after broad compilation.
+
+Further persistence bodies connect typed Classifier QVariant to profile JSON,
+cache update, NoSQL metadata/attributes calls, queued worker, JSON bytes,
+compression, encryption and file save. Queued invocation success is not durability:
+its return is ignored and the wrapper immediately returns0. Worker retries only
+0x3303 up to six calls and emits final saveDone status; encryption failure is
+0x3304. Actual compression/encryption/file bodies and inverse profile decoding
+still require tracing. Valid wrong-type QVariant conversion may return a default
+classifier while load reports type validity; no reliable model roundtrip follows.
+These findings are evidence only, not a copied vendor codec.

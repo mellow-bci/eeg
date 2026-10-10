@@ -1,0 +1,857 @@
+(lldb) target create --arch arm64 "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -s 0x101e21864 -c 120
+CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveTrainingProfileAttributes:
+CortexService[0x101e21864] <+0>:   sub    sp, sp, #0x80
+CortexService[0x101e21868] <+4>:   stp    x26, x25, [sp, #0x30]
+CortexService[0x101e2186c] <+8>:   stp    x24, x23, [sp, #0x40]
+CortexService[0x101e21870] <+12>:  stp    x22, x21, [sp, #0x50]
+CortexService[0x101e21874] <+16>:  stp    x20, x19, [sp, #0x60]
+CortexService[0x101e21878] <+20>:  stp    x29, x30, [sp, #0x70]
+CortexService[0x101e2187c] <+24>:  add    x29, sp, #0x70
+CortexService[0x101e21880] <+28>:  cbnz   w2, 0x101e21a28           ; <+452>
+CortexService[0x101e21884] <+32>:  mov    x20, x0
+CortexService[0x101e21888] <+36>:  tbz    w3, #0x0, 0x101e218d8     ; <+116>
+CortexService[0x101e2188c] <+40>:  add    x0, x20, #0xc8
+CortexService[0x101e21890] <+44>:  stp    xzr, x1, [sp]
+CortexService[0x101e21894] <+48>:  mov    x8, sp
+CortexService[0x101e21898] <+52>:  add    x5, x8, #0x10
+CortexService[0x101e2189c] <+56>:  adrp   x9, 4589
+CortexService[0x101e218a0] <+60>:  add    x9, x9, #0x322            ; "TrainingProfileAttributes"
+CortexService[0x101e218a4] <+64>:  stp    xzr, x9, [sp, #0x10]
+CortexService[0x101e218a8] <+68>:  add    x6, x8, #0x20
+CortexService[0x101e218ac] <+72>:  adrp   x8, 5023
+CortexService[0x101e218b0] <+76>:  add    x8, x8, #0xac0            ; guard variable for bool QMetaType::registerMutableViewImpl<QMap<QString, Cortex::Core::ErrorCode>, QIterable<QMetaAssociation>>(std::__1::function<bool (void*, void*)>, QMetaType, QMetaType)::unregister + 8
+CortexService[0x101e218b4] <+80>:  stp    xzr, x8, [sp, #0x20]
+CortexService[0x101e218b8] <+84>:  adrp   x1, 4597
+CortexService[0x101e218bc] <+88>:  add    x1, x1, #0xd31            ; "save"
+CortexService[0x101e218c0] <+92>:  mov    x4, sp
+CortexService[0x101e218c4] <+96>:  mov    w2, #0x2                  ; =2
+CortexService[0x101e218c8] <+100>: mov    w3, #0x2                  ; =2
+CortexService[0x101e218cc] <+104>: bl     0x1024b47ec               ; symbol stub for: QMetaObject::invokeMethodImpl(QObject*, char const*, Qt::ConnectionType, long long, void const* const*, char const* const*, QtPrivate::QMetaTypeInterface const* const*)
+CortexService[0x101e218d0] <+108>: mov    w22, #0x0                 ; =0
+CortexService[0x101e218d4] <+112>: b      0x101e21994               ; <+304>
+CortexService[0x101e218d8] <+116>: mov    x19, x4
+CortexService[0x101e218dc] <+120>: add    x23, x20, #0xa0
+CortexService[0x101e218e0] <+124>: add    x21, x1, #0x8
+CortexService[0x101e218e4] <+128>: add    x24, x1, #0x20
+CortexService[0x101e218e8] <+132>: mov    x0, x23
+CortexService[0x101e218ec] <+136>: mov    x1, x21
+CortexService[0x101e218f0] <+140>: mov    x2, x24
+CortexService[0x101e218f4] <+144>: bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e218f8] <+148>: mov    x22, x0
+CortexService[0x101e218fc] <+152>: mov    w25, #0x3303              ; =13059
+CortexService[0x101e21900] <+156>: cmp    w0, w25
+CortexService[0x101e21904] <+160>: b.ne   0x101e21990               ; <+300>
+CortexService[0x101e21908] <+164>: mov    x0, x23
+CortexService[0x101e2190c] <+168>: mov    x1, x21
+CortexService[0x101e21910] <+172>: mov    x2, x24
+CortexService[0x101e21914] <+176>: bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e21918] <+180>: mov    x22, x0
+CortexService[0x101e2191c] <+184>: cmp    w0, w25
+CortexService[0x101e21920] <+188>: b.ne   0x101e21990               ; <+300>
+CortexService[0x101e21924] <+192>: mov    x0, x23
+CortexService[0x101e21928] <+196>: mov    x1, x21
+CortexService[0x101e2192c] <+200>: mov    x2, x24
+CortexService[0x101e21930] <+204>: bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e21934] <+208>: mov    x22, x0
+CortexService[0x101e21938] <+212>: cmp    w0, w25
+CortexService[0x101e2193c] <+216>: b.ne   0x101e21990               ; <+300>
+CortexService[0x101e21940] <+220>: mov    x0, x23
+CortexService[0x101e21944] <+224>: mov    x1, x21
+CortexService[0x101e21948] <+228>: mov    x2, x24
+CortexService[0x101e2194c] <+232>: bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e21950] <+236>: mov    x22, x0
+CortexService[0x101e21954] <+240>: cmp    w0, w25
+CortexService[0x101e21958] <+244>: b.ne   0x101e21990               ; <+300>
+CortexService[0x101e2195c] <+248>: mov    x0, x23
+CortexService[0x101e21960] <+252>: mov    x1, x21
+CortexService[0x101e21964] <+256>: mov    x2, x24
+CortexService[0x101e21968] <+260>: bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e2196c] <+264>: mov    x22, x0
+CortexService[0x101e21970] <+268>: mov    w8, #0x3303               ; =13059
+CortexService[0x101e21974] <+272>: cmp    w0, w8
+CortexService[0x101e21978] <+276>: b.ne   0x101e21990               ; <+300>
+CortexService[0x101e2197c] <+280>: mov    x0, x23
+CortexService[0x101e21980] <+284>: mov    x1, x21
+CortexService[0x101e21984] <+288>: mov    x2, x24
+CortexService[0x101e21988] <+292>: bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e2198c] <+296>: mov    x22, x0
+CortexService[0x101e21990] <+300>: cbz    w22, 0x101e219b4          ; <+336>
+CortexService[0x101e21994] <+304>: mov    x0, x22
+CortexService[0x101e21998] <+308>: ldp    x29, x30, [sp, #0x70]
+CortexService[0x101e2199c] <+312>: ldp    x20, x19, [sp, #0x60]
+CortexService[0x101e219a0] <+316>: ldp    x22, x21, [sp, #0x50]
+CortexService[0x101e219a4] <+320>: ldp    x24, x23, [sp, #0x40]
+CortexService[0x101e219a8] <+324>: ldp    x26, x25, [sp, #0x30]
+CortexService[0x101e219ac] <+328>: add    sp, sp, #0x80
+CortexService[0x101e219b0] <+332>: ret
+CortexService[0x101e219b4] <+336>: adrp   x8, 4962
+CortexService[0x101e219b8] <+340>: add    x8, x8, #0x4d0            ; vtable for Cortex::Database::NoSQLDatabaseWrapper + 1640
+CortexService[0x101e219bc] <+344>: add    x23, x8, #0x10
+CortexService[0x101e219c0] <+348>: mov    x8, sp
+CortexService[0x101e219c4] <+352>: add    x0, x8, #0x8
+CortexService[0x101e219c8] <+356>: stp    x23, xzr, [sp]
+CortexService[0x101e219cc] <+360>: stp    xzr, xzr, [sp, #0x10]
+CortexService[0x101e219d0] <+364>: str    wzr, [sp, #0x20]
+CortexService[0x101e219d4] <+368>: mov    x1, x21
+CortexService[0x101e219d8] <+372>: bl     0x1024b58fc               ; symbol stub for: QString::operator=(QString const&)
+CortexService[0x101e219dc] <+376>: mov    x1, sp
+CortexService[0x101e219e0] <+380>: mov    x0, x20
+CortexService[0x101e219e4] <+384>: mov    w2, #0x0                  ; =0
+CortexService[0x101e219e8] <+388>: mov    x3, x19
+CortexService[0x101e219ec] <+392>: bl     0x101d167cc               ; ___lldb_unnamed_symbol_101d167cc
+CortexService[0x101e219f0] <+396>: mov    x22, x0
+CortexService[0x101e219f4] <+400>: str    x23, [sp]
+CortexService[0x101e219f8] <+404>: ldr    x8, [sp, #0x8]
+CortexService[0x101e219fc] <+408>: cbz    x8, 0x101e21994           ; <+304>
+CortexService[0x101e21a00] <+412>: mov    w9, #-0x1                 ; =-1
+CortexService[0x101e21a04] <+416>: ldaddal w9, w8, [x8]
+CortexService[0x101e21a08] <+420>: cmp    w8, #0x1
+CortexService[0x101e21a0c] <+424>: b.ne   0x101e21994               ; <+304>
+CortexService[0x101e21a10] <+428>: ldr    x0, [sp, #0x8]
+CortexService[0x101e21a14] <+432>: cbz    x0, 0x101e21a2c           ; <+456>
+CortexService[0x101e21a18] <+436>: ldr    w8, [x0]
+CortexService[0x101e21a1c] <+440>: cbnz   w8, 0x101e21a30           ; <+460>
+CortexService[0x101e21a20] <+444>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e21a24] <+448>: b      0x101e21994               ; <+304>
+CortexService[0x101e21a28] <+452>: bl     0x10249b790               ; ___lldb_unnamed_symbol_10249b790
+CortexService[0x101e21a2c] <+456>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e21a30] <+460>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e21a34] <+464>: mov    x19, x0
+CortexService[0x101e21a38] <+468>: mov    x0, sp
+CortexService[0x101e21a3c] <+472>: bl     0x101d16d24               ; ___lldb_unnamed_symbol_101d16d24
+CortexService[0x101e21a40] <+476>: mov    x0, x19
+(lldb) disassemble -s 0x101e7522c -c 160
+CortexService`Cortex::FileStore::TrainingAttributesWriteWorker::save:
+CortexService[0x101e7522c] <+0>:   stp    x22, x21, [sp, #-0x30]!
+CortexService[0x101e75230] <+4>:   stp    x20, x19, [sp, #0x10]
+CortexService[0x101e75234] <+8>:   stp    x29, x30, [sp, #0x20]
+CortexService[0x101e75238] <+12>:  add    x29, sp, #0x20
+CortexService[0x101e7523c] <+16>:  mov    x20, x0
+CortexService[0x101e75240] <+20>:  add    x19, x1, #0x8
+CortexService[0x101e75244] <+24>:  add    x21, x1, #0x20
+CortexService[0x101e75248] <+28>:  ldr    x0, [x0, #0x10]
+CortexService[0x101e7524c] <+32>:  mov    x1, x19
+CortexService[0x101e75250] <+36>:  mov    x2, x21
+CortexService[0x101e75254] <+40>:  bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e75258] <+44>:  mov    x2, x0
+CortexService[0x101e7525c] <+48>:  mov    w22, #0x3303              ; =13059
+CortexService[0x101e75260] <+52>:  cmp    w0, w22
+CortexService[0x101e75264] <+56>:  b.ne   0x101e752f0               ; <+196>
+CortexService[0x101e75268] <+60>:  ldr    x0, [x20, #0x10]
+CortexService[0x101e7526c] <+64>:  mov    x1, x19
+CortexService[0x101e75270] <+68>:  mov    x2, x21
+CortexService[0x101e75274] <+72>:  bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e75278] <+76>:  mov    x2, x0
+CortexService[0x101e7527c] <+80>:  cmp    w0, w22
+CortexService[0x101e75280] <+84>:  b.ne   0x101e752f0               ; <+196>
+CortexService[0x101e75284] <+88>:  ldr    x0, [x20, #0x10]
+CortexService[0x101e75288] <+92>:  mov    x1, x19
+CortexService[0x101e7528c] <+96>:  mov    x2, x21
+CortexService[0x101e75290] <+100>: bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e75294] <+104>: mov    x2, x0
+CortexService[0x101e75298] <+108>: cmp    w0, w22
+CortexService[0x101e7529c] <+112>: b.ne   0x101e752f0               ; <+196>
+CortexService[0x101e752a0] <+116>: ldr    x0, [x20, #0x10]
+CortexService[0x101e752a4] <+120>: mov    x1, x19
+CortexService[0x101e752a8] <+124>: mov    x2, x21
+CortexService[0x101e752ac] <+128>: bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e752b0] <+132>: mov    x2, x0
+CortexService[0x101e752b4] <+136>: cmp    w0, w22
+CortexService[0x101e752b8] <+140>: b.ne   0x101e752f0               ; <+196>
+CortexService[0x101e752bc] <+144>: ldr    x0, [x20, #0x10]
+CortexService[0x101e752c0] <+148>: mov    x1, x19
+CortexService[0x101e752c4] <+152>: mov    x2, x21
+CortexService[0x101e752c8] <+156>: bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e752cc] <+160>: mov    x2, x0
+CortexService[0x101e752d0] <+164>: mov    w8, #0x3303               ; =13059
+CortexService[0x101e752d4] <+168>: cmp    w0, w8
+CortexService[0x101e752d8] <+172>: b.ne   0x101e752f0               ; <+196>
+CortexService[0x101e752dc] <+176>: ldr    x0, [x20, #0x10]
+CortexService[0x101e752e0] <+180>: mov    x1, x19
+CortexService[0x101e752e4] <+184>: mov    x2, x21
+CortexService[0x101e752e8] <+188>: bl     0x101e732f8               ; Cortex::FileStore::TrainingAttributesStore::save(QString const&, QJsonObject const&)
+CortexService[0x101e752ec] <+192>: mov    x2, x0
+CortexService[0x101e752f0] <+196>: mov    x0, x20
+CortexService[0x101e752f4] <+200>: mov    x1, x19
+CortexService[0x101e752f8] <+204>: ldp    x29, x30, [sp, #0x20]
+CortexService[0x101e752fc] <+208>: ldp    x20, x19, [sp, #0x10]
+CortexService[0x101e75300] <+212>: ldp    x22, x21, [sp], #0x30
+CortexService[0x101e75304] <+216>: b      0x101e71f4c               ; Cortex::FileStore::TrainingAttributesWriteWorker::saveDone(QString const&, Cortex::Core::ErrorCode)
+
+CortexService`___lldb_unnamed_symbol_101e75308:
+CortexService[0x101e75308] <+0>:   sub    sp, sp, #0x40
+CortexService[0x101e7530c] <+4>:   stp    x20, x19, [sp, #0x20]
+CortexService[0x101e75310] <+8>:   stp    x29, x30, [sp, #0x30]
+CortexService[0x101e75314] <+12>:  add    x29, sp, #0x30
+CortexService[0x101e75318] <+16>:  adrp   x1, 4504
+CortexService[0x101e7531c] <+20>:  add    x1, x1, #0x4d3            ; ".emu2"
+CortexService[0x101e75320] <+24>:  mov    x8, sp
+CortexService[0x101e75324] <+28>:  mov    w0, #0x5                  ; =5
+CortexService[0x101e75328] <+32>:  bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x101e7532c] <+36>:  ldr    q0, [sp]
+CortexService[0x101e75330] <+40>:  adrp   x1, 5658
+CortexService[0x101e75334] <+44>:  add    x1, x1, #0x840
+CortexService[0x101e75338] <+48>:  str    q0, [x1]
+CortexService[0x101e7533c] <+52>:  ldr    x8, [sp, #0x10]
+CortexService[0x101e75340] <+56>:  str    x8, [x1, #0x10]
+CortexService[0x101e75344] <+60>:  adrp   x20, -7786
+CortexService[0x101e75348] <+64>:  add    x20, x20, #0x0            ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e7534c] <+68>:  adrp   x19, -7797
+CortexService[0x101e75350] <+72>:  add    x19, x19, #0x0            ; _mh_execute_header
+CortexService[0x101e75354] <+76>:  mov    x0, x20
+CortexService[0x101e75358] <+80>:  mov    x2, x19
+CortexService[0x101e7535c] <+84>:  bl     0x1024b76c0               ; symbol stub for: __cxa_atexit
+CortexService[0x101e75360] <+88>:  adrp   x1, 4504
+CortexService[0x101e75364] <+92>:  add    x1, x1, #0x4d9            ; ".emu2.encrypted"
+CortexService[0x101e75368] <+96>:  mov    x8, sp
+CortexService[0x101e7536c] <+100>: mov    w0, #0xf                  ; =15
+CortexService[0x101e75370] <+104>: bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x101e75374] <+108>: ldr    q0, [sp]
+CortexService[0x101e75378] <+112>: adrp   x1, 5658
+CortexService[0x101e7537c] <+116>: add    x1, x1, #0x860
+CortexService[0x101e75380] <+120>: str    q0, [x1]
+CortexService[0x101e75384] <+124>: ldr    x8, [sp, #0x10]
+CortexService[0x101e75388] <+128>: str    x8, [x1, #0x10]
+CortexService[0x101e7538c] <+132>: mov    x0, x20
+CortexService[0x101e75390] <+136>: mov    x2, x19
+CortexService[0x101e75394] <+140>: bl     0x1024b76c0               ; symbol stub for: __cxa_atexit
+CortexService[0x101e75398] <+144>: adrp   x1, 4504
+CortexService[0x101e7539c] <+148>: add    x1, x1, #0x4e9            ; ".eemu2"
+CortexService[0x101e753a0] <+152>: mov    x8, sp
+CortexService[0x101e753a4] <+156>: mov    w0, #0x6                  ; =6
+CortexService[0x101e753a8] <+160>: bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x101e753ac] <+164>: ldr    q0, [sp]
+CortexService[0x101e753b0] <+168>: adrp   x1, 5658
+CortexService[0x101e753b4] <+172>: add    x1, x1, #0x880
+CortexService[0x101e753b8] <+176>: str    q0, [x1]
+CortexService[0x101e753bc] <+180>: ldr    x8, [sp, #0x10]
+CortexService[0x101e753c0] <+184>: str    x8, [x1, #0x10]
+CortexService[0x101e753c4] <+188>: mov    x0, x20
+CortexService[0x101e753c8] <+192>: mov    x2, x19
+CortexService[0x101e753cc] <+196>: bl     0x1024b76c0               ; symbol stub for: __cxa_atexit
+CortexService[0x101e753d0] <+200>: adrp   x1, 4504
+CortexService[0x101e753d4] <+204>: add    x1, x1, #0x4f0            ; ".egemu2"
+CortexService[0x101e753d8] <+208>: mov    x8, sp
+CortexService[0x101e753dc] <+212>: mov    w0, #0x7                  ; =7
+CortexService[0x101e753e0] <+216>: bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x101e753e4] <+220>: ldr    q0, [sp]
+CortexService[0x101e753e8] <+224>: adrp   x1, 5658
+CortexService[0x101e753ec] <+228>: add    x1, x1, #0x8a0
+CortexService[0x101e753f0] <+232>: str    q0, [x1]
+CortexService[0x101e753f4] <+236>: ldr    x8, [sp, #0x10]
+CortexService[0x101e753f8] <+240>: str    x8, [x1, #0x10]
+CortexService[0x101e753fc] <+244>: mov    x0, x20
+CortexService[0x101e75400] <+248>: mov    x2, x19
+CortexService[0x101e75404] <+252>: bl     0x1024b76c0               ; symbol stub for: __cxa_atexit
+CortexService[0x101e75408] <+256>: ldp    x29, x30, [sp, #0x30]
+CortexService[0x101e7540c] <+260>: ldp    x20, x19, [sp, #0x20]
+CortexService[0x101e75410] <+264>: add    sp, sp, #0x40
+CortexService[0x101e75414] <+268>: ret
+
+CortexService`adler32_z:
+CortexService[0x101e75418] <+0>:   ubfx   x8, x0, #16, #16
+CortexService[0x101e7541c] <+4>:   and    x9, x0, #0xffff
+CortexService[0x101e75420] <+8>:   cmp    x2, #0x1
+CortexService[0x101e75424] <+12>:  b.ne   0x101e75468               ; <+80>
+CortexService[0x101e75428] <+16>:  ldrb   w10, [x1]
+CortexService[0x101e7542c] <+20>:  mov    x11, #-0xfff1             ; =-65521
+CortexService[0x101e75430] <+24>:  add    x9, x9, x10
+CortexService[0x101e75434] <+28>:  add    x10, x9, x11
+CortexService[0x101e75438] <+32>:  mov    w11, #0xfff0              ; =65520
+CortexService[0x101e7543c] <+36>:  cmp    x9, x11
+CortexService[0x101e75440] <+40>:  csel   x9, x10, x9, hi
+CortexService[0x101e75444] <+44>:  add    x8, x9, x8
+CortexService[0x101e75448] <+48>:  cmp    x8, x11
+CortexService[0x101e7544c] <+52>:  lsl    x8, x8, #16
+CortexService[0x101e75450] <+56>:  mov    x10, #-0x10000            ; =-65536
+CortexService[0x101e75454] <+60>:  movk   x10, #0xf, lsl #16
+CortexService[0x101e75458] <+64>:  add    x10, x8, x10
+CortexService[0x101e7545c] <+68>:  csel   x8, x10, x8, hi
+CortexService[0x101e75460] <+72>:  orr    x0, x8, x9
+CortexService[0x101e75464] <+76>:  ret
+CortexService[0x101e75468] <+80>:  cbz    x1, 0x101e754d0           ; <+184>
+CortexService[0x101e7546c] <+84>:  cmp    x2, #0x10
+CortexService[0x101e75470] <+88>:  b.hs   0x101e754d8               ; <+192>
+CortexService[0x101e75474] <+92>:  cbz    x2, 0x101e7548c           ; <+116>
+CortexService[0x101e75478] <+96>:  ldrb   w10, [x1], #0x1
+CortexService[0x101e7547c] <+100>: add    x9, x9, x10
+CortexService[0x101e75480] <+104>: add    x8, x9, x8
+CortexService[0x101e75484] <+108>: subs   x2, x2, #0x1
+CortexService[0x101e75488] <+112>: b.ne   0x101e75478               ; <+96>
+CortexService[0x101e7548c] <+116>: mov    x10, #-0xfff1             ; =-65521
+CortexService[0x101e75490] <+120>: add    x10, x9, x10
+CortexService[0x101e75494] <+124>: mov    w11, #0xfff0              ; =65520
+CortexService[0x101e75498] <+128>: cmp    x9, x11
+CortexService[0x101e7549c] <+132>: csel   x9, x10, x9, hi
+CortexService[0x101e754a0] <+136>: mov    x10, #0xc5cd              ; =50637
+CortexService[0x101e754a4] <+140>: movk   x10, #0xd2f, lsl #16
+CortexService[0x101e754a8] <+144>: movk   x10, #0xe1, lsl #32
+(lldb) disassemble -s 0x101fadc94 -c 120
+CortexService`Cortex::Model::TrainingProfileAttributesInternal::toJsonObject:
+CortexService[0x101fadc94] <+0>:   sub    sp, sp, #0x80
+CortexService[0x101fadc98] <+4>:   stp    x20, x19, [sp, #0x60]
+CortexService[0x101fadc9c] <+8>:   stp    x29, x30, [sp, #0x70]
+CortexService[0x101fadca0] <+12>:  add    x29, sp, #0x70
+CortexService[0x101fadca4] <+16>:  mov    x20, x0
+CortexService[0x101fadca8] <+20>:  mov    x19, x8
+CortexService[0x101fadcac] <+24>:  mov    x0, x8
+CortexService[0x101fadcb0] <+28>:  bl     0x1024b4774               ; symbol stub for: QJsonObject::QJsonObject()
+CortexService[0x101fadcb4] <+32>:  add    x1, x20, #0x8
+CortexService[0x101fadcb8] <+36>:  add    x0, sp, #0x28
+CortexService[0x101fadcbc] <+40>:  bl     0x1024b454c               ; symbol stub for: QJsonValue::QJsonValue(QString const&)
+CortexService[0x101fadcc0] <+44>:  adrp   x1, 4190
+CortexService[0x101fadcc4] <+48>:  add    x1, x1, #0xd87            ; "uuid"
+CortexService[0x101fadcc8] <+52>:  sub    x8, x29, #0x30
+CortexService[0x101fadccc] <+56>:  mov    w0, #0x4                  ; =4
+CortexService[0x101fadcd0] <+60>:  bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x101fadcd4] <+64>:  ldur   q0, [x29, #-0x30]
+CortexService[0x101fadcd8] <+68>:  str    q0, [sp]
+CortexService[0x101fadcdc] <+72>:  ldur   x8, [x29, #-0x20]
+CortexService[0x101fadce0] <+76>:  str    x8, [sp, #0x10]
+CortexService[0x101fadce4] <+80>:  mov    x1, sp
+CortexService[0x101fadce8] <+84>:  mov    x0, x19
+CortexService[0x101fadcec] <+88>:  bl     0x1024b4798               ; symbol stub for: QJsonObject::operator[](QString const&)
+CortexService[0x101fadcf0] <+92>:  stp    x0, x1, [sp, #0x18]
+CortexService[0x101fadcf4] <+96>:  add    x0, sp, #0x18
+CortexService[0x101fadcf8] <+100>: add    x1, sp, #0x28
+CortexService[0x101fadcfc] <+104>: bl     0x1024b4b10               ; symbol stub for: QJsonValueRef::operator=(QJsonValue const&)
+CortexService[0x101fadd00] <+108>: ldr    x8, [sp]
+CortexService[0x101fadd04] <+112>: cbz    x8, 0x101fadd2c           ; <+152>
+CortexService[0x101fadd08] <+116>: mov    w9, #-0x1                 ; =-1
+CortexService[0x101fadd0c] <+120>: ldaddal w9, w8, [x8]
+CortexService[0x101fadd10] <+124>: cmp    w8, #0x1
+CortexService[0x101fadd14] <+128>: b.ne   0x101fadd2c               ; <+152>
+CortexService[0x101fadd18] <+132>: ldr    x0, [sp]
+CortexService[0x101fadd1c] <+136>: cbz    x0, 0x101fadd44           ; <+176>
+CortexService[0x101fadd20] <+140>: ldr    w8, [x0]
+CortexService[0x101fadd24] <+144>: cbnz   w8, 0x101fadd48           ; <+180>
+CortexService[0x101fadd28] <+148>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101fadd2c] <+152>: add    x0, sp, #0x28
+CortexService[0x101fadd30] <+156>: bl     0x1024b4594               ; symbol stub for: QJsonValue::~QJsonValue()
+CortexService[0x101fadd34] <+160>: ldp    x29, x30, [sp, #0x70]
+CortexService[0x101fadd38] <+164>: ldp    x20, x19, [sp, #0x60]
+CortexService[0x101fadd3c] <+168>: add    sp, sp, #0x80
+CortexService[0x101fadd40] <+172>: ret
+CortexService[0x101fadd44] <+176>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101fadd48] <+180>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101fadd4c] <+184>: mov    x20, x0
+CortexService[0x101fadd50] <+188>: b      0x101fadd68               ; <+212>
+CortexService[0x101fadd54] <+192>: mov    x20, x0
+CortexService[0x101fadd58] <+196>: b      0x101fadd70               ; <+220>
+CortexService[0x101fadd5c] <+200>: mov    x20, x0
+CortexService[0x101fadd60] <+204>: mov    x0, sp
+CortexService[0x101fadd64] <+208>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101fadd68] <+212>: add    x0, sp, #0x28
+CortexService[0x101fadd6c] <+216>: bl     0x1024b4594               ; symbol stub for: QJsonValue::~QJsonValue()
+CortexService[0x101fadd70] <+220>: mov    x0, x19
+CortexService[0x101fadd74] <+224>: bl     0x1024b4780               ; symbol stub for: QJsonObject::~QJsonObject()
+CortexService[0x101fadd78] <+228>: mov    x0, x20
+CortexService[0x101fadd7c] <+232>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+
+CortexService`___lldb_unnamed_symbol_101fadd80:
+CortexService[0x101fadd80] <+0>:   sub    sp, sp, #0x70
+CortexService[0x101fadd84] <+4>:   stp    x20, x19, [sp, #0x50]
+CortexService[0x101fadd88] <+8>:   stp    x29, x30, [sp, #0x60]
+CortexService[0x101fadd8c] <+12>:  add    x29, sp, #0x60
+CortexService[0x101fadd90] <+16>:  adrp   x8, 4465
+CortexService[0x101fadd94] <+20>:  ldr    x8, [x8, #0xcf0]
+CortexService[0x101fadd98] <+24>:  ldr    x8, [x8]
+CortexService[0x101fadd9c] <+28>:  stur   x8, [x29, #-0x18]
+CortexService[0x101fadda0] <+32>:  adrp   x1, 4190
+CortexService[0x101fadda4] <+36>:  add    x1, x1, #0x2f0            ; "licenseName"
+CortexService[0x101fadda8] <+40>:  add    x8, sp, #0x10
+CortexService[0x101faddac] <+44>:  mov    w0, #0xb                  ; =11
+CortexService[0x101faddb0] <+48>:  bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x101faddb4] <+52>:  ldr    q0, [sp, #0x10]
+CortexService[0x101faddb8] <+56>:  adrp   x1, 5391
+CortexService[0x101faddbc] <+60>:  add    x1, x1, #0xf40
+CortexService[0x101faddc0] <+64>:  str    q0, [x1]
+CortexService[0x101faddc4] <+68>:  ldr    x8, [sp, #0x20]
+CortexService[0x101faddc8] <+72>:  str    x8, [x1, #0x10]
+CortexService[0x101faddcc] <+76>:  adrp   x0, -8098
+CortexService[0x101faddd0] <+80>:  add    x0, x0, #0x0              ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101faddd4] <+84>:  adrp   x2, -8109
+CortexService[0x101faddd8] <+88>:  add    x2, x2, #0x0              ; _mh_execute_header
+CortexService[0x101fadddc] <+92>:  bl     0x1024b76c0               ; symbol stub for: __cxa_atexit
+CortexService[0x101fadde0] <+96>:  adrp   x1, 4190
+CortexService[0x101fadde4] <+100>: add    x1, x1, #0x2fc            ; "nameCode"
+CortexService[0x101fadde8] <+104>: add    x8, sp, #0x10
+CortexService[0x101faddec] <+108>: mov    w0, #0x8                  ; =8
+CortexService[0x101faddf0] <+112>: bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x101faddf4] <+116>: ldr    q0, [sp, #0x10]
+CortexService[0x101faddf8] <+120>: adrp   x1, 5391
+CortexService[0x101faddfc] <+124>: add    x1, x1, #0xf60
+CortexService[0x101fade00] <+128>: str    q0, [x1]
+CortexService[0x101fade04] <+132>: ldr    x8, [sp, #0x20]
+CortexService[0x101fade08] <+136>: str    x8, [x1, #0x10]
+CortexService[0x101fade0c] <+140>: adrp   x0, -8098
+CortexService[0x101fade10] <+144>: add    x0, x0, #0x0              ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101fade14] <+148>: adrp   x2, -8109
+CortexService[0x101fade18] <+152>: add    x2, x2, #0x0              ; _mh_execute_header
+CortexService[0x101fade1c] <+156>: bl     0x1024b76c0               ; symbol stub for: __cxa_atexit
+CortexService[0x101fade20] <+160>: adrp   x1, 4190
+CortexService[0x101fade24] <+164>: add    x1, x1, #0x305            ; "consumerHeadsetsConfigs"
+CortexService[0x101fade28] <+168>: add    x8, sp, #0x10
+CortexService[0x101fade2c] <+172>: mov    w0, #0x17                 ; =23
+CortexService[0x101fade30] <+176>: bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x101fade34] <+180>: ldr    q0, [sp, #0x10]
+CortexService[0x101fade38] <+184>: adrp   x1, 5391
+CortexService[0x101fade3c] <+188>: add    x1, x1, #0xf80
+CortexService[0x101fade40] <+192>: str    q0, [x1]
+CortexService[0x101fade44] <+196>: ldr    x8, [sp, #0x20]
+CortexService[0x101fade48] <+200>: str    x8, [x1, #0x10]
+CortexService[0x101fade4c] <+204>: adrp   x0, -8098
+CortexService[0x101fade50] <+208>: add    x0, x0, #0x0              ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101fade54] <+212>: adrp   x2, -8109
+CortexService[0x101fade58] <+216>: add    x2, x2, #0x0              ; _mh_execute_header
+CortexService[0x101fade5c] <+220>: bl     0x1024b76c0               ; symbol stub for: __cxa_atexit
+CortexService[0x101fade60] <+224>: adrp   x1, 4190
+CortexService[0x101fade64] <+228>: add    x1, x1, #0x31d            ; "proHeadsetsConfigs"
+CortexService[0x101fade68] <+232>: add    x8, sp, #0x10
+CortexService[0x101fade6c] <+236>: mov    w0, #0x12                 ; =18
+CortexService[0x101fade70] <+240>: bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+(lldb) image lookup -rn NoSQLDatabaseWrapper
+220 matches found in /Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService:
+        Address: CortexService[0x0000000100a0aafc] (CortexService.__TEXT.__text + 10484476)
+        Summary: CortexService`QtSharedPointer::ExternalRefCountWithCustomDeleter<Cortex::Database::NoSQLDatabaseWrapper, QtSharedPointer::NormalDeleter>::deleter(QtSharedPointer::ExternalRefCountData*)
+        Address: CortexService[0x0000000100a23d90] (CortexService.__TEXT.__text + 10587536)
+        Summary: CortexService`Cortex::DatabaseManager::CloudKeyHandler::init(Cortex::Database::NoSQLDatabaseWrapper*, Cortex::Database::DatabaseCrypto*, QRecursiveMutex*)
+        Address: CortexService[0x0000000100a2361c] (CortexService.__TEXT.__text + 10585628)
+        Summary: CortexService`Cortex::DatabaseManager::DatabaseOpenHandler::init(Cortex::Database::NoSQLDatabaseWrapper*, Cortex::Database::DatabaseCrypto*, QRecursiveMutex*)
+        Address: CortexService[0x0000000100a8f51c] (CortexService.__TEXT.__text + 11027740)
+        Summary: CortexService`Cortex::DatabaseManager::StreamFileStatusUpdateWorker::setDb(QSharedPointer<Cortex::Database::NoSQLDatabaseWrapper> const&)
+        Address: CortexService[0x0000000101d7e8e0] (CortexService.__TEXT.__text + 30882016)
+        Summary: CortexService`Cortex::Database::DatabaseUpgrader::setDb(QSharedPointer<Cortex::Database::NoSQLDatabaseWrapper> const&, QString const&)
+        Address: CortexService[0x0000000101e29b4c] (CortexService.__TEXT.__text + 31583052)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getAppInfo(QString const&, Cortex::Model::AppInfo&, bool)
+        Address: CortexService[0x0000000101e37ae4] (CortexService.__TEXT.__text + 31640292)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getChanges()
+        Address: CortexService[0x0000000101e1c224] (CortexService.__TEXT.__text + 31527460)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getIndexes()
+        Address: CortexService[0x0000000101e21a90] (CortexService.__TEXT.__text + 31550096)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getLicense(QString const&, Cortex::Model::License&, bool)
+        Address: CortexService[0x0000000101e47f6c] (CortexService.__TEXT.__text + 31706988)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getPhaseV2(QString const&, Cortex::Model::ExperimentV2Phase&, bool)
+        Address: CortexService[0x0000000101e1fc1c] (CortexService.__TEXT.__text + 31542300)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getRecords(Cortex::Database::RecordListFilter const&, QJsonArray&, int&)
+        Address: CortexService[0x0000000101e204b0] (CortexService.__TEXT.__text + 31544496)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getSubject(QString const&, Cortex::Model::Subject&, bool)
+        Address: CortexService[0x0000000101e1c7b4] (CortexService.__TEXT.__text + 31528884)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveRecord(Cortex::Model::Record const&, bool, bool)
+        Address: CortexService[0x0000000101e31f58] (CortexService.__TEXT.__text + 31616856)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveSurvey(Cortex::Model::Survey const&, bool)
+        Address: CortexService[0x0000000101e1c22c] (CortexService.__TEXT.__text + 31527468)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::deleteIndex(QString const&)
+        Address: CortexService[0x0000000101e20410] (CortexService.__TEXT.__text + 31544336)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getBaseUser(QString const&, Cortex::Model::BaseUser&, bool)
+        Address: CortexService[0x0000000101d009fc] (CortexService.__TEXT.__text + 30366204)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::qt_metacall(QMetaObject::Call, int, void**)
+        Address: CortexService[0x0000000101d009a8] (CortexService.__TEXT.__text + 30366120)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::qt_metacast(char const*)
+        Address: CortexService[0x0000000101e29ecc] (CortexService.__TEXT.__text + 31583948)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveAppInfo(Cortex::Model::AppInfo const&, bool, bool)
+        Address: CortexService[0x0000000101e1e744] (CortexService.__TEXT.__text + 31536964)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveLicense(Cortex::Model::License const&, bool)
+        Address: CortexService[0x0000000101e1e16c] (CortexService.__TEXT.__text + 31535468)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveSubject(Cortex::Model::Subject const&, bool, bool)
+        Address: CortexService[0x0000000101e21f70] (CortexService.__TEXT.__text + 31551344)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getAppAccess(QString const&, Cortex::Model::AppAccess&, bool)
+        Address: CortexService[0x0000000101e484dc] (CortexService.__TEXT.__text + 31708380)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getElementV2(QString const&, Cortex::Model::ExperimentV2Element&, bool)
+        Address: CortexService[0x0000000101e4f7a0] (CortexService.__TEXT.__text + 31737760)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getMediaData(QString const&, Cortex::Model::MediaData&, bool)
+        Address: CortexService[0x0000000101e30db8] (CortexService.__TEXT.__text + 31612344)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getRemoteIps(Cortex::Model::RemoteIps&)
+        Address: CortexService[0x0000000101e4b12c] (CortexService.__TEXT.__text + 31719724)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getWorkspace(QString const&, Cortex::Model::Workspace&, bool)
+        Address: CortexService[0x0000000101e2b994] (CortexService.__TEXT.__text + 31590804)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::removeRecord(QString const&)
+        Address: CortexService[0x0000000101e36498] (CortexService.__TEXT.__text + 31634584)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::createIndexes()
+        Address: CortexService[0x0000000101e33704] (CortexService.__TEXT.__text + 31622916)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getExperiment(long long, Cortex::Model::Experiment&, bool)
+        Address: CortexService[0x0000000101e281bc] (CortexService.__TEXT.__text + 31576508)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getSyncConfig(QString const&, Cortex::Model::SyncConfig&, bool)
+        Address: CortexService[0x0000000101e2c2b4] (CortexService.__TEXT.__text + 31593140)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::querySubjects(QJsonObject const&, QJsonArray const&, int, int, bool)
+        Address: CortexService[0x0000000101e2b76c] (CortexService.__TEXT.__text + 31590252)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::removeAppInfo(QString const&)
+        Address: CortexService[0x0000000101e1ecac] (CortexService.__TEXT.__text + 31538348)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveAppAccess(Cortex::Model::AppAccess const&, bool, bool)
+        Address: CortexService[0x0000000101e35f1c] (CortexService.__TEXT.__text + 31633180)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveChallenge(Cortex::Model::Challenge const&, bool, bool)
+        Address: CortexService[0x0000000101e48a2c] (CortexService.__TEXT.__text + 31709740)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveListPhase(QList<Cortex::Model::ExperimentV2Phase> const&, bool, bool)
+        Address: CortexService[0x0000000101e4f21c] (CortexService.__TEXT.__text + 31736348)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveMediaData(Cortex::Model::MediaData const&)
+        Address: CortexService[0x0000000101e30c58] (CortexService.__TEXT.__text + 31611992)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveRemoteIps(Cortex::Model::RemoteIps const&)
+        Address: CortexService[0x0000000101e4abb0] (CortexService.__TEXT.__text + 31718320)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveWorkspace(Cortex::Model::Workspace const&, bool, bool)
+        Address: CortexService[0x0000000101e3050c] (CortexService.__TEXT.__text + 31610124)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getCloudPolicy(QString const&, Cortex::Model::CloudPolicy&, bool)
+        Address: CortexService[0x0000000101e23f34] (CortexService.__TEXT.__text + 31559476)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getCurrentUser(Cortex::Model::User&)
+        Address: CortexService[0x0000000101e37adc] (CortexService.__TEXT.__text + 31640284)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getDocsChanged()
+        Address: CortexService[0x0000000101e331e8] (CortexService.__TEXT.__text + 31621608)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveExperiment(Cortex::Model::Experiment const&, bool)
+        Address: CortexService[0x0000000101e27c40] (CortexService.__TEXT.__text + 31575104)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveSyncConfig(Cortex::Model::SyncConfig const&, bool, bool)
+        Address: CortexService[0x0000000101e4d164] (CortexService.__TEXT.__text + 31727972)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::addToDocChanges(QString const&)
+        Address: CortexService[0x0000000101e3c45c] (CortexService.__TEXT.__text + 31659100)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::clearEventsInDB(QString const&, QString const&)
+        Address: CortexService[0x0000000101e17d18] (CortexService.__TEXT.__text + 31509784)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::databaseVersion()
+        Address: CortexService[0x0000000101e476f4] (CortexService.__TEXT.__text + 31704820)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getExperimentV2(QString const&, Cortex::Model::ExperimentV2&, bool)
+        Address: CortexService[0x0000000101e2fcec] (CortexService.__TEXT.__text + 31608044)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getMetaDocument(QString const&, Cortex::Model::MetaDocument&)
+        Address: CortexService[0x0000000101e501f0] (CortexService.__TEXT.__text + 31740400)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getNotification(QString const&, Cortex::Model::CloudNotification&)
+        Address: CortexService[0x0000000101e5055c] (CortexService.__TEXT.__text + 31741276)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getNotification(QString const&, QString const&, Cortex::Model::CloudNotification&)
+        Address: CortexService[0x0000000101e409a4] (CortexService.__TEXT.__text + 31676836)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getRecordDetail(QString const&, QJsonObject&)
+        Address: CortexService[0x0000000101e3099c] (CortexService.__TEXT.__text + 31611292)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getSyncMetadata(Cortex::Model::SyncMetadata&)
+        Address: CortexService[0x0000000101e2f218] (CortexService.__TEXT.__text + 31605272)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getUserSettings(QString const&, Cortex::Model::UserSettings&, bool)
+        Address: CortexService[0x0000000101e2ff84] (CortexService.__TEXT.__text + 31608708)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveCloudPolicy(Cortex::Model::CloudPolicy const&)
+        Address: CortexService[0x0000000101e250f4] (CortexService.__TEXT.__text + 31564020)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveCurrentUser(Cortex::Model::User const&, bool)
+        Address: CortexService[0x0000000101e48d44] (CortexService.__TEXT.__text + 31710532)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveListElement(QList<Cortex::Model::ExperimentV2Element> const&, bool, bool)
+        Address: CortexService[0x0000000101e1cd00] (CortexService.__TEXT.__text + 31530240)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveMarkerGroup(Cortex::Model::MarkerGroup const&, bool)
+        Address: CortexService[0x0000000101e1aa90] (CortexService.__TEXT.__text + 31521424)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::upgradeBaseUser()
+        Address: CortexService[0x0000000101e4de48] (CortexService.__TEXT.__text + 31731272)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getDemoSummaries(Cortex::Model::DemographicSummaryContainer&)
+        Address: CortexService[0x0000000101e1f874] (CortexService.__TEXT.__text + 31541364)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getDeviceSession(QString const&, Cortex::Model::DeviceSession&, bool)
+        Address: CortexService[0x0000000101e20618] (CortexService.__TEXT.__text + 31544856)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getSubjectByName(long long, QString const&, Cortex::Model::Subject&)
+        Address: CortexService[0x0000000101e40110] (CortexService.__TEXT.__text + 31674640)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveExperimentV2(Cortex::Model::ExperimentV2 const&, bool, bool)
+        Address: CortexService[0x0000000101e2fe20] (CortexService.__TEXT.__text + 31608352)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveMetaDocument(QString const&, Cortex::Model::MetaDocument const&, bool)
+        Address: CortexService[0x0000000101e4fc7c] (CortexService.__TEXT.__text + 31739004)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveNotification(Cortex::Model::CloudNotification const&)
+        Address: CortexService[0x0000000101e4df6c] (CortexService.__TEXT.__text + 31731564)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveProfileImage(QByteArray const&, QString&)
+        Address: CortexService[0x0000000101e30bb8] (CortexService.__TEXT.__text + 31611832)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveSyncMetadata(Cortex::Model::SyncMetadata const&)
+        Address: CortexService[0x0000000101e2f768] (CortexService.__TEXT.__text + 31606632)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveUserSettings(Cortex::Model::UserSettings const&)
+        Address: CortexService[0x0000000101e3eec4] (CortexService.__TEXT.__text + 31669956)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::searchTagsFromDB(QString const&, QString const&, QSharedPointer<QJsonObject>&)
+        Address: CortexService[0x0000000101e23ac8] (CortexService.__TEXT.__text + 31558344)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getAppNameByAppId(QString const&)
+        Address: CortexService[0x0000000101e21318] (CortexService.__TEXT.__text + 31548184)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getCustomUserData(QString const&, Cortex::Model::CustomUserData&, bool)
+        Address: CortexService[0x0000000101e2ff78] (CortexService.__TEXT.__text + 31608696)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getLatestRevision(QString const&, unsigned int&)
+        Address: CortexService[0x0000000101e2bad8] (CortexService.__TEXT.__text + 31591128)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getStreamFileName(QString const&, Cortex::Model::StreamFileType, QString&)
+        Address: CortexService[0x0000000101e2bad0] (CortexService.__TEXT.__text + 31591120)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getStreamFilePath(QString const&, Cortex::Model::StreamFileType, QString&)
+        Address: CortexService[0x0000000101e1dcf4] (CortexService.__TEXT.__text + 31534324)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getSurveyByRecord(QString const&, QJsonObject&)
+        Address: CortexService[0x0000000101e2e778] (CortexService.__TEXT.__text + 31602552)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getVirtualHeadset(QString const&, Cortex::Model::VirtualHeadset&, bool)
+        Address: CortexService[0x0000000101e251a0] (CortexService.__TEXT.__text + 31564192)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::removeCurrentUser()
+        Address: CortexService[0x0000000101e4dda8] (CortexService.__TEXT.__text + 31731112)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveDemoSummaries(Cortex::Model::DemographicSummaryContainer const&)
+        Address: CortexService[0x0000000101e1c234] (CortexService.__TEXT.__text + 31527476)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveDeviceSession(Cortex::Model::DeviceSession const&, bool, bool)
+        Address: CortexService[0x0000000101e18b70] (CortexService.__TEXT.__text + 31513456)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getAllDemographics(int, int, QJsonArray&)
+        Address: CortexService[0x0000000101e4c918] (CortexService.__TEXT.__text + 31725848)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getConsumerAppData(QString const&, Cortex::Model::ConsumerAppData&, bool)
+        Address: CortexService[0x0000000101e25728] (CortexService.__TEXT.__text + 31565608)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getEventKeyMapping(QString const&, QString const&, Cortex::Model::EventKeyMapping&)
+        Address: CortexService[0x0000000101e1d274] (CortexService.__TEXT.__text + 31531636)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getMarkersByRecord(QString const&, QJsonArray&, bool)
+        Address: CortexService[0x0000000101e49f80] (CortexService.__TEXT.__text + 31715200)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getPartnerContract(Cortex::Model::PartnerContract&)
+        Address: CortexService[0x0000000101e29148] (CortexService.__TEXT.__text + 31580488)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getRecordsByUserId(QString const&)
+        Address: CortexService[0x0000000101e279d8] (CortexService.__TEXT.__text + 31574488)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getSyncSessionData(QString const&, Cortex::Model::SyncSessionData&, bool)
+        Address: CortexService[0x0000000101e20e28] (CortexService.__TEXT.__text + 31546920)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getTrainingProfile(QString const&, Cortex::Model::TrainingProfile&, bool)
+        Address: CortexService[0x0000000101e2406c] (CortexService.__TEXT.__text + 31559788)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getUserIdByCloudId(long long const&)
+        Address: CortexService[0x0000000101e268a8] (CortexService.__TEXT.__text + 31570088)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::queryDeviceSession(QJsonObject const&, QJsonArray const&)
+        Address: CortexService[0x0000000101e2118c] (CortexService.__TEXT.__text + 31547788)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveCustomUserData(Cortex::Model::CustomUserData const&, bool, bool)
+        Address: CortexService[0x0000000101e2eb80] (CortexService.__TEXT.__text + 31603584)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveVirtualHeadset(Cortex::Model::VirtualHeadset const&)
+        Address: CortexService[0x0000000101e4ee8c] (CortexService.__TEXT.__text + 31735436)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getCEAPJobByVersion(QString const&, Cortex::Model::CEAPMigrationJobStatus&)
+        Address: CortexService[0x0000000101e4905c] (CortexService.__TEXT.__text + 31711324)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getExperimentV2List(QString const&, QString const&, QJsonArray&)
+        Address: CortexService[0x0000000101e29928] (CortexService.__TEXT.__text + 31582504)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getLicensesByUserId(QString const&)
+        Address: CortexService[0x0000000101e35754] (CortexService.__TEXT.__text + 31631188)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getNetworkDataUsage(Cortex::Model::StatisticsUnit const&, QDateTime const&, QDateTime const&, QJsonArray&)
+        Address: CortexService[0x0000000101e2dccc] (CortexService.__TEXT.__text + 31599820)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getStreamFileFolder(Cortex::Model::StreamFileType, QString&)
+        Address: CortexService[0x0000000101e2bae0] (CortexService.__TEXT.__text + 31591136)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::queryApplicationIds(QString const&, QJsonArray&)
+        Address: CortexService[0x0000000101e2b880] (CortexService.__TEXT.__text + 31590528)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::removeDeviceSession(QString const&)
+        Address: CortexService[0x0000000101e517c8] (CortexService.__TEXT.__text + 31745992)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::removeNotifications(QList<QString> const&)
+        Address: CortexService[0x0000000101e4bc98] (CortexService.__TEXT.__text + 31722648)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveConsumerAppData(Cortex::Model::ConsumerAppData const&, bool, bool)
+        Address: CortexService[0x0000000101e17eb0] (CortexService.__TEXT.__text + 31510192)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveDatabaseVersion(QString const&)
+        Address: CortexService[0x0000000101e251b0] (CortexService.__TEXT.__text + 31564208)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveEventKeyMapping(Cortex::Model::EventKeyMapping const&)
+        Address: CortexService[0x0000000101e4a0b4] (CortexService.__TEXT.__text + 31715508)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::savePartnerContract(Cortex::Model::PartnerContract const&)
+        Address: CortexService[0x0000000101e2745c] (CortexService.__TEXT.__text + 31573084)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveSyncSessionData(Cortex::Model::SyncSessionData const&, bool, bool)
+        Address: CortexService[0x0000000101e1e1e0] (CortexService.__TEXT.__text + 31535584)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveTrainingProfile(Cortex::Model::TrainingProfile const&, bool, bool)
+        Address: CortexService[0x0000000101e18088] (CortexService.__TEXT.__text + 31510664)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::upgradeParquetStore()
+        Address: CortexService[0x0000000101e395dc] (CortexService.__TEXT.__text + 31647196)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getOfflineCortexInfo(Cortex::Model::OfflineCortexInfo&)
+        Address: CortexService[0x0000000101e506ec] (CortexService.__TEXT.__text + 31741676)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getValidNotification(QString const&, Cortex::Model::CloudNotification&)
+        Address: CortexService[0x0000000101e4b5cc] (CortexService.__TEXT.__text + 31720908)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getWorkspacesByAdmin(QString const&)
+        Address: CortexService[0x0000000101e2e95c] (CortexService.__TEXT.__text + 31603036)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::queryVirtualHeadsets(QString const&)
+        Address: CortexService[0x0000000101e2f104] (CortexService.__TEXT.__text + 31604996)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::removeVirtualHeadset(QString const&)
+        Address: CortexService[0x0000000101e18090] (CortexService.__TEXT.__text + 31510672)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::upgradeCloudSyncData()
+        Address: CortexService[0x0000000101e3aae8] (CortexService.__TEXT.__text + 31652584)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getLastTimeCloudCheck(QString const&, Cortex::Model::PdpCloudCheck&)
+        Address: CortexService[0x0000000101e45670] (CortexService.__TEXT.__text + 31696496)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getLatestExperimentV2(Cortex::Model::ExperimentV2&, QString const&)
+        Address: CortexService[0x0000000101e24b94] (CortexService.__TEXT.__text + 31562644)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getSubjectIdByCloudId(long long const&)
+        Address: CortexService[0x0000000101e4d6e8] (CortexService.__TEXT.__text + 31729384)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getSyncMinuteSnapshot(QString const&, Cortex::Model::SyncConsumerMinuteSnapshot&, bool)
+        Address: CortexService[0x0000000101e2c850] (CortexService.__TEXT.__text + 31594576)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveCustomHeadsetInfo(Cortex::Model::CustomHeadsetInfo const&)
+        Address: CortexService[0x0000000101e4068c] (CortexService.__TEXT.__text + 31676044)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveExperimentV2Phase(Cortex::Model::ExperimentV2Phase const&, bool, bool)
+        Address: CortexService[0x0000000101e39778] (CortexService.__TEXT.__text + 31647608)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveOfflineCortexInfo(Cortex::Model::OfflineCortexInfo const&)
+        Address: CortexService[0x0000000101e36818] (CortexService.__TEXT.__text + 31635480)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::generatePartialIndexes()
+        Address: CortexService[0x0000000101e29ed0] (CortexService.__TEXT.__text + 31583952)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getAppVersionsByUserId(QString const&, QString const&)
+        Address: CortexService[0x0000000101e24980] (CortexService.__TEXT.__text + 31562112)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getBaseUserIdByCloudId(long long const&)
+        Address: CortexService[0x0000000101e497c8] (CortexService.__TEXT.__text + 31713224)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getDefaultExperimentV2(Cortex::Model::ExperimentV2&)
+        Address: CortexService[0x0000000101e31530] (CortexService.__TEXT.__text + 31614256)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getDemographicsVersion(QString const&, Cortex::Model::DemographicsVersion&, bool)
+        Address: CortexService[0x0000000101e2dcd4] (CortexService.__TEXT.__text + 31599828)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getDetectionConfigMeta(QString const&, Cortex::Model::DetectionConfigMeta&, bool)
+        Address: CortexService[0x0000000101e510f8] (CortexService.__TEXT.__text + 31744248)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getExpiredNotification(QString const&, QList<Cortex::Model::CloudNotification>&)
+        Address: CortexService[0x0000000101e3c6cc] (CortexService.__TEXT.__text + 31659724)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getProRecordListFromDB(QString const&, QString const&, QSharedPointer<QJsonObject>&)
+        Address: CortexService[0x0000000101e2502c] (CortexService.__TEXT.__text + 31563820)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getSubjectByConditions(QMap<QString, QVariant> const&, Cortex::Model::Subject&)
+        Address: CortexService[0x0000000101e3afd0] (CortexService.__TEXT.__text + 31653840)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveLastTimeCloudCheck(Cortex::Model::PdpCloudCheck const&)
+        Address: CortexService[0x0000000101e4b980] (CortexService.__TEXT.__text + 31721856)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveListCustomUserData(QList<Cortex::Model::CustomUserData> const&, bool, bool)
+        Address: CortexService[0x0000000101e4d16c] (CortexService.__TEXT.__text + 31727980)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveSyncMinuteSnapshot(Cortex::Model::SyncConsumerMinuteSnapshot const&, bool, bool)
+        Address: CortexService[0x0000000101e18dec] (CortexService.__TEXT.__text + 31514092)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::upgradeSyncSessionData()
+        Address: CortexService[0x0000000101e184a4] (CortexService.__TEXT.__text + 31511716)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::generateSyncSessionData(Cortex::Model::SyncSessionStatus, QList<QVariant>&, QString const&)
+        Address: CortexService[0x0000000101e4c3ec] (CortexService.__TEXT.__text + 31724524)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getConsumerActivityData(QString const&, Cortex::Model::ConsumerActivityData&, bool)
+        Address: CortexService[0x0000000101e46c40] (CortexService.__TEXT.__text + 31702080)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getLicensePaymentStatus(QString const&, Cortex::Model::LicensePaymentStatus&, bool)
+        Address: CortexService[0x0000000101e1d860] (CortexService.__TEXT.__text + 31533152)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getMarkerGroupsByRecord(QString const&, QList<Cortex::Model::MarkerGroup>&)
+        Address: CortexService[0x0000000101e1fb7c] (CortexService.__TEXT.__text + 31542140)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getRecordIncludeDeleted(QString const&, Cortex::Model::Record&, bool)
+        Address: CortexService[0x0000000101e2baa8] (CortexService.__TEXT.__text + 31591080)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getStreamFilePathToRead(Cortex::Model::DeviceSession const&, QString&)
+        Address: CortexService[0x0000000101e25ce8] (CortexService.__TEXT.__text + 31567080)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getUserAttributesFormat()
+        Address: CortexService[0x0000000101e4e7e4] (CortexService.__TEXT.__text + 31733732)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveCEAPMigrationJobStt(Cortex::Model::CEAPMigrationJobStatus const&)
+        Address: CortexService[0x0000000101e30fc8] (CortexService.__TEXT.__text + 31612872)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveDemographicsVersion(Cortex::Model::DemographicsVersion const&, bool)
+        Address: CortexService[0x0000000101e2e1ec] (CortexService.__TEXT.__text + 31601132)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveDetectionConfigMeta(Cortex::Model::DetectionConfigMeta const&, bool)
+        Address: CortexService[0x0000000101e40818] (CortexService.__TEXT.__text + 31676440)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveExperimentV2Element(Cortex::Model::ExperimentV2Element const&, bool, bool)
+        Address: CortexService[0x0000000101e4ce64] (CortexService.__TEXT.__text + 31727204)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveListConsumerAppData(QList<Cortex::Model::ConsumerAppData> const&, bool, bool)
+        Address: CortexService[0x0000000101e1804c] (CortexService.__TEXT.__text + 31510604)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::upgradeTrainingAttStore()
+        Address: CortexService[0x0000000101e230b0] (CortexService.__TEXT.__text + 31555760)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getAppAccessByConditions(QMap<QString, QVariant> const&, Cortex::Model::AppAccess&)
+        Address: CortexService[0x0000000101e329fc] (CortexService.__TEXT.__text + 31619580)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getIdOfMissingExperiment(QString const&, QJsonArray&)
+        Address: CortexService[0x0000000101e3be44] (CortexService.__TEXT.__text + 31657540)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getProviderEventByUserId(QString const&, QString const&)
+        Address: CortexService[0x0000000101e4dc80] (CortexService.__TEXT.__text + 31730816)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getSyncSummariesSnapshot(Cortex::Model::SyncSummariesSnapshot&)
+        Address: CortexService[0x0000000101e20f08] (CortexService.__TEXT.__text + 31547144)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getTrainingProfileByName(QString const&, QString const&, Cortex::Model::TrainingProfile&)
+        Address: CortexService[0x0000000101e37ed4] (CortexService.__TEXT.__text + 31641300)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::removeDownloadingSession(QString const&)
+        Address: CortexService[0x0000000101e4be0c] (CortexService.__TEXT.__text + 31723020)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveConsumerActivityData(Cortex::Model::ConsumerActivityData const&, bool, bool)
+        Address: CortexService[0x0000000101e47178] (CortexService.__TEXT.__text + 31703416)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveLicensePaymentStatus(Cortex::Model::LicensePaymentStatus const&, bool, bool)
+        Address: CortexService[0x0000000101e25c48] (CortexService.__TEXT.__text + 31566920)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveUserAttributesFormat(Cortex::Model::UserAttributesFormat const&)
+        Address: CortexService[0x0000000101e4a154] (CortexService.__TEXT.__text + 31715668)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getCalendarIntegrationStt(QString const&, Cortex::Model::CalendarIntegrationStatus&, bool)
+        Address: CortexService[0x0000000101e26684] (CortexService.__TEXT.__text + 31569540)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getDeviceSessionsByUserId(QString const&)
+        Address: CortexService[0x0000000101e34cfc] (CortexService.__TEXT.__text + 31628540)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getEstimatedTimestampList(QMap<QString, QVariant> const&, QList<Cortex::Model::HeadsetEstimatedTimestamp>&)
+        Address: CortexService[0x0000000101e34680] (CortexService.__TEXT.__text + 31626880)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getLastEstimatedTimestamp(QMap<QString, QVariant> const&, Cortex::Model::HeadsetEstimatedTimestamp&)
+        Address: CortexService[0x0000000101e4edc8] (CortexService.__TEXT.__text + 31735240)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::isCEAPMigrationJobSucceed(QString const&, Cortex::Model::CEAPMigrationState&)
+        Address: CortexService[0x0000000101e26128] (CortexService.__TEXT.__text + 31568168)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::parseOrderFieldsOfSubject(QJsonArray const&, Cortex::Database::NoSQL::NoSQLExpressionList&)
+        Address: CortexService[0x0000000101e2aa2c] (CortexService.__TEXT.__text + 31586860)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::parseQueryFieldsOfSubject(Cortex::Database::NoSQL::NoSQLExpression&, QJsonObject const&, bool)
+        Address: CortexService[0x0000000101e51900] (CortexService.__TEXT.__text + 31746304)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::removeAllUserNotification(QString const&)
+        Address: CortexService[0x0000000101e4dbe0] (CortexService.__TEXT.__text + 31730656)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveSyncSummariesSnapshot(Cortex::Model::SyncSummariesSnapshot const&)
+        Address: CortexService[0x0000000101e225c8] (CortexService.__TEXT.__text + 31552968)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getAppAccessFromAppVersion(Cortex::Model::AppInfoByVersion const&, Cortex::Model::AppAccess&)
+        Address: CortexService[0x0000000101e238dc] (CortexService.__TEXT.__text + 31557852)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getAppAccessesByConditions(QMap<QString, QVariant> const&)
+        Address: CortexService[0x0000000101e2cdc8] (CortexService.__TEXT.__text + 31595976)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getCustomHsInfoByHeadsetId(QString const&, QString const&, Cortex::Model::CustomHeadsetInfo&, bool)
+        Address: CortexService[0x0000000101e39084] (CortexService.__TEXT.__text + 31645828)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getHeadsetUpgradedFirmware(QString const&, Cortex::Model::HeadsetUpgradedFirmware&, bool)
+        Address: CortexService[0x0000000101e29300] (CortexService.__TEXT.__text + 31580928)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getNumberOfRecordsByUserId(QString const&, QMap<QString, QVariant>)
+        Address: CortexService[0x0000000101e28c4c] (CortexService.__TEXT.__text + 31579212)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getStorageManagementConfig(QString const&, Cortex::Model::StorageManagementConfig&, bool)
+        Address: CortexService[0x0000000101e4a644] (CortexService.__TEXT.__text + 31716932)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveCalendarIntegrationStt(Cortex::Model::CalendarIntegrationStatus const&, bool, bool)
+        Address: CortexService[0x0000000101e187ac] (CortexService.__TEXT.__text + 31512492)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::upgradeDemographicsVersion()
+        Address: CortexService[0x0000000101e1b5c8] (CortexService.__TEXT.__text + 31524296)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::generateSyncSessionDocument()
+        Address: CortexService[0x0000000101e2a0c8] (CortexService.__TEXT.__text + 31584456)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getRecordsByDeviceSessionId(QString const&)
+        Address: CortexService[0x0000000101e2952c] (CortexService.__TEXT.__text + 31581484)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getTrainingProfilesByUserId(QString const&)
+        Address: CortexService[0x0000000101e38b08] (CortexService.__TEXT.__text + 31644424)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveHeadsetUpgradedFirmware(Cortex::Model::HeadsetUpgradedFirmware const&, bool, bool)
+        Address: CortexService[0x0000000101e286c8] (CortexService.__TEXT.__text + 31577800)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveStorageManagementConfig(Cortex::Model::StorageManagementConfig const&)
+        Address: CortexService[0x0000000101e34164] (CortexService.__TEXT.__text + 31625572)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getHeadsetEstimatedTimestamp(QString const&, Cortex::Model::HeadsetEstimatedTimestamp&, bool)
+        Address: CortexService[0x0000000101e31a04] (CortexService.__TEXT.__text + 31615492)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getLatestDemographicsVersion(long long, Cortex::Model::DemographicsVersion&)
+        Address: CortexService[0x0000000101e21a48] (CortexService.__TEXT.__text + 31550024)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getTrainingProfileAttributes(QString const&, Cortex::Model::TrainingProfileAttributes&)
+        Address: CortexService[0x0000000101e17c38] (CortexService.__TEXT.__text + 31509560)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::onSaveTrainingAttributesDone(QString const&, Cortex::Core::ErrorCode)
+        Address: CortexService[0x0000000101e37fe8] (CortexService.__TEXT.__text + 31641576)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::removeAllDownloadingSessions(QString const&, QList<QString>&)
+        Address: CortexService[0x0000000101e226f8] (CortexService.__TEXT.__text + 31553272)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getAppVersionsByLicenseBundle(QString const&, QString const&, QString const&, QString const&)
+        Address: CortexService[0x0000000101e39fc8] (CortexService.__TEXT.__text + 31649736)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getPersonalDetectionParameter(QString const&, Cortex::Model::PersonalDetectionParameters&, bool)
+        Address: CortexService[0x0000000101e35230] (CortexService.__TEXT.__text + 31629872)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getRecordIdsByDeviceSessionId(QString const&)
+        Address: CortexService[0x0000000101e42d54] (CortexService.__TEXT.__text + 31685972)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getRecordListByExperimentV3Id(QString const&, QJsonObject const&, QJsonObject&)
+        Address: CortexService[0x0000000101e33be8] (CortexService.__TEXT.__text + 31624168)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveHeadsetEstimatedTimestamp(Cortex::Model::HeadsetEstimatedTimestamp const&, bool, bool)
+        Address: CortexService[0x0000000101e21864] (CortexService.__TEXT.__text + 31549540)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveTrainingProfileAttributes(Cortex::Model::TrainingProfileAttributes const&, bool, bool, bool)
+        Address: CortexService[0x0000000101e25f5c] (CortexService.__TEXT.__text + 31567708)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::setupUpdatedMetadataOnProcess(Cortex::Core::ObservedProcess)
+        Address: CortexService[0x0000000101e38650] (CortexService.__TEXT.__text + 31643216)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::findUndefinedStreamFileSessions(QJsonArray&)
+        Address: CortexService[0x0000000101e2a624] (CortexService.__TEXT.__text + 31585828)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getNumberOfSubjectsByConditions(QJsonObject const&, bool)
+        Address: CortexService[0x0000000101e39a5c] (CortexService.__TEXT.__text + 31648348)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::savePersonalDetectionParameters(Cortex::Model::PersonalDetectionParameters const&, bool, bool)
+        Address: CortexService[0x0000000101e17acc] (CortexService.__TEXT.__text + 31509196)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::willSaveTrainingAttributesAsync()
+        Address: CortexService[0x0000000101e38630] (CortexService.__TEXT.__text + 31643184)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::isMetaDocumentUpdaterInitialized()
+        Address: CortexService[0x0000000101e4d160] (CortexService.__TEXT.__text + 31727968)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveConsumerActivitySettingsData(Cortex::Model::ConsumerActivityData const&, bool, bool)
+        Address: CortexService[0x0000000101e2d420] (CortexService.__TEXT.__text + 31597600)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getCustomHeadsetsInfoByCustomName(QString const&, QString const&, Cortex::Model::CustomHeadsetInfo&)
+        Address: CortexService[0x0000000101e296e4] (CortexService.__TEXT.__text + 31581924)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getLoadedTrainingProfilesByUserId(QString const&)
+        Address: CortexService[0x0000000101e38640] (CortexService.__TEXT.__text + 31643200)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::isMetaDocumentObserverInitialized()
+        Address: CortexService[0x0000000101e4648c] (CortexService.__TEXT.__text + 31700108)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getExperimentV2PhasesByExperimentId(QString const&)
+        Address: CortexService[0x0000000101e3a1a4] (CortexService.__TEXT.__text + 31650212)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getLatestPersonalDetectionParameters(QString const&, QString const&, QString const&)
+        Address: CortexService[0x0000000101e45c6c] (CortexService.__TEXT.__text + 31698028)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getExperimentV2ElementsByExperimentId(QString const&)
+        Address: CortexService[0x0000000101e1c1b8] (CortexService.__TEXT.__text + 31527352)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::open(QByteArray const&, bool)
+        Address: CortexService[0x0000000101e1c1c8] (CortexService.__TEXT.__text + 31527368)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::close()
+        Address: CortexService[0x0000000101e2ff70] (CortexService.__TEXT.__text + 31608688)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::rekey(QByteArray const&)
+        Address: CortexService[0x0000000101e1c1c0] (CortexService.__TEXT.__text + 31527360)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::reopen()
+        Address: CortexService[0x0000000101e1fdd8] (CortexService.__TEXT.__text + 31542744)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getUser(QString const&, Cortex::Model::User&, bool)
+        Address: CortexService[0x0000000101e17fe8] (CortexService.__TEXT.__text + 31510504)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveDoc(Cortex::Database::NoSQL::NoSQLDocument const&, bool, bool)
+        Address: CortexService[0x0000000101e37aec] (CortexService.__TEXT.__text + 31640300)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::contains(QString const&, QString const&)
+        Address: CortexService[0x0000000101e17d10] (CortexService.__TEXT.__text + 31509776)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::database()
+        Address: CortexService[0x0000000101e3bac4] (CortexService.__TEXT.__text + 31656644)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getEvent(QString const&, Cortex::Model::Event&, bool)
+        Address: CortexService[0x0000000101e329f4] (CortexService.__TEXT.__text + 31619572)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::runQuery(Cortex::Database::NoSQL::NoSQLQuery const&, QJsonArray&)
+        Address: CortexService[0x0000000101e1e0f8] (CortexService.__TEXT.__text + 31535352)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveUser(Cortex::Model::User const&, bool, bool)
+        Address: CortexService[0x0000000101e1fa9c] (CortexService.__TEXT.__text + 31541916)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getRecord(QString const&, Cortex::Model::Record&, bool)
+        Address: CortexService[0x0000000101e32520] (CortexService.__TEXT.__text + 31618336)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::getSurvey(QString const&, Cortex::Model::Survey&, bool)
+        Address: CortexService[0x0000000101e3b548] (CortexService.__TEXT.__text + 31655240)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::saveEvent(Cortex::Model::Event const&, bool, bool)
+        Address: CortexService[0x0000000101e17970] (CortexService.__TEXT.__text + 31508848)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::NoSQLDatabaseWrapper(QString const&, QString const&)
+        Address: CortexService[0x0000000101e1766c] (CortexService.__TEXT.__text + 31508076)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::NoSQLDatabaseWrapper(QString const&, QString const&)
+        Address: CortexService[0x0000000101e17ab8] (CortexService.__TEXT.__text + 31509176)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::~NoSQLDatabaseWrapper()
+        Address: CortexService[0x0000000101e17ab4] (CortexService.__TEXT.__text + 31509172)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::~NoSQLDatabaseWrapper()
+        Address: CortexService[0x0000000101e17974] (CortexService.__TEXT.__text + 31508852)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::~NoSQLDatabaseWrapper()
+        Address: CortexService[0x0000000101d01908] (CortexService.__TEXT.__text + 30370056)
+        Summary: CortexService`QtPrivate::MetaObjectForType<Cortex::Database::NoSQLDatabaseWrapper, void>::metaObjectFunction(QtPrivate::QMetaTypeInterface const*)
+        Address: CortexService[0x0000000101d01510] (CortexService.__TEXT.__text + 30369040)
+        Summary: CortexService`Cortex::Database::NoSQLDatabaseWrapper::metaObject() const
+(lldb) quit
