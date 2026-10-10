@@ -1,0 +1,57 @@
+(lldb) target create --arch arm64 "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -s 0x100b41710 -e 0x100b41740
+CortexService`Cortex::MentalCommands::GaussianData::getNumOfEpochs:
+CortexService[0x100b41710] <+0>:  add    x0, x0, #0x10
+CortexService[0x100b41714] <+4>:  ret
+
+CortexService`Cortex::MentalCommands::GaussianData::getCovariance:
+CortexService[0x100b41718] <+0>:  add    x0, x0, #0xc0
+CortexService[0x100b4171c] <+4>:  ret
+
+CortexService`Cortex::MentalCommands::GaussianData::getAverage:
+CortexService[0x100b41720] <+0>:  add    x0, x0, #0x170
+CortexService[0x100b41724] <+4>:  ret
+
+CortexService`___lldb_unnamed_symbol_100b41728:
+CortexService[0x100b41728] <+0>:  adrp   x8, 9691
+CortexService[0x100b4172c] <+4>:  ldr    x8, [x8, #0x30]
+CortexService[0x100b41730] <+8>:  ldrb   w9, [x8]
+CortexService[0x100b41734] <+12>: tbnz   w9, #0x0, 0x100b4174c     ; <+36>
+CortexService[0x100b41738] <+16>: mov    w9, #0x1                  ; =1
+CortexService[0x100b4173c] <+20>: strb   w9, [x8]
+(lldb) disassemble -s 0x100b47174 -e 0x100b471f4
+CortexService`Cortex::MentalCommands::GaussianTraining::combineGaussian:
+CortexService[0x100b47174] <+2708>: add    x8, x22, #0xc0
+CortexService[0x100b47178] <+2712>: add    x9, sp, #0xca0
+CortexService[0x100b4717c] <+2716>: str    x8, [sp, #0x2a0]
+CortexService[0x100b47180] <+2720>: str    x9, [sp, #0x2b0]
+CortexService[0x100b47184] <+2724>: str    x9, [sp, #0x2c0]
+CortexService[0x100b47188] <+2728>: strh   wzr, [sp, #0x2c8]
+CortexService[0x100b4718c] <+2732>: add    x0, sp, #0x2a0
+CortexService[0x100b47190] <+2736>: add    x1, sp, #0x460
+CortexService[0x100b47194] <+2740>: bl     0x100b4f160               ; ___lldb_unnamed_symbol_100b4f160
+CortexService[0x100b47198] <+2744>: add    x0, x22, #0x170
+CortexService[0x100b4719c] <+2748>: add    x1, sp, #0xca0
+CortexService[0x100b471a0] <+2752>: add    x2, sp, #0x880
+CortexService[0x100b471a4] <+2756>: bl     0x10212d4f0               ; Cortex::Math::replaceByElementIndex(arma::Mat<double>&, arma::Col<unsigned long long> const&, arma::Mat<double> const&)
+CortexService[0x100b471a8] <+2760>: add    x0, x22, #0x10
+CortexService[0x100b471ac] <+2764>: add    x1, sp, #0xca0
+CortexService[0x100b471b0] <+2768>: add    x2, sp, #0xa90
+CortexService[0x100b471b4] <+2772>: bl     0x10212d4f0               ; Cortex::Math::replaceByElementIndex(arma::Mat<double>&, arma::Col<unsigned long long> const&, arma::Mat<double> const&)
+CortexService[0x100b471b8] <+2776>: ldr    w8, [sp, #0x14]
+CortexService[0x100b471bc] <+2780>: cbz    w8, 0x100b471d0           ; <+2800>
+CortexService[0x100b471c0] <+2784>: ldr    x0, [sp, #0x18]
+CortexService[0x100b471c4] <+2788>: bl     0x100b41708               ; Cortex::MentalCommands::GaussianData::getUpdateTime() const
+CortexService[0x100b471c8] <+2792>: mov    x1, x0
+CortexService[0x100b471cc] <+2796>: b      0x100b471ec               ; <+2828>
+CortexService[0x100b471d0] <+2800>: ldr    x0, [sp, #0x18]
+CortexService[0x100b471d4] <+2804>: bl     0x100b41708               ; Cortex::MentalCommands::GaussianData::getUpdateTime() const
+CortexService[0x100b471d8] <+2808>: mov    x21, x0
+CortexService[0x100b471dc] <+2812>: ldr    x0, [sp, #0x8]
+CortexService[0x100b471e0] <+2816>: bl     0x100b41708               ; Cortex::MentalCommands::GaussianData::getUpdateTime() const
+CortexService[0x100b471e4] <+2820>: add    w8, w0, w21
+CortexService[0x100b471e8] <+2824>: lsr    w1, w8, #1
+CortexService[0x100b471ec] <+2828>: mov    x0, x22
+CortexService[0x100b471f0] <+2832>: bl     0x100b414a8               ; Cortex::MentalCommands::GaussianData::setUpdateTime(unsigned int)
+(lldb) quit

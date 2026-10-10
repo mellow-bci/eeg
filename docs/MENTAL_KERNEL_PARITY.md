@@ -231,3 +231,60 @@ empty shared pooling and tied selection cutoff) must gain explicit evidence or
 remain rejected. Then obtain local trained reference parameters and observed
 stage outputs for the existing comparison harness; prospective held-out
 physiological evaluation is a separate gate after numerical comparison.
+
+## Training acceptance and orchestration continuation (2026-10-11)
+
+| Area | Newly implemented comparison subset | Remaining boundary |
+| --- | --- | --- |
+| Collection | Actual six-byte control jump table; sample/whole-second wall timing, strict start delay, validity gate, rolling paired buffers, one-shot events | Caller-supplied MatrixStream step and upstream validity, real raw-feature recipe |
+| Acceptance | Minimum epoch gate, separate event versus fit/save outcome, build/clear/save/update/unlock ordering, rejection and reset state | Actual cache, brain-map, count mutations and complete classifier builder remain required operations |
+| Training bank | First matching class appends a separate Gaussian; explicit features/first timestamp, no replacement | Feature construction and metadata from deployed front end |
+| Class weights | Neutral1, action exponential or explicit ten-entry table; no guessed table values | Table loading/initialization and consuming normalization |
+| Signature orchestration | Ordered class folding → feature selection → selected means/counts/covariance → metadata channel set → explicit fitted artifacts → unit-component weights | Complete PCA/canonical scatter construction remains explicit required fitting input, not fabricated |
+| Edge domains | Scalar singleton covariance, PSD PCA zero eigenvalues/allzero empty rank, bounded canonical diagonal repair with provenance, empty-shared pooled diagnostic state | Tied ranking cutoff and unsupported singleton/vector shape remain rejected; bounded policies are our choices |
+
+Evidence: `training-lifecycle-continuation-20261011`,
+`training-bank-continuation-20261011`, `signature-continuation-20261011`,
+`training-edge-continuation-20261011`, each under
+`evidence/mental-command-reference`, contains actual static bodies and TRACE.
+The acceptance callback test takes20 analytic Matrix epochs through the lifecycle
+into actual training-bank mean/covariance/count fitting. It explicitly reports
+save failure because no classifier persistence occurs. Callback interfaces mark
+unrecovered algorithms; they are not completed Cortex parity implementations.
+
+The binary accepts training with event4 even on builder/save failure. Our result
+separates those outcomes, and tests check operation order. Insufficient accept
+leaves active/timer unchanged in the traced body; comparison code preserves that
+behavior. Separate resetState is necessary before a new attempt. No vendor asset
+was needed for these arithmetic/state additions. Participant-trained profile and
+matched stage outputs remain missing private comparison inputs. No change to
+acquisition, independent live trainer, UI or Cast was made by this work.
+
+Remaining offline work is the deployed front-end feature/window/validity recipe,
+full fitting scatter/center construction, cache/rebuild and profile count/brain-map
+mutations, weight-table initialization/consumer, ranking ties and downstream Stats
+consumers. Exact observed numerical comparison and prospective session-separated
+physiological evaluation still remain separate gates. This checkpoint does not
+claim that all offline work, full Cortex parity or production qualification is done.
+
+Further Oct11 body tracing reduces the fitting boundary: `ReferencePCAFitting`
+folds selected single-class Gaussians in order, eigendecomposes pooled covariance
+and uses pooled mean as PCA center, with the recovered rank policy. Low-epoch
+clipping and singular spectra reject in this composed normal-support path;
+separate edge kernels do not establish the complete singular recipe.
+`ReferenceCanonicalScatter` projects each class first, then pools projected
+Gaussians and constructs T=(N−1)Cpooled, E=sum((ni−1)Ci), H=T−E, df=N−K.
+This order matters with heterogeneous counts. The pooled mean is retained as
+provenance; its role as a runtime canonical center remains unverified.
+`ReferenceTrainingProfileUpdates` increments/reconstructs training counts using
+an explicit supplied action-column catalogue, and retains surviving trained-action
+ordering before appending newly present actions. Database existence flags are
+inputs, not inferred success. Per-normalized-headset sensitivity-table loading is
+traced; configuration source and actual table values remain unresolved.
+
+Final focused checkpoint:115 executed,113 passed,2 skipped,0 failures.
+Broader EEGCore checkpoint:294 executed,290 passed,4 skipped,0 failures; it
+preceded final epoch assembly/persistence refinements and PCA/scatter/profile
+additions, all covered by the final focused run. No skipped Cortex fixture is
+counted as passing. Commands: `swift test --package-path apple --filter EEGCoreTests`
+and `swift test --package-path apple --filter 'Reference|Decoder'`.

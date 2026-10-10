@@ -1,0 +1,41 @@
+(lldb) target create --arch arm64 "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -n Cortex::MentalCommands::GaussianData::isEmpty
+CortexService`Cortex::MentalCommands::GaussianData::isEmpty:
+CortexService[0x100b41418] <+0>:   ldr    x9, [x0, #0x20]
+CortexService[0x100b4141c] <+4>:   cbz    x9, 0x100b41444           ; <+44>
+CortexService[0x100b41420] <+8>:   ldr    x8, [x0, #0x30]
+CortexService[0x100b41424] <+12>:  cmp    x9, #0x1
+CortexService[0x100b41428] <+16>:  b.ne   0x100b4144c               ; <+52>
+CortexService[0x100b4142c] <+20>:  mov    x10, #0x0                 ; =0
+CortexService[0x100b41430] <+24>:  mov    x11, #-0x10000000000000   ; =-4503599627370496
+CortexService[0x100b41434] <+28>:  fmov   d0, x11
+CortexService[0x100b41438] <+32>:  cmp    x10, x9
+CortexService[0x100b4143c] <+36>:  b.lo   0x100b4148c               ; <+116>
+CortexService[0x100b41440] <+40>:  b      0x100b41498               ; <+128>
+CortexService[0x100b41444] <+44>:  mov    w0, #0x1                  ; =1
+CortexService[0x100b41448] <+48>:  ret
+CortexService[0x100b4144c] <+52>:  mov    x10, #0x0                 ; =0
+CortexService[0x100b41450] <+56>:  mov    x11, #-0x10000000000000   ; =-4503599627370496
+CortexService[0x100b41454] <+60>:  fmov   d0, x11
+CortexService[0x100b41458] <+64>:  add    x11, x8, x10, lsl #3
+CortexService[0x100b4145c] <+68>:  ldp    d1, d2, [x11]
+CortexService[0x100b41460] <+72>:  fcmp   d1, d0
+CortexService[0x100b41464] <+76>:  fcsel  d0, d1, d0, gt
+CortexService[0x100b41468] <+80>:  fcmp   d2, d0
+CortexService[0x100b4146c] <+84>:  fcsel  d0, d2, d0, gt
+CortexService[0x100b41470] <+88>:  add    x11, x10, #0x3
+CortexService[0x100b41474] <+92>:  add    x10, x10, #0x2
+CortexService[0x100b41478] <+96>:  cmp    x11, x9
+CortexService[0x100b4147c] <+100>: b.lo   0x100b41458               ; <+64>
+CortexService[0x100b41480] <+104>: and    x10, x9, #0xfffffffffffffffe
+CortexService[0x100b41484] <+108>: cmp    x10, x9
+CortexService[0x100b41488] <+112>: b.hs   0x100b41498               ; <+128>
+CortexService[0x100b4148c] <+116>: ldr    d1, [x8, x10, lsl #3]
+CortexService[0x100b41490] <+120>: fcmp   d1, d0
+CortexService[0x100b41494] <+124>: fcsel  d0, d1, d0, gt
+CortexService[0x100b41498] <+128>: fmov   d1, #2.00000000
+CortexService[0x100b4149c] <+132>: fcmp   d0, d1
+CortexService[0x100b414a0] <+136>: cset   w0, mi
+CortexService[0x100b414a4] <+140>: ret
+(lldb) disassemble -n Cortex::MentalCommands::GaussianData::getDimension
