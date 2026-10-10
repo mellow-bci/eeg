@@ -180,3 +180,18 @@ Remaining gates, in order:
 
 No vendor binaries, embedded secrets, decrypted database, trained parameters,
 account records or model assets are included in tracked deliverables.
+
+## Training continuation (2026-10-10)
+
+Explicit-covariance PCA eigenbasis arithmetic and Gaussian distribution
+projection now have analytic tests. These are bounded training primitives,
+not a completed Cortex-compatible trainer. Per-feature pooling masks,
+feature-ranking formula, PCA rank policy, MANOVA canonical fitting and neutral
+autosampling configuration remain open. The existing independent trainer is
+not substituted for those unresolved stages. See
+`evidence/mental-command-reference/training-followup-20261010/TRACE.md` for
+function addresses, capture coverage, numerical choices and ordered gates.
+
+The focused Reference/Decoder suite executes 37 tests with two explicit skips
+and zero failures. No matched trained Cortex profile has become available;
+exact mental-command pipeline parity is still unverified.

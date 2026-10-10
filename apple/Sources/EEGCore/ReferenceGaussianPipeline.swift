@@ -1,4 +1,5 @@
 import Foundation
+import Accelerate
 
 /// Explicit-parameter reconstruction of bounded Cortex classifier arithmetic.
 /// Not connected to runtime profiles: learned parameters, front-end recipe and
@@ -8,6 +9,7 @@ enum ReferenceGaussianPipeline {
     enum InputError: Error, Equatable {
         case invalidShape, nonFiniteInput, invalidWeight, nonPositiveDefiniteCovariance
         case invalidClassCount, invalidNormalization, numericalFailure
+        case decomposition(Int32)
     }
 
     struct CenteredTransform: Sendable, Codable {
@@ -50,6 +52,95 @@ enum ReferenceGaussianPipeline {
         let value: Double
         let atMean: Double
         let logValue: Double
+    }
+
+    struct Eigenbasis: Sendable {
+        let eigenvalues: [Double]
+        /// Input rows, output columns; descending eigenvalue order.
+        let basis: [[Double]]
+    }
+
+    /// princompMultiClass calls eig_sym on the combined covariance, then reverses
+    /// eigenvalues/vectors (0x100b48764..0x100b48794). This exposes that arithmetic
+    /// stage with explicit covariance input, not a replacement for class pooling.
+    /// LAPACK dsyev and largest-coefficient-positive signs are OUR numerical
+    /// choices. Repeated eigenvalues do not identify a unique vendor basis.
+    static func covarianceEigenbasis(_ covariance: [[Double]]) throws -> Eigenbasis {
+        let size = covariance.count
+        guard size > 0, size <= 70, covariance.allSatisfy({ $0.count == size }) else {
+            throw InputError.invalidShape // Our supported dimension boundary.
+        }
+        guard covariance.allSatisfy({ $0.allSatisfy(\.isFinite) }) else { throw InputError.nonFiniteInput }
+        for row in 0..<size {
+            for column in 0..<row where covariance[row][column] != covariance[column][row] {
+                throw InputError.nonPositiveDefiniteCovariance
+            }
+        }
+        var n = __LAPACK_int(size), lda = n, info: __LAPACK_int = 0
+        var vectors = (0..<size).flatMap { column in covariance.map { $0[column] } }
+        var values = Array(repeating: 0.0, count: size)
+        var job: Int8 = 86, triangle: Int8 = 85 // V, U.
+        var query = [0.0], workspaceSize: __LAPACK_int = -1
+        dsyev_(&job, &triangle, &n, &vectors, &lda, &values, &query, &workspaceSize, &info)
+        guard info == 0 else { throw InputError.decomposition(info) }
+        guard query[0].isFinite, query[0] >= 1, query[0] <= Double(Int32.max) else {
+            throw InputError.numericalFailure
+        }
+        workspaceSize = __LAPACK_int(ceil(query[0]))
+        var workspace = Array(repeating: 0.0, count: Int(workspaceSize))
+        dsyev_(&job, &triangle, &n, &vectors, &lda, &values, &workspace, &workspaceSize, &info)
+        guard info == 0 else { throw InputError.decomposition(info) }
+        guard values.allSatisfy({ $0.isFinite && $0 > 0 }), vectors.allSatisfy(\.isFinite) else {
+            throw InputError.nonPositiveDefiniteCovariance // Our strict support policy.
+        }
+        var basis = Array(repeating: Array(repeating: 0.0, count: size), count: size)
+        for column in 0..<size {
+            let source = size - column - 1
+            let coefficients = (0..<size).map { vectors[source * size + $0] }
+            let largest = coefficients.indices.max { abs(coefficients[$0]) < abs(coefficients[$1]) }!
+            let sign = coefficients[largest] < 0 ? -1.0 : 1.0
+            for row in 0..<size { basis[row][column] = sign * coefficients[row] }
+        }
+        return Eigenbasis(eigenvalues: Array(values.reversed()), basis: basis)
+    }
+
+    /// Training projection arithmetic from gaussianTransform 0x100b49468:
+    /// mu' = mu B; Sigma' = B^T Sigma B. This is deliberately uncentered.
+    /// It implements distribution arithmetic only, NOT GaussianData epoch-count
+    /// propagation or a recovered PCA/canonical training recipe. Weight is kept
+    /// by our component contract; the vendor GaussianData has separate metadata.
+    static func projectDistribution(_ component: Component, basis: [[Double]]) throws -> Component {
+        let size = component.mean.count
+        guard size > 0, basis.count == size, let outputs = basis.first?.count, outputs > 0,
+              basis.allSatisfy({ $0.count == outputs }), component.covariance.count == size,
+              component.covariance.allSatisfy({ $0.count == size }) else { throw InputError.invalidShape }
+        guard component.weight.isFinite, component.weight >= 0 else { throw InputError.invalidWeight }
+        // Reuse the scoring contract to validate finite, symmetric SPD input.
+        // Strict SPD is our support policy, not a claim about vendor repair rules.
+        _ = try gaussianDensity(component.mean, component: component)
+        let mean = try transform(component.mean, using: .init(mean: Array(repeating: 0, count: size), basis: basis))
+        var left = Array(repeating: Array(repeating: 0.0, count: size), count: outputs)
+        for output in 0..<outputs {
+            for column in 0..<size {
+                for row in 0..<size {
+                    left[output][column] += basis[row][output] * component.covariance[row][column]
+                }
+            }
+        }
+        var covariance = Array(repeating: Array(repeating: 0.0, count: outputs), count: outputs)
+        for row in 0..<outputs {
+            for column in row..<outputs {
+                var value = 0.0
+                for input in 0..<size { value += left[row][input] * basis[input][column] }
+                // Symmetric storage is our numerical convention: avoid roundoff
+                // asymmetry causing an otherwise valid projection to be rejected.
+                covariance[row][column] = value
+                covariance[column][row] = value
+            }
+        }
+        let projected = Component(weight: component.weight, mean: mean, covariance: covariance)
+        _ = try gaussianDensity(mean, component: projected)
+        return projected
     }
 
     static func infer(featureVector: [Double], parameters: Parameters) throws -> Result {

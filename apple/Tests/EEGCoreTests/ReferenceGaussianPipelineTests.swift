@@ -4,6 +4,54 @@ import XCTest
 final class ReferenceGaussianPipelineTests: XCTestCase {
     private typealias Pipeline = ReferenceGaussianPipeline
 
+    func testCovarianceEigenbasisReconstructsMatrixAndDiagonalizesProjection() throws {
+        let covariance = [[4.0, 2], [2, 3]]
+        let fitted = try Pipeline.covarianceEigenbasis(covariance)
+        XCTAssertEqual(fitted.eigenvalues[0], (7 + sqrt(17)) / 2, accuracy: 1e-13)
+        XCTAssertEqual(fitted.eigenvalues[1], (7 - sqrt(17)) / 2, accuracy: 1e-13)
+        for row in 0..<2 {
+            for column in 0..<2 {
+                let reconstructed = (0..<2).reduce(0.0) {
+                    $0 + fitted.basis[row][$1] * fitted.eigenvalues[$1] * fitted.basis[column][$1]
+                }
+                XCTAssertEqual(reconstructed, covariance[row][column], accuracy: 1e-13)
+            }
+        }
+        let projected = try Pipeline.projectDistribution(.init(weight: 1, mean: [1, -1],
+            covariance: covariance), basis: fitted.basis)
+        XCTAssertEqual(projected.covariance[0][0], fitted.eigenvalues[0], accuracy: 1e-13)
+        XCTAssertEqual(projected.covariance[1][1], fitted.eigenvalues[1], accuracy: 1e-13)
+        XCTAssertEqual(projected.covariance[0][1], 0, accuracy: 1e-13)
+        XCTAssertThrowsError(try Pipeline.covarianceEigenbasis([[1, 1], [1, 1]]))
+        XCTAssertThrowsError(try Pipeline.covarianceEigenbasis([[1, 2], [0, 1]]))
+        XCTAssertThrowsError(try Pipeline.covarianceEigenbasis([[Double.nan]]))
+    }
+
+    func testTrainingProjectionPreservesCorrelationAndMeanWithoutCentering() throws {
+        let source = Pipeline.Component(weight: 0.75, mean: [1, -1], covariance: [[4, 2], [2, 3]])
+        let projected = try Pipeline.projectDistribution(source, basis: [[1, 1], [1, -1]])
+        XCTAssertEqual(projected.weight, 0.75)
+        XCTAssertEqual(projected.mean, [0, 2])
+        XCTAssertEqual(projected.covariance, [[11, 1], [1, 3]])
+        // Invertible B has |det B|=2: transformed pdf must be source pdf / 2.
+        let original = try Pipeline.gaussianDensity([3, 0], component: source)
+        let changed = try Pipeline.gaussianDensity([3, 3], component: projected)
+        XCTAssertEqual(changed.value, original.value / 2, accuracy: 1e-14)
+    }
+
+    func testTrainingProjectionReductionUsesFullCovariance() throws {
+        let source = Pipeline.Component(weight: 1, mean: [2, 3], covariance: [[4, 2], [2, 3]])
+        let projected = try Pipeline.projectDistribution(source, basis: [[2], [-1]])
+        XCTAssertEqual(projected.mean, [1])
+        XCTAssertEqual(projected.covariance, [[11]])
+        XCTAssertThrowsError(try Pipeline.projectDistribution(source, basis: [[1, 1], [1, 1]]))
+        XCTAssertThrowsError(try Pipeline.projectDistribution(source, basis: [[.nan], [1]]))
+        XCTAssertThrowsError(try Pipeline.projectDistribution(source, basis: [[1]]))
+        XCTAssertThrowsError(try Pipeline.projectDistribution(source, basis: [[], []]))
+        XCTAssertThrowsError(try Pipeline.projectDistribution(.init(weight: -1, mean: source.mean,
+            covariance: source.covariance), basis: [[1], [1]]))
+    }
+
     func testCenteredTransformOrientationAndCanonicalTruncation() throws {
         let transform = Pipeline.CenteredTransform(mean: [1, 2], basis: [[1, 2, 3], [-1, 1, 0]])
         XCTAssertEqual(try Pipeline.transform([5, 9], using: transform), [-3, 15, 12])
