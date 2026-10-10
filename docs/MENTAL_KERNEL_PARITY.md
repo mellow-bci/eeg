@@ -183,15 +183,51 @@ account records or model assets are included in tracked deliverables.
 
 ## Training continuation (2026-10-10)
 
-Explicit-covariance PCA eigenbasis arithmetic and Gaussian distribution
-projection now have analytic tests. These are bounded training primitives,
-not a completed Cortex-compatible trainer. Per-feature pooling masks,
-feature-ranking formula, PCA rank policy, MANOVA canonical fitting and neutral
-autosampling configuration remain open. The existing independent trainer is
-not substituted for those unresolved stages. See
-`evidence/mental-command-reference/training-followup-20261010/TRACE.md` for
-function addresses, capture coverage, numerical choices and ordered gates.
+The current bounded reference implementation covers these additional bodies:
 
-The focused Reference/Decoder suite executes 37 tests with two explicit skips
-and zero failures. No matched trained Cortex profile has become available;
-exact mental-command pipeline parity is still unverified.
+| Stage | Implemented subset | Explicit gap |
+| --- | --- | --- |
+| Training statistics | Feature-row/epoch-column means, unbiased covariance, counts and coordinate scatter | Singleton epoch/vector reinterpretation and upstream acceptance recipe |
+| Pooling | Per-feature count masks, weighted means, pair-count covariance and timestamp arithmetic | Empty shared selection and nonvector count domain |
+| Feature ranking | Inclusive 20-epoch eligibility, asymmetric standardized mean separation, worst competitor, count-derived budget and selected union | A tied score across the truncation boundary rejects; vendor unstable tie permutation unverified |
+| PCA | Explicit covariance eigenbasis and body-derived cumulative-99-percent dimension policy | Full class/epoch extraction recipe and singular covariance domain |
+| Canonical fitting | Nonsingular within/between scatter whitening, eigenbasis and pooled within-variance normalization | Singular retry branch and full training orchestration and singular-domain behavior |
+| Bartlett diagnostics | Reverse reciprocal cumulative products, statistic multiplier and degrees of freedom | No significance or rank decision proven in the captured function; downstream consumer remains to trace |
+| Epoch counts | Thresholded Cartesian extraction with repeated indices and first-column-mean projection | Overflow/empty-domain vendor error behavior |
+| Neutral training | Paired Matrix-epoch buffering, configured minimum, control stop, lock/unlock/reset and differentiated completion outcomes | Upstream validity derivation, actual builder/save implementation and acceptance policy |
+| Composition | Analytic two-class feature epochs → fitted statistics → pooling → PCA → canonical fit → full Gaussian inference → command/neutral decision | Not a recorded Cortex profile or a raw-recording-to-trained-profile recipe |
+
+Sources and support policies are recorded in the pooling, feature-selection,
+canonical, training-statistics, epoch-count, Bartlett and neutral-training continuation TRACE files under
+`evidence/mental-command-reference`. LAPACK/sign conventions, finite/SPD
+validation, maximum buffer capacity and numerical dimension bounds are our
+explicit policies. None are presented as recovered vendor defaults.
+
+The existing independently designed live trainer and acquisition are preserved.
+These primitives remain internal reference code: no UI or runtime substitution
+is made before recipe and reference comparison gates pass. A completion event
+from autosampling is not a successful fit; insufficient data and build/save
+failures have distinct outputs.
+
+No vendor asset is needed for the implemented arithmetic. Exact comparison
+still needs a participant-trained profile's selected coordinates, learned
+PCA/canonical matrices, Gaussian statistics, priors/settings and corresponding
+Cortex-observed stage outputs. The checked M4 store was empty; the optional
+external comparison remains skipped. Synthetic analytical tests do not establish
+physiological command accuracy, exact parity or production qualification.
+
+Validation checkpoint: final focused Reference/Decoder run executed 74 tests,
+with 72 passed, two explicit skips and zero failures. The broader EEGCore run
+executed 251 tests, with 247 passed, four explicit skips and zero failures;
+it preceded the final statistics/Bartlett additions and final composition
+update, which are covered by the subsequent focused run. The skipped matched
+Cortex comparison remains unavailable, not passed. Static reference binary
+SHA256 was rechecked on M4 and matches the pinned identity.
+
+Next offline order is to trace full training orchestration and acceptance,
+rebuild/mixture-weight policies, deployed front-end recipe and downstream Stats
+consumers. Unsupported edge domains (singular fit, singleton statistics,
+empty shared pooling and tied selection cutoff) must gain explicit evidence or
+remain rejected. Then obtain local trained reference parameters and observed
+stage outputs for the existing comparison harness; prospective held-out
+physiological evaluation is a separate gate after numerical comparison.
