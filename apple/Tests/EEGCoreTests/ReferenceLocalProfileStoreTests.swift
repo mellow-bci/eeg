@@ -108,6 +108,21 @@ final class ReferenceLocalProfileStoreTests: XCTestCase {
         XCTAssertThrowsError(try save(store,revision: 1)) { XCTAssertEqual($0 as? Store.Failure,.database(SQLITE_BUSY)) }
         XCTAssertEqual(try store.load(id: "trial")?.revision,1)
     }
+    func testActualSQLWriteFailureRollsBackAndCanRetry() throws {
+        let url = try location(), store = try Store(url: url,key: key)
+        _ = try save(store)
+        var database: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(url.path,&database),SQLITE_OK)
+        defer { sqlite3_close(database) }
+        let trigger = "CREATE TRIGGER reject_profile BEFORE UPDATE ON profiles BEGIN SELECT RAISE(ABORT,'injected-write-error'); END"
+        XCTAssertEqual(sqlite3_exec(database,trigger,nil,nil,nil),SQLITE_OK)
+        XCTAssertThrowsError(try save(store,revision: 1,name: "rejected")) { XCTAssertEqual($0 as? Store.Failure,.database(SQLITE_CONSTRAINT)) }
+        XCTAssertEqual(try store.load(id: "trial")?.revision,1)
+        XCTAssertEqual(try store.load(id: "trial")?.metadata["name"],.string("first"))
+        XCTAssertEqual(sqlite3_exec(database,"DROP TRIGGER reject_profile",nil,nil,nil),SQLITE_OK)
+        XCTAssertEqual(try save(store,revision: 1,name: "retry"),2)
+        XCTAssertEqual(try store.load(id: "trial")?.metadata["name"],.string("retry"))
+    }
     #if os(macOS)
     func testKilledSQLiteWriterRecoversPreviousCompleteProfile() throws {
         guard FileManager.default.isExecutableFile(atPath: "/usr/bin/sqlite3") else { throw XCTSkip("SQLite CLI unavailable") }

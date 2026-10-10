@@ -1,0 +1,182 @@
+(lldb) target create "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) memory read -s 4 -f d -c 12 0x102fd6a74
+0x102fd6a74: 40
+0x102fd6a78: 43
+0x102fd6a7c: 45
+0x102fd6a80: 51
+0x102fd6a84: 54
+0x102fd6a88: 64
+0x102fd6a8c: 69
+0x102fd6a90: 77
+0x102fd6a94: 82
+0x102fd6a98: 92
+0x102fd6a9c: 95
+0x102fd6aa0: 101
+(lldb) image lookup -r -n "Cortex::Core::.*init|Cortex::Core::.*Channel|___lldb_unnamed_symbol_101fc"
+82 matches found in /Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService:
+        Address: CortexService[0x0000000101242394] (CortexService.__TEXT.__text + 19100564)
+        Summary: CortexService`Cortex::DeviceCore::AbstractInputDevice::setSensors(QList<Cortex::Core::Channel_t> const&, QList<Cortex::Core::Channel_t> const&, QList<Cortex::Core::Channel_t> const&, QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x000000010124216c] (CortexService.__TEXT.__text + 19100012)
+        Summary: CortexService`Cortex::DeviceCore::AbstractInputDevice::setXtrodesMapping(QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::NeutralDataType>> const&)
+        Address: CortexService[0x0000000101242058] (CortexService.__TEXT.__text + 19099736)
+        Summary: CortexService`Cortex::DeviceCore::AbstractInputDevice::setFlexMappingChannel(QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::FlexSensor_t>> const&)
+        Address: CortexService[0x0000000101232c58] (CortexService.__TEXT.__text + 19037272)
+        Summary: CortexService`Cortex::DetectionCore::ContactQuality::isInsightSignalClean(Cortex::Core::Channel_t, Cortex::Core::ContactQualityValue)
+        Address: CortexService[0x0000000101232bd0] (CortexService.__TEXT.__text + 19037136)
+        Summary: CortexService`Cortex::DetectionCore::ContactQuality::isInsightSignalClean(QList<Cortex::Core::Channel_t> const&, Cortex::Core::ContactQualityValue, int)
+        Address: CortexService[0x0000000101232b9c] (CortexService.__TEXT.__text + 19037084)
+        Summary: CortexService`Cortex::DetectionCore::ContactQuality::set(Cortex::Core::Channel_t, Cortex::Core::ContactQualityValue)
+        Address: CortexService[0x0000000101232938] (CortexService.__TEXT.__text + 19036472)
+        Summary: CortexService`Cortex::DetectionCore::ContactQuality::set(Cortex::Math::Matrix const&, QList<Cortex::Core::Channel_t>)
+        Address: CortexService[0x000000010123c98c] (CortexService.__TEXT.__text + 19077516)
+        Summary: CortexService`Cortex::DetectionCore::SignalQualityState::SignalQualityState(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x0000000101235e14] (CortexService.__TEXT.__text + 19050004)
+        Summary: CortexService`Cortex::DetectionCore::InsightEEGInterpolator::InsightEEGInterpolator(QList<Cortex::Core::Channel_t> const&, bool)
+        Address: CortexService[0x00000001012312c0] (CortexService.__TEXT.__text + 19030720)
+        Summary: CortexService`Cortex::DetectionCore::CQSummary::initForSQS(QList<Cortex::Core::Channel_t> const&, int, int)
+        Address: CortexService[0x00000001012310e8] (CortexService.__TEXT.__text + 19030248)
+        Summary: CortexService`Cortex::DetectionCore::CQSummary::init(QList<Cortex::Core::Channel_t> const&, QList<Cortex::Core::Channel_t> const&, int, int)
+        Address: CortexService[0x0000000101234778] (CortexService.__TEXT.__text + 19044216)
+        Summary: CortexService`Cortex::DetectionCore::Detection::setTargetChan(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x00000001012341b0] (CortexService.__TEXT.__text + 19042736)
+        Summary: CortexService`Cortex::DetectionCore::Detection::configure(Cortex::Core::HeadsetType, QList<Cortex::Core::Channel_t> const&, Cortex::DetectionCore::EmoProfile*, Cortex::DetectionCore::DetectionState*)
+        Address: CortexService[0x0000000100fea3cc] (CortexService.__TEXT.__text + 16643020)
+        Summary: CortexService`Cortex::DeviceManager::InputDevice::setChannels(QList<Cortex::Core::Channel_t> const&, QList<Cortex::Core::Channel_t> const&, QList<Cortex::Core::Channel_t> const&, QList<Cortex::Core::Channel_t> const&, QList<QString>, QList<QString> const&)
+        Address: CortexService[0x0000000100feb954] (CortexService.__TEXT.__text + 16648532)
+        Summary: CortexService`Cortex::DeviceManager::InputDevice::doXtrodesMapping(QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::NeutralDataType>> const&, Cortex::Core::XtrodesMontages const&, Cortex::Core::InputDeviceInformation&)
+        Address: CortexService[0x0000000100fec0cc] (CortexService.__TEXT.__text + 16650444)
+        Summary: CortexService`Cortex::DeviceManager::InputDevice::doXtrodesMontage(QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::NeutralDataType>>&, Cortex::Core::XtrodesMontages const&)
+        Address: CortexService[0x0000000100feab48] (CortexService.__TEXT.__text + 16644936)
+        Summary: CortexService`Cortex::DeviceManager::InputDevice::setEpocFlexMapping(QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::FlexSensor_t>> const&, Cortex::Core::InputDeviceInformation&)
+        Address: CortexService[0x0000000100fea5f0] (CortexService.__TEXT.__text + 16643568)
+        Summary: CortexService`Cortex::DeviceManager::InputDevice::channelListToString(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x0000000100feaa60] (CortexService.__TEXT.__text + 16644704)
+        Summary: CortexService`Cortex::DeviceManager::InputDevice::initChannelStringList(QList<Cortex::Core::Channel_t> const&, QList<QString>&)
+        Address: CortexService[0x0000000100fb652c] (CortexService.__TEXT.__text + 16430380)
+        Summary: CortexService`Cortex::DeviceManager::DeviceFactory::setXtrodesMapping(Cortex::Core::InputDeviceInformation&, QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::NeutralDataType>> const&, Cortex::Core::XtrodesMontages const&)
+        Address: CortexService[0x0000000100fb62e0] (CortexService.__TEXT.__text + 16429792)
+        Summary: CortexService`Cortex::DeviceManager::DeviceFactory::setEpocFlexMapping(Cortex::Core::InputDeviceInformation&, QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::FlexSensor_t>> const&)
+        Address: CortexService[0x0000000100fc23c4] (CortexService.__TEXT.__text + 16479172)
+        Summary: CortexService`Cortex::DeviceManager::DeviceManager::createFileDevice(Cortex::Core::ConnectionType, QString const&, QString const&, QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::FlexSensor_t>> const&)
+        Address: CortexService[0x0000000100fbf90c] (CortexService.__TEXT.__text + 16468236)
+        Summary: CortexService`Cortex::DeviceManager::DeviceManager::setXtrodesMapping(Cortex::Core::InputDeviceInformation&, QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::NeutralDataType>> const&, Cortex::Core::XtrodesMontages const&)
+        Address: CortexService[0x0000000100fbf7d0] (CortexService.__TEXT.__text + 16467920)
+        Summary: CortexService`Cortex::DeviceManager::DeviceManager::setEpocFlexMapping(Cortex::Core::InputDeviceInformation&, QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::FlexSensor_t>> const&)
+        Address: CortexService[0x0000000100fe0978] (CortexService.__TEXT.__text + 16603512)
+        Summary: CortexService`Cortex::DeviceManager::FileDeviceFactory::createFileDevice(Cortex::Core::ConnectionType, QString const&, QString const&, QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::FlexSensor_t>> const&)
+        Address: CortexService[0x0000000100b26bdc] (CortexService.__TEXT.__text + 11647964)
+        Summary: CortexService`Cortex::MentalCommands::CognitivDetection::configure(Cortex::Core::HeadsetType, QList<Cortex::Core::Channel_t> const&, Cortex::DetectionCore::EmoProfile*, Cortex::DetectionCore::DetectionState*)
+        Address: CortexService[0x0000000100f10c90] (CortexService.__TEXT.__text + 15752336)
+        Summary: CortexService`Cortex::FacialExpressions::FacialExpressionsDetection::configure(Cortex::Core::HeadsetType, QList<Cortex::Core::Channel_t> const&, Cortex::DetectionCore::EmoProfile*, Cortex::DetectionCore::DetectionState*)
+        Address: CortexService[0x0000000100f32c10] (CortexService.__TEXT.__text + 15891472)
+        Summary: CortexService`Cortex::FacialExpressions::NTExpressivDetectionManager::setTargetChannels(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x0000000100c58528] (CortexService.__TEXT.__text + 12899624)
+        Summary: CortexService`Cortex::PerformanceMetrics::ValenceDetector::setTargetChannels(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x0000000100c58878] (CortexService.__TEXT.__text + 12900472)
+        Summary: CortexService`Cortex::PerformanceMetrics::ValenceDetector::getChannelGroupSums(Cortex::Math::Matrix const&, QList<Cortex::Core::Channel_t> const&, int)
+        Address: CortexService[0x0000000100c58688] (CortexService.__TEXT.__text + 12899976)
+        Summary: CortexService`Cortex::PerformanceMetrics::ValenceDetector::setChannelGroupCleanFlags(QList<Cortex::Core::Channel_t> const&, int, Cortex::Core::ContactQualityValue)
+        Address: CortexService[0x0000000100c4fc34] (CortexService.__TEXT.__text + 12864564)
+        Summary: CortexService`Cortex::PerformanceMetrics::MeditationDetector::setTargetChannels(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x0000000100c47014] (CortexService.__TEXT.__text + 12828692)
+        Summary: CortexService`Cortex::PerformanceMetrics::InsightAffectivDetector::setTargetChannels(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x0000000100c47170] (CortexService.__TEXT.__text + 12829040)
+        Summary: CortexService`Cortex::PerformanceMetrics::InsightAffectivDetector::setChannelGroupCleanFlags(QList<Cortex::Core::Channel_t> const&, int, Cortex::Core::ContactQualityValue)
+        Address: CortexService[0x0000000100b9d11c] (CortexService.__TEXT.__text + 12132636)
+        Summary: CortexService`Cortex::PerformanceMetricsV2::GenericPMDetection::configure(Cortex::Core::HeadsetType, QList<Cortex::Core::Channel_t> const&, Cortex::DetectionCore::EmoProfile*, Cortex::DetectionCore::DetectionState*)
+        Address: CortexService[0x0000000100c098c0] (CortexService.__TEXT.__text + 12576960)
+        Summary: CortexService`Cortex::PerformanceMetricsV2::SignalQualityDetection::configure(Cortex::Core::HeadsetType, QList<Cortex::Core::Channel_t> const&, Cortex::DetectionCore::EmoProfile*, Cortex::DetectionCore::DetectionState*)
+        Address: CortexService[0x0000000100bf8528] (CortexService.__TEXT.__text + 12506408)
+        Summary: CortexService`Cortex::PerformanceMetricsV2::SampleRateQualityDetection::configure(Cortex::Core::HeadsetType, QList<Cortex::Core::Channel_t> const&, Cortex::DetectionCore::EmoProfile*, Cortex::DetectionCore::DetectionState*)
+        Address: CortexService[0x0000000100bde958] (CortexService.__TEXT.__text + 12400984)
+        Summary: CortexService`Cortex::PerformanceMetricsV2::PerformanceMetricsDetection::configure(Cortex::Core::HeadsetType, QList<Cortex::Core::Channel_t> const&, Cortex::DetectionCore::EmoProfile*, Cortex::DetectionCore::DetectionState*)
+        Address: CortexService[0x00000001003ce8f8] (CortexService.__TEXT.__text + 3946744)
+        Summary: CortexService`Cortex::API::SessionApiHandler::startImportingFiles(QString const&, Cortex::Core::ConnectionType, QVariant const&, Cortex::Model::License const&, QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::FlexSensor_t>> const&, Cortex::PerformanceMetricsV2::DetectionsParameters const&, QString const&)
+        Address: CortexService[0x000000010014e3cc] (CortexService.__TEXT.__text + 1323980)
+        Summary: CortexService`Cortex::API::validateFlexChannelMapping(QJsonObject const&, QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::FlexSensor_t>>&, bool)
+        Address: CortexService[0x0000000101f3433c] (CortexService.__TEXT.__text + 32674620)
+        Summary: CortexService`Cortex::Core::JsonObjectParser::getEEGChannels(QString const&, bool&)
+        Address: CortexService[0x0000000101fc6898] (CortexService.__TEXT.__text + 33274008)
+        Summary: CortexService`Cortex::Core::channel2StringDb(Cortex::Core::Channel_t)
+        Address: CortexService[0x0000000101fc697c] (CortexService.__TEXT.__text + 33274236)
+        Summary: CortexService`Cortex::Core::stringDb2Channel(QString const&)
+        Address: CortexService[0x0000000101fc6684] (CortexService.__TEXT.__text + 33273476)
+        Summary: CortexService`Cortex::Core::stringApi2Channel(QString const&)
+        Address: CortexService[0x0000000101f2d1a0] (CortexService.__TEXT.__text + 32645536)
+        Summary: CortexService`Cortex::Core::getChannelDataInfo(Cortex::Core::Channel_t, Cortex::Core::HeadsetType, bool, Cortex::Core::HeadsetMode)
+        Address: CortexService[0x0000000101f2cfdc] (CortexService.__TEXT.__text + 32645084)
+        Summary: CortexService`Cortex::Core::getMetaChannelInfo(Cortex::Core::Channel_t)
+        Address: CortexService[0x0000000101f25dc4] (CortexService.__TEXT.__text + 32615876)
+        Summary: CortexService`Cortex::Core::calculateCqChannelId(Cortex::Core::HeadsetType, Cortex::Core::HeadsetSampleRate, unsigned int, int)
+        Address: CortexService[0x0000000101f2d5a4] (CortexService.__TEXT.__text + 32646564)
+        Summary: CortexService`Cortex::Core::getEQChannelDataInfo(Cortex::Core::SignalQualityChannel)
+        Address: CortexService[0x0000000101f1bd80] (CortexService.__TEXT.__text + 32574848)
+        Summary: CortexService`Cortex::Core::Config::init(bool, Cortex::Core::AppInfoConfig const&)
+        Address: CortexService[0x0000000101f2f760] (CortexService.__TEXT.__text + 32655200)
+        Summary: CortexService`Cortex::Core::DiskSpace::init(QString const&, long long, long long)
+        Address: CortexService[0x0000000101f2d670] (CortexService.__TEXT.__text + 32646768)
+        Summary: CortexService`Cortex::Core::getCqInfo(Cortex::Core::Channel_t)
+        Address: CortexService[0x0000000101fc86e8] (CortexService.__TEXT.__text + 33281768)
+        Summary: CortexService`Cortex::Core::isChannel(QString const&, QString const&)
+        Address: CortexService[0x000000010119c334] (CortexService.__TEXT.__text + 18420532)
+        Summary: CortexService`Cortex::Export::EdfSignalHeaderV2Creator::createSignalHeaders(QList<QString> const&, QList<Cortex::Core::Channel_t> const&, Cortex::DataCache::DataStream, int)
+        Address: CortexService[0x000000010119bafc] (CortexService.__TEXT.__text + 18418428)
+        Summary: CortexService`Cortex::Export::EdfSignalHeaderV2Creator::getChannelDataInfos(QList<QString> const&, QList<Cortex::Core::Channel_t> const&, Cortex::DataCache::DataStream)
+        Address: CortexService[0x000000010119c520] (CortexService.__TEXT.__text + 18421024)
+        Summary: CortexService`Cortex::Export::EdfSignalHeaderV2Creator::createEqSignalHeaders(QList<QString> const&, QList<Cortex::Core::SignalQualityChannel> const&, int)
+        Address: CortexService[0x000000010119b9f0] (CortexService.__TEXT.__text + 18418160)
+        Summary: CortexService`Cortex::Export::EdfSignalHeaderV2Creator::getCqChannelDataInfos(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x000000010119c414] (CortexService.__TEXT.__text + 18420756)
+        Summary: CortexService`Cortex::Export::EdfSignalHeaderV2Creator::getEqChannelDataInfos(QList<Cortex::Core::SignalQualityChannel> const&)
+        Address: CortexService[0x000000010119b644] (CortexService.__TEXT.__text + 18417220)
+        Summary: CortexService`Cortex::Export::EdfSignalHeaderV2Creator::getEegChannelDataInfos(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x000000010119b8c8] (CortexService.__TEXT.__text + 18417864)
+        Summary: CortexService`Cortex::Export::EdfSignalHeaderV2Creator::getMotionChannelDataInfos(QList<Cortex::Core::Channel_t> const&, bool)
+        Address: CortexService[0x00000001004efe0c] (CortexService.__TEXT.__text + 5131788)
+        Summary: CortexService`Cortex::Import::FileImporter::import(QString const&, QString const&, Cortex::PerformanceMetricsV2::DetectionsParameters, QList<std::__1::pair<Cortex::Core::Channel_t, Cortex::Core::FlexSensor_t>> const&)
+        Address: CortexService[0x0000000101232880] (CortexService.__TEXT.__text + 19036288)
+        Summary: CortexService`Cortex::DetectionCore::ContactQuality::minValueForChannel(Cortex::Core::Channel_t) const
+        Address: CortexService[0x00000001012327d0] (CortexService.__TEXT.__text + 19036112)
+        Summary: CortexService`Cortex::DetectionCore::ContactQuality::get(Cortex::Core::Channel_t) const
+        Address: CortexService[0x0000000101234858] (CortexService.__TEXT.__text + 19044440)
+        Summary: CortexService`Cortex::DetectionCore::Detection::contactQuality(Cortex::Core::Channel_t) const
+        Address: CortexService[0x0000000101fc2064] (CortexService.__TEXT.__text + 33255524)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc2064
+        Address: CortexService[0x0000000101fc20f4] (CortexService.__TEXT.__text + 33255668)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc20f4
+        Address: CortexService[0x0000000101fc2358] (CortexService.__TEXT.__text + 33256280)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc2358
+        Address: CortexService[0x0000000101fc2800] (CortexService.__TEXT.__text + 33257472)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc2800
+        Address: CortexService[0x0000000101fc2904] (CortexService.__TEXT.__text + 33257732)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc2904
+        Address: CortexService[0x0000000101fc29f0] (CortexService.__TEXT.__text + 33257968)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc29f0
+        Address: CortexService[0x0000000101fc2af4] (CortexService.__TEXT.__text + 33258228)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc2af4
+        Address: CortexService[0x0000000101fc2c1c] (CortexService.__TEXT.__text + 33258524)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc2c1c
+        Address: CortexService[0x0000000101fc2d44] (CortexService.__TEXT.__text + 33258820)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc2d44
+        Address: CortexService[0x0000000101fc2e48] (CortexService.__TEXT.__text + 33259080)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc2e48
+        Address: CortexService[0x0000000101fc2f34] (CortexService.__TEXT.__text + 33259316)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc2f34
+        Address: CortexService[0x0000000101fc6cf0] (CortexService.__TEXT.__text + 33275120)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc6cf0
+        Address: CortexService[0x0000000101fc6d50] (CortexService.__TEXT.__text + 33275216)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc6d50
+        Address: CortexService[0x0000000101fc7060] (CortexService.__TEXT.__text + 33276000)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc7060
+        Address: CortexService[0x0000000101fc70c0] (CortexService.__TEXT.__text + 33276096)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc70c0
+        Address: CortexService[0x0000000101fc867c] (CortexService.__TEXT.__text + 33281660)
+        Summary: CortexService`___lldb_unnamed_symbol_101fc867c
+        Address: CortexService[0x0000000101fcae7c] (CortexService.__TEXT.__text + 33291900)
+        Summary: CortexService`___lldb_unnamed_symbol_101fcae7c
+        Address: CortexService[0x0000000101fcb068] (CortexService.__TEXT.__text + 33292392)
+        Summary: CortexService`___lldb_unnamed_symbol_101fcb068
+        Address: CortexService[0x0000000101fcb074] (CortexService.__TEXT.__text + 33292404)
+        Summary: CortexService`___lldb_unnamed_symbol_101fcb074
+(lldb) quit

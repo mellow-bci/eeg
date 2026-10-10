@@ -504,3 +504,39 @@ Evidence: metadata-schema-continuation-20261011,
 database-driver-continuation-20261011, local-storage-continuation-20261011.
 No new vendor assets were needed. Qt date/channel normalization, exact trained
 Cortex outputs and physical power-loss qualification remain explicit gates.
+
+
+## Metadata conversions and native database completion — 2026-10-11
+
+ReferenceDateMetadata adds an opt-in bounded explicit-zone date adapter. The
+installed Qt6.8.3 oracle (called with Cortex's actual helper sequence) verifies
+UTC export as +00:00, three-digit millisecond rounding, date carry and offset
+bounds. Three tests cover nineteen explicit valid vectors, eight invalid vectors
+and a deterministic160-row oracle matrix. Local timezone/DST and additional Qt
+syntax remain unsupported; raw persisted metadata is unchanged.
+
+Native document read/create/update/put and error-domain tables are now body
+traced. A single-document write checks transaction completion errors when the
+write itself succeeded; the previously traced batch wrapper returns its document
+status without independently propagating the guard error. Reopen disposes the
+old handle first; close returns the first close error and releases the handle
+regardless of the second result. These details qualify earlier wrapper findings,
+not claims of C4 isolation or crash durability. ReferenceNativeDatabaseError
+implements only the numeric domain/code adapter, separately from SQLite errors.
+
+The independent SQLite repository additionally passes an actual trigger-induced
+write failure, rollback-state check and successful retry without callback mocking.
+Evidence: date-conversion-continuation-20261011 and
+native-database-continuation-20261011. No vendor assets were needed; linked Qt/C4
+comparison evidence does not create a deliverable runtime dependency.
+
+
+ReferenceChannelMetadata now contains all179 installed database vocabulary
+entries from actual initializer101fd47b8 and the exact ordered fourteen-channel
+training default. Missing/empty lists normalize to that default and omit the
+export field. Unknown strings become enum0 (LA); unknown enum values export
+UNUSED. QString matching is case-sensitive UTF-16, duplicates/order preserved.
+This is comparison-only metadata vocabulary, not179 qualified sensors or support
+for additional headset hardware. Raw profile storage remains unchanged.
+Channel evidence: channel-metadata-continuation-20261011. Final focused
+Reference/Decoder run passes253tests with2explicitskips and zero failures.

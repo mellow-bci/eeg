@@ -6,7 +6,7 @@ This checkpoint traces the installed arm64 CortexService binary rather than READ
 
 `ReferenceTrainingMetadata` covers the ten observed keys: uuid, name, ownerId, deleted, loaded, originalUuid, originalProfileURL, createdDatetime, modifiedDatetime and conditional eegChannels. The channel key is resolved from its actual static initializer, not inferred from a symbol name. Attributes identity JSON contains uuid only; trained attributes are a separate payload.
 
-Strings follow the observed empty projection for missing/non-string values, with diagnostic field names. Native Boolean values are supported; untraced QVariant numeric/string coercions reject. Dates and channel names remain raw strings. Qt date normalization, channel enum lookup and default-channel normalization are unresolved; preserving wire values is our explicit policy. Unknown keys are preserved by our repository, although the traced vendor constructor does not retain them.
+Strings follow the observed empty projection for missing/non-string values, with diagnostic field names. Native Boolean values are supported; untraced QVariant numeric/string coercions reject. Dates and channel names remain raw strings. Raw preservation remains our explicit policy. Separate ReferenceDateMetadata and ReferenceChannelMetadata comparison adapters now cover explicit-zone timestamps against the installed Qt6.8.3 oracle and the actual179-entry channel vocabulary/default fourteen-channel list. Local timezone/DST and additional accepted Qt syntax remain unsupported; it never silently rewrites this repository. Unknown keys are preserved by our repository, although the traced vendor constructor does not retain them.
 
 ## 2. Real independent storage and full fitted workflow
 
@@ -24,7 +24,7 @@ The vendor body instead performs ordered CouchDriver document saves, stops on th
 
 ## 3. Offline recovery qualification
 
-`ReferenceLocalProfileStoreTests` exercises actual signature fitting -> classifier packing -> authenticated disk save -> connection close/reopen -> identical posterior/density outputs. It also exercises two-connection stale revisions, real SQLite writer contention, injected precommit rollback and postcommit acknowledgement failure, wrong keys, revision tampering, byte limits, unknown schema versions and database symlink rejection.
+`ReferenceLocalProfileStoreTests` exercises actual signature fitting -> classifier packing -> authenticated disk save -> connection close/reopen -> identical posterior/density outputs. It also exercises two-connection stale revisions, real SQLite writer contention and trigger-induced write failure/retry, injected precommit rollback and postcommit acknowledgement failure, wrong keys, revision tampering, byte limits, unknown schema versions and database symlink rejection.
 
 The macOS interrupted-write test launches `/usr/bin/sqlite3` against the real temporary database, stages a corrupt uncommitted replacement, waits for its STAGED acknowledgement, kills that process with SIGKILL, then reopens and validates the previous complete fitted profile and inference. This is a real process termination test; it is not a simulated success callback. It does not establish physical power-loss durability, disk-full recovery, filesystem fault tolerance or target-headset performance.
 
@@ -41,4 +41,4 @@ SQLite explains [WAL commit/checkpoint behavior](https://www.sqlite.org/wal.html
 
 ## Remaining exact-comparison gates
 
-All ten metadata field names are resolved, but their complete Qt conversions are not. Vendor trained PCA/canonical/Gaussian profile values and matching Cortex outputs are still unavailable. The previously identified embedded salt is excluded and only needed for exact vendor file-key derivation, not this independent repository. Physiological command validity, nuisance rejection and cross-session command reliability require participant experiments; no exact full Cortex parity or production-readiness claim follows from these offline tests.
+All ten metadata field names are resolved; bounded explicit-zone date conversion is oracle-tested, but complete Qt date syntax/local-time and QVariant Boolean/non-string coercions are not. Vendor trained PCA/canonical/Gaussian profile values and matching Cortex outputs are still unavailable. The previously identified embedded salt is excluded and only needed for exact vendor file-key derivation, not this independent repository. Physiological command validity, nuisance rejection and cross-session command reliability require participant experiments; no exact full Cortex parity or production-readiness claim follows from these offline tests.
