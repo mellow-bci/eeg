@@ -186,9 +186,9 @@
           }
         ]
       },
-      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category.",
-      "missing_parameters_assets_dependencies": "Physical host/device clock characterization, interpolation policy and prolonged native fault/load measurements. Queued I/O is implemented; its existence does not prove sustained hardware throughput.",
-      "current_implementation": "Arrival timestamps/counters and canonical nonoverlapping windows preserve raw measurements. Native EEGQueuedRecordingStore and EEGLiveInference provide ordered bounded recording/inference queues, generation invalidation and explicit overload/error states. EEGRecordingClockAnchor brackets one host wall-clock observation using receipt-clock readings; clock accuracy remains unmeasured. No reconstructed missing EEG is presented as measured data. Stored v1 clock anchors now decode through validated provenance and numeric checks; this does not select an export timeline or establish clock accuracy. The canonical completed-recording clock reader returns an optional anchor, sample count and file digest; malformed, duplicate or late anchors are rejected without changing raw replay. Analysis, spectrum validation and nominal export share an overflow-safe index/counter adjacency predicate. Finalized Int.max-to-zero fixtures preserve raw samples, reject continuity for analysis and split nominal segments without integer traps; ordinary counter wrap remains supported. See docs/DETECTOR_TIMING.md.",
+      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category. Oct11 static SamplesBuffer and SynchronisedSubscription bodies now trace complete interval search, inclusive endpoints, covered empty gaps, clipped measured fallback, cached secondary starts and direction-dependent closest-timestamp ties. DataInterpolation counter-distance admission1...65 and temporal scalar linear/FMA kernel are traced separately from Insight spatial channel synthesis.",
+      "missing_parameters_assets_dependencies": "Physical host/device clock characterization, full package interpolation orchestration, same-input reference vectors and prolonged native fault/load measurements. Queued I/O is implemented; its existence does not prove sustained hardware throughput.",
+      "current_implementation": "Arrival timestamps/counters and canonical nonoverlapping windows preserve raw measurements. Native EEGQueuedRecordingStore and EEGLiveInference provide ordered bounded recording/inference queues, generation invalidation and explicit overload/error states. EEGRecordingClockAnchor brackets one host wall-clock observation using receipt-clock readings; clock accuracy remains unmeasured. No reconstructed missing EEG is presented as measured data. Stored v1 clock anchors now decode through validated provenance and numeric checks; this does not select an export timeline or establish clock accuracy. The canonical completed-recording clock reader returns an optional anchor, sample count and file digest; malformed, duplicate or late anchors are rejected without changing raw replay. Analysis, spectrum validation and nominal export share an overflow-safe index/counter adjacency predicate. Finalized Int.max-to-zero fixtures preserve raw samples, reject continuity for analysis and split nominal segments without integer traps; ordinary counter wrap remains supported. See docs/DETECTOR_TIMING.md. ReferenceTimestampSearch and ReferenceTimestampRouting implement these bounded timestamp/index rules on immutable retained arrays; tests compose actual search outcomes through subscription cadence and raw diagnostic features. Transport clock production, concurrent buffer mutation and physical qualification remain separate. ReferenceEEGInterpolation implements scalar missing-sample values and counter gate with explicit endpoints/modulus. Its separate Insight helper preserves measured rows, appends exact arithmetic synthesized channels and takes explicit UInt64 jitter draws; no Insight hardware support or automatic EPOC X routing is implied.",
       "target_component": "Acquisition service owns timing and loss; derived interpolation, if added, must remain separate and flagged in recording metadata.",
       "acceptance_gate": "Fault injection, latency/memory measurements, explicit gap counts; interpolated samples never masquerade as measured samples.",
       "delivery_notes": "Native queue implementations and software tests exist. Physical startup, sleep/wake, clock drift, sustained throughput and fault qualification remain pending; interpolation is unimplemented.",
@@ -203,7 +203,13 @@
         "docs/NATIVE_WORKFLOW_AUDIT.md",
         "docs/RECORDING_CLOCK_ANCHOR.md",
         "apple/Sources/EEGCore/RecordingStore.swift",
-        "apple/Tests/EEGCoreTests/RecordingStoreTests.swift"
+        "apple/Tests/EEGCoreTests/RecordingStoreTests.swift",
+        "apple/Sources/EEGCore/ReferenceTimestampSearch.swift",
+        "apple/Tests/EEGCoreTests/ReferenceTimestampSearchTests.swift",
+        "evidence/mental-command-reference/timestamp-search-continuation-20261011/TRACE.md",
+        "apple/Sources/EEGCore/ReferenceEEGInterpolation.swift",
+        "apple/Tests/EEGCoreTests/ReferenceEEGInterpolationTests.swift",
+        "evidence/mental-command-reference/interpolation-continuation-20261011/TRACE.md"
       ]
     },
     {

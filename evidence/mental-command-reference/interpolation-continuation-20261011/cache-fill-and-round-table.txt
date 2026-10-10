@@ -1,0 +1,108 @@
+(lldb) target create --arch arm64 /Applications/EmotivApps/EMOTIV\ Launcher.app/Contents/MacOS/CortexService
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -s 0x100089148 -c 90
+CortexService`___lldb_unnamed_symbol_100089148:
+CortexService[0x100089148] <+0>:   stp    x29, x30, [sp, #-0x10]!
+CortexService[0x10008914c] <+4>:   mov    x29, sp
+CortexService[0x100089150] <+8>:   ldr    x8, [x0]
+CortexService[0x100089154] <+12>:  cbz    x8, 0x1000891b0           ; <+104>
+CortexService[0x100089158] <+16>:  ldr    w9, [x8]
+CortexService[0x10008915c] <+20>:  cmp    w9, #0x1
+CortexService[0x100089160] <+24>:  b.ne   0x1000891b4               ; <+108>
+CortexService[0x100089164] <+28>:  ldr    x9, [x0, #0x10]
+CortexService[0x100089168] <+32>:  subs   x11, x1, x9
+CortexService[0x10008916c] <+36>:  b.le   0x1000891b8               ; <+112>
+CortexService[0x100089170] <+40>:  ldr    x12, [x8, #0x8]
+CortexService[0x100089174] <+44>:  ldr    x10, [x0, #0x8]
+CortexService[0x100089178] <+48>:  add    x8, x8, #0x17
+CortexService[0x10008917c] <+52>:  and    x8, x8, #0xfffffffffffffff8
+CortexService[0x100089180] <+56>:  sub    x8, x10, x8
+CortexService[0x100089184] <+60>:  add    x8, x9, x8, asr #3
+CortexService[0x100089188] <+64>:  sub    x8, x12, x8
+CortexService[0x10008918c] <+68>:  cmp    x11, x8
+CortexService[0x100089190] <+72>:  b.gt   0x1000891bc               ; <+116>
+CortexService[0x100089194] <+76>:  str    x1, [x0, #0x10]
+CortexService[0x100089198] <+80>:  lsl    x8, x9, #3
+CortexService[0x10008919c] <+84>:  add    x0, x10, x8
+CortexService[0x1000891a0] <+88>:  lsl    x9, x1, #3
+CortexService[0x1000891a4] <+92>:  sub    x1, x9, x8
+CortexService[0x1000891a8] <+96>:  ldp    x29, x30, [sp], #0x10
+CortexService[0x1000891ac] <+100>: b      0x1024b79cc               ; symbol stub for: bzero
+CortexService[0x1000891b0] <+104>: bl     0x102305ae4               ; ___lldb_unnamed_symbol_102305ae4
+CortexService[0x1000891b4] <+108>: bl     0x102305b44               ; ___lldb_unnamed_symbol_102305b44
+CortexService[0x1000891b8] <+112>: bl     0x102305b24               ; ___lldb_unnamed_symbol_102305b24
+CortexService[0x1000891bc] <+116>: bl     0x102305b04               ; ___lldb_unnamed_symbol_102305b04
+
+CortexService`___lldb_unnamed_symbol_1000891c0:
+CortexService[0x1000891c0] <+0>:   stp    x22, x21, [sp, #-0x30]!
+CortexService[0x1000891c4] <+4>:   stp    x20, x19, [sp, #0x10]
+CortexService[0x1000891c8] <+8>:   stp    x29, x30, [sp, #0x20]
+CortexService[0x1000891cc] <+12>:  add    x29, sp, #0x20
+CortexService[0x1000891d0] <+16>:  mov    x20, x1
+CortexService[0x1000891d4] <+20>:  mov    x19, x0
+CortexService[0x1000891d8] <+24>:  ldr    x9, [x0]
+CortexService[0x1000891dc] <+28>:  cbz    x9, 0x100089230           ; <+112>
+CortexService[0x1000891e0] <+32>:  ldr    w8, [x9]
+CortexService[0x1000891e4] <+36>:  cmp    w8, #0x1
+CortexService[0x1000891e8] <+40>:  b.gt   0x100089230               ; <+112>
+CortexService[0x1000891ec] <+44>:  ldr    x8, [x19, #0x10]
+CortexService[0x1000891f0] <+48>:  cmp    x8, x20
+CortexService[0x1000891f4] <+52>:  b.ne   0x100089218               ; <+88>
+CortexService[0x1000891f8] <+56>:  ldr    x11, [x9, #0x8]
+CortexService[0x1000891fc] <+60>:  ldr    x10, [x19, #0x8]
+CortexService[0x100089200] <+64>:  add    x12, x9, #0x17
+CortexService[0x100089204] <+68>:  and    x12, x12, #0xfffffffffffffff8
+CortexService[0x100089208] <+72>:  sub    x12, x10, x12
+CortexService[0x10008920c] <+76>:  add    x12, x20, x12, asr #3
+CortexService[0x100089210] <+80>:  cmp    x11, x12
+CortexService[0x100089214] <+84>:  b.ne   0x100089284               ; <+196>
+CortexService[0x100089218] <+88>:  cbnz   x20, 0x100089230          ; <+112>
+CortexService[0x10008921c] <+92>:  ldr    x10, [x19, #0x8]
+CortexService[0x100089220] <+96>:  add    x9, x9, #0x17
+CortexService[0x100089224] <+100>: and    x9, x9, #0xfffffffffffffff8
+CortexService[0x100089228] <+104>: cmp    x9, x10
+CortexService[0x10008922c] <+108>: b.ne   0x100089298               ; <+216>
+CortexService[0x100089230] <+112>: ldr    x22, [x2]
+CortexService[0x100089234] <+116>: ldr    x8, [x19, #0x10]
+CortexService[0x100089238] <+120>: cmp    x20, #0x0
+CortexService[0x10008923c] <+124>: ccmp   x8, #0x0, #0x4, eq
+CortexService[0x100089240] <+128>: cset   w21, ne
+CortexService[0x100089244] <+132>: mov    x0, x19
+CortexService[0x100089248] <+136>: mov    x1, x21
+CortexService[0x10008924c] <+140>: mov    w2, #0x1                  ; =1
+CortexService[0x100089250] <+144>: mov    x3, #0x0                  ; =0
+CortexService[0x100089254] <+148>: mov    x4, #0x0                  ; =0
+CortexService[0x100089258] <+152>: bl     0x1000892b4               ; ___lldb_unnamed_symbol_1000892b4
+CortexService[0x10008925c] <+156>: mov    x0, x19
+CortexService[0x100089260] <+160>: mov    x1, x21
+CortexService[0x100089264] <+164>: mov    x2, x20
+CortexService[0x100089268] <+168>: mov    w3, #0x1                  ; =1
+CortexService[0x10008926c] <+172>: bl     0x1000893e0               ; ___lldb_unnamed_symbol_1000893e0
+CortexService[0x100089270] <+176>: str    x22, [x0]
+CortexService[0x100089274] <+180>: ldp    x29, x30, [sp, #0x20]
+CortexService[0x100089278] <+184>: ldp    x20, x19, [sp, #0x10]
+CortexService[0x10008927c] <+188>: ldp    x22, x21, [sp], #0x30
+CortexService[0x100089280] <+192>: ret
+CortexService[0x100089284] <+196>: ldr    x8, [x2]
+CortexService[0x100089288] <+200>: str    x8, [x10, x20, lsl #3]
+CortexService[0x10008928c] <+204>: add    x8, x20, #0x1
+CortexService[0x100089290] <+208>: str    x8, [x19, #0x10]
+CortexService[0x100089294] <+212>: b      0x100089274               ; <+180>
+CortexService[0x100089298] <+216>: ldr    x9, [x2]
+CortexService[0x10008929c] <+220>: stur   x9, [x10, #-0x8]
+CortexService[0x1000892a0] <+224>: ldr    x9, [x19, #0x8]
+CortexService[0x1000892a4] <+228>: sub    x9, x9, #0x8
+CortexService[0x1000892a8] <+232>: add    x8, x8, #0x1
+CortexService[0x1000892ac] <+236>: stp    x9, x8, [x19, #0x8]
+(lldb) memory read -f f -s 8 -c 10 0x102fd6d78
+0x102fd6d78: 1
+0x102fd6d80: 10
+0x102fd6d88: 100
+0x102fd6d90: 1000
+0x102fd6d98: 10000
+0x102fd6da0: 100000
+0x102fd6da8: 1000000
+0x102fd6db0: 1.0E+7
+0x102fd6db8: 1.0E+8
+0x102fd6dc0: 1.0E+9
+(lldb) quit
