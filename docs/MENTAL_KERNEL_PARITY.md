@@ -445,3 +445,42 @@ for caller-key codec verification. A trained Cortex profile and synchronized
 intermediate/prediction outputs are still missing for exact trained-profile
 comparison. Full physiological mental-command parity is not established by
 these offline tests.
+
+
+## Runtime fields and database/locker orchestration — 2026-10-11
+
+The bounded runtime-field gate from the preceding checkpoint is now resolved
+against actual body use, including Armadillo transpose materialization.
+`ReferenceRuntimeProfile` selects uniqueFeatureIndices in stored order, maps
+coeff/pcMeans to PCA, retains the leading numOfValidFeatures PCA columns, then
+maps eigenvec/meanTot to the canonical transform. Gaussian weights are M×1,
+means D×M with components in columns, and covariance matrices share component
+order. classRefIDs, channelInUse and useCount remain metadata. Priors and neutral
+scale are classifier-state inputs outside the ten-field serialized envelope;
+no values are invented. Supported dimensional, numerical and shape gates are
+explicit and schema acceptance alone never creates a usable classifier.
+
+An independently fitted signature survives typed JSON, caller-key gzip/AES,
+inverse loading and runtime inference with unchanged scores. Asymmetric mixture
+columns and PCA truncation have analytic checks; invalid selectors/shapes fail.
+The adapter reuses existing Gaussian math and does not alter acquisition or the
+independent live trainer. No vendor trained data or observed predictions were
+available for an exact learned-profile comparison.
+
+| Orchestration | Body-backed contract | Qualification boundary |
+| --- | --- | --- |
+| FileLocker | One tryLock, separate isLocked gate, diagnostics on failed acquisition, unconditional unlock/disposal. Read/save append .lock and pass1000ms; failed lock gives raw3→attribute error0x3303. | Explicit backend callbacks; Qt stale-lock/OS internals and cross-process durability are not reproduced or qualified by callback tests. |
+| Profile-key locks | Idempotent ASCII key membership, observed training/neutral key lists; changed locked QVariant gives a diagnostic but writes proceed. | Advisory, not exclusion or authorization. Equality is supplied explicitly; overlap exposes the observed non-refcounted behavior. |
+| Cache/save | Publish cache before metadata then attribute write; no rollback shown. Queued invocation outcome is exposed separately from vendor-reported0. | No successful-enqueue/durability inference; queue/thread/driver implementations remain separate dependencies. |
+| Synchronous save | Retry file0x3303 at most6 calls; successful file write immediately calls UUID-only metadata helper and propagates its error. | Corrects the earlier tentative scheduling description. No cross-file/database transaction is shown. |
+| Document write | Acquire driver/error, retry only0x3102 at most10 calls, sleep5ms after each busy result including the last; changes notified only on zero plus updater/flag. | Physical driver persistence, full TrainingProfile metadata schema, Qt scheduling and application-store qualification remain unverified. |
+
+Evidence: `runtime-field-continuation-20261011`,
+`database-orchestration-continuation-20261011`, `file-lock-continuation-20261011`,
+`profile-lock-continuation-20261011`. Final focused/core logs and counts are
+recorded in the database checkpoint manifest. No additional vendor assets were
+needed. Exact vendor-file key derivation still depends on the previously
+identified embedded salt, excluded from this deliverable. Trained vendor
+parameters/reference outputs remain optional comparison inputs, not runtime
+dependencies or bundled assets. Full Cortex or physiological parity is not
+claimed.

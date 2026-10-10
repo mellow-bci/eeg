@@ -1,0 +1,158 @@
+(lldb) target create --arch arm64 "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -n Cortex::Database::NoSQL::NoSQLDatabase::saveDoc
+CortexService`Cortex::Database::NoSQL::NoSQLDatabase::saveDoc:
+CortexService[0x101de6664] <+0>:   sub    sp, sp, #0x70
+CortexService[0x101de6668] <+4>:   stp    x24, x23, [sp, #0x30]
+CortexService[0x101de666c] <+8>:   stp    x22, x21, [sp, #0x40]
+CortexService[0x101de6670] <+12>:  stp    x20, x19, [sp, #0x50]
+CortexService[0x101de6674] <+16>:  stp    x29, x30, [sp, #0x60]
+CortexService[0x101de6678] <+20>:  add    x29, sp, #0x60
+CortexService[0x101de667c] <+24>:  mov    x20, x2
+CortexService[0x101de6680] <+28>:  mov    x19, x1
+CortexService[0x101de6684] <+32>:  add    x1, sp, #0x2c
+CortexService[0x101de6688] <+36>:  mov    w2, #0x0                  ; =0
+CortexService[0x101de668c] <+40>:  bl     0x101de5d68               ; Cortex::Database::NoSQL::NoSQLDatabase::driver(Cortex::Core::ErrorCode*, bool)
+CortexService[0x101de6690] <+44>:  cbz    x0, 0x101de66f4           ; <+144>
+CortexService[0x101de6694] <+48>:  mov    x21, x0
+CortexService[0x101de6698] <+52>:  mov    w22, #0x0                 ; =0
+CortexService[0x101de669c] <+56>:  str    wzr, [sp, #0x2c]
+CortexService[0x101de66a0] <+60>:  mov    w23, #0x3102              ; =12546
+CortexService[0x101de66a4] <+64>:  ldr    x8, [x21]
+CortexService[0x101de66a8] <+68>:  ldr    x8, [x8, #0x38]
+CortexService[0x101de66ac] <+72>:  mov    x0, x21
+CortexService[0x101de66b0] <+76>:  mov    x1, x19
+CortexService[0x101de66b4] <+80>:  mov    x2, x20
+CortexService[0x101de66b8] <+84>:  blr    x8
+CortexService[0x101de66bc] <+88>:  str    w0, [sp, #0x2c]
+CortexService[0x101de66c0] <+92>:  cmp    w0, w23
+CortexService[0x101de66c4] <+96>:  b.ne   0x101de66f4               ; <+144>
+CortexService[0x101de66c8] <+100>: add    w24, w22, #0x1
+CortexService[0x101de66cc] <+104>: mov    w0, #0x5                  ; =5
+CortexService[0x101de66d0] <+108>: bl     0x1024b5980               ; symbol stub for: QThread::msleep(unsigned long)
+CortexService[0x101de66d4] <+112>: ldr    w8, [sp, #0x2c]
+CortexService[0x101de66d8] <+116>: cmp    w8, w23
+CortexService[0x101de66dc] <+120>: ccmp   w22, #0x9, #0x2, eq
+CortexService[0x101de66e0] <+124>: mov    x22, x24
+CortexService[0x101de66e4] <+128>: b.lo   0x101de66a4               ; <+64>
+CortexService[0x101de66e8] <+132>: mov    w9, #0x3102               ; =12546
+CortexService[0x101de66ec] <+136>: cmp    w8, w9
+CortexService[0x101de66f0] <+140>: b.eq   0x101de6710               ; <+172>
+CortexService[0x101de66f4] <+144>: ldr    w0, [sp, #0x2c]
+CortexService[0x101de66f8] <+148>: ldp    x29, x30, [sp, #0x60]
+CortexService[0x101de66fc] <+152>: ldp    x20, x19, [sp, #0x50]
+CortexService[0x101de6700] <+156>: ldp    x22, x21, [sp, #0x40]
+CortexService[0x101de6704] <+160>: ldp    x24, x23, [sp, #0x30]
+CortexService[0x101de6708] <+164>: add    sp, sp, #0x70
+CortexService[0x101de670c] <+168>: ret
+CortexService[0x101de6710] <+172>: adrp   x8, 2064
+CortexService[0x101de6714] <+176>: ldr    d0, [x8, #0x1f8]
+CortexService[0x101de6718] <+180>: adrp   x8, 4794
+CortexService[0x101de671c] <+184>: add    x8, x8, #0xb16            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/Cortex/Database/NoSQL/NoSQLDatabase.cpp"
+CortexService[0x101de6720] <+188>: adrp   x9, 4794
+CortexService[0x101de6724] <+192>: add    x9, x9, #0xbeb            ; "virtual ErrorCode Cortex::Database::NoSQL::NoSQLDatabase::saveDoc(const NoSQLDocument &, bool)"
+CortexService[0x101de6728] <+196>: str    d0, [sp]
+CortexService[0x101de672c] <+200>: stp    x8, x9, [sp, #0x8]
+CortexService[0x101de6730] <+204>: adrp   x8, 4649
+CortexService[0x101de6734] <+208>: add    x8, x8, #0xa              ; "default"
+CortexService[0x101de6738] <+212>: str    x8, [sp, #0x18]
+CortexService[0x101de673c] <+216>: add    x8, sp, #0x20
+CortexService[0x101de6740] <+220>: mov    x0, sp
+CortexService[0x101de6744] <+224>: bl     0x1024b6364               ; symbol stub for: QMessageLogger::critical() const
+CortexService[0x101de6748] <+228>: adrp   x1, 4794
+CortexService[0x101de674c] <+232>: add    x1, x1, #0xc4a            ; "database is locked, cannot save"
+CortexService[0x101de6750] <+236>: add    x0, sp, #0x20
+CortexService[0x101de6754] <+240>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101de6758] <+244>: mov    x20, x0
+CortexService[0x101de675c] <+248>: mov    x0, x19
+CortexService[0x101de6760] <+252>: bl     0x101dfab60               ; Cortex::Database::NoSQL::NoSQLDocument::getId() const
+CortexService[0x101de6764] <+256>: adrp   x8, 4919
+CortexService[0x101de6768] <+260>: ldr    x8, [x8, #0xdc0]
+CortexService[0x101de676c] <+264>: ldp    x9, x2, [x0, #0x8]
+CortexService[0x101de6770] <+268>: cmp    x9, #0x0
+CortexService[0x101de6774] <+272>: csel   x1, x8, x9, eq
+CortexService[0x101de6778] <+276>: mov    x0, x20
+CortexService[0x101de677c] <+280>: bl     0x1024b541c               ; symbol stub for: QDebug::putString(QChar const*, unsigned long)
+CortexService[0x101de6780] <+284>: ldr    x0, [x20]
+CortexService[0x101de6784] <+288>: ldrb   w8, [x0, #0x30]
+CortexService[0x101de6788] <+292>: cbz    w8, 0x101de6794           ; <+304>
+CortexService[0x101de678c] <+296>: mov    w1, #0x20                 ; =32
+CortexService[0x101de6790] <+300>: bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101de6794] <+304>: add    x0, sp, #0x20
+CortexService[0x101de6798] <+308>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101de679c] <+312>: b      0x101de66f4               ; <+144>
+CortexService[0x101de67a0] <+316>: mov    x19, x0
+CortexService[0x101de67a4] <+320>: add    x0, sp, #0x20
+CortexService[0x101de67a8] <+324>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101de67ac] <+328>: mov    x0, x19
+CortexService[0x101de67b0] <+332>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+(lldb) disassemble -n Cortex::Database::MetaDocumentUpdater::addChanges
+CortexService`Cortex::Database::MetaDocumentUpdater::addChanges:
+CortexService[0x101dd225c] <+0>:   sub    sp, sp, #0x50
+CortexService[0x101dd2260] <+4>:   stp    x22, x21, [sp, #0x20]
+CortexService[0x101dd2264] <+8>:   stp    x20, x19, [sp, #0x30]
+CortexService[0x101dd2268] <+12>:  stp    x29, x30, [sp, #0x40]
+CortexService[0x101dd226c] <+16>:  add    x29, sp, #0x40
+CortexService[0x101dd2270] <+20>:  mov    x20, x1
+CortexService[0x101dd2274] <+24>:  mov    x19, x0
+CortexService[0x101dd2278] <+28>:  add    x0, x0, #0x10
+CortexService[0x101dd227c] <+32>:  strb   wzr, [sp, #0x10]
+CortexService[0x101dd2280] <+36>:  str    x0, [sp, #0x8]
+CortexService[0x101dd2284] <+40>:  ldr    x8, [x19, #0x10]
+CortexService[0x101dd2288] <+44>:  cbnz   x8, 0x101dd229c           ; <+64>
+CortexService[0x101dd228c] <+48>:  mov    w9, #0x1                  ; =1
+CortexService[0x101dd2290] <+52>:  casa   x8, x9, [x0]
+CortexService[0x101dd2294] <+56>:  cmp    x8, #0x0
+CortexService[0x101dd2298] <+60>:  b.eq   0x101dd22a0               ; <+68>
+CortexService[0x101dd229c] <+64>:  bl     0x1024b4600               ; symbol stub for: QBasicMutex::lockInternal()
+CortexService[0x101dd22a0] <+68>:  mov    w8, #0x1                  ; =1
+CortexService[0x101dd22a4] <+72>:  strb   w8, [sp, #0x10]
+CortexService[0x101dd22a8] <+76>:  add    x0, x19, #0x18
+CortexService[0x101dd22ac] <+80>:  add    x2, sp, #0x7
+CortexService[0x101dd22b0] <+84>:  mov    x1, x20
+CortexService[0x101dd22b4] <+88>:  bl     0x100152768               ; ___lldb_unnamed_symbol_100152768
+CortexService[0x101dd22b8] <+92>:  ldr    x0, [sp, #0x8]
+CortexService[0x101dd22bc] <+96>:  ldr    x8, [x0]
+CortexService[0x101dd22c0] <+100>: cbz    x8, 0x101dd2350           ; <+244>
+CortexService[0x101dd22c4] <+104>: mov    w22, #0x1                 ; =1
+CortexService[0x101dd22c8] <+108>: mov    w8, #0x1                  ; =1
+CortexService[0x101dd22cc] <+112>: casl   x8, xzr, [x0]
+CortexService[0x101dd22d0] <+116>: cmp    x8, #0x1
+CortexService[0x101dd22d4] <+120>: b.eq   0x101dd22dc               ; <+128>
+CortexService[0x101dd22d8] <+124>: bl     0x1024b460c               ; symbol stub for: QBasicMutex::unlockInternal()
+CortexService[0x101dd22dc] <+128>: add    x8, sp, #0x8
+CortexService[0x101dd22e0] <+132>: add    x20, x8, #0x8
+CortexService[0x101dd22e4] <+136>: add    x21, x8, #0x10
+CortexService[0x101dd22e8] <+140>: stp    xzr, xzr, [sp, #0x8]
+CortexService[0x101dd22ec] <+144>: adrp   x8, 5101
+CortexService[0x101dd22f0] <+148>: add    x8, x8, #0xd58            ; guard variable for arma::Datum<double>::nan + 120
+CortexService[0x101dd22f4] <+152>: str    x8, [sp, #0x18]
+CortexService[0x101dd22f8] <+156>: mov    w0, #0x20                 ; =32
+CortexService[0x101dd22fc] <+160>: bl     0x1024b7660               ; symbol stub for: operator new(unsigned long)
+CortexService[0x101dd2300] <+164>: mov    x1, x0
+CortexService[0x101dd2304] <+168>: adrp   x8, 0
+CortexService[0x101dd2308] <+172>: add    x8, x8, #0x728            ; ___lldb_unnamed_symbol_101dd2728
+CortexService[0x101dd230c] <+176>: str    w22, [x0]
+CortexService[0x101dd2310] <+180>: adrp   x9, 0
+CortexService[0x101dd2314] <+184>: add    x9, x9, #0x54             ; Cortex::Database::MetaDocumentUpdater::onDatabaseUpdated()
+CortexService[0x101dd2318] <+188>: stp    x8, x9, [x0, #0x8]
+CortexService[0x101dd231c] <+192>: str    xzr, [x0, #0x18]
+CortexService[0x101dd2320] <+196>: add    x4, sp, #0x8
+CortexService[0x101dd2324] <+200>: mov    x0, x19
+CortexService[0x101dd2328] <+204>: mov    w2, #0x2                  ; =2
+CortexService[0x101dd232c] <+208>: mov    w3, #0x1                  ; =1
+CortexService[0x101dd2330] <+212>: mov    x5, x20
+CortexService[0x101dd2334] <+216>: mov    x6, x21
+CortexService[0x101dd2338] <+220>: bl     0x1024b47f8               ; symbol stub for: QMetaObject::invokeMethodImpl(QObject*, QtPrivate::QSlotObjectBase*, Qt::ConnectionType, long long, void const* const*, char const* const*, QtPrivate::QMetaTypeInterface const* const*)
+CortexService[0x101dd233c] <+224>: ldp    x29, x30, [sp, #0x40]
+CortexService[0x101dd2340] <+228>: ldp    x20, x19, [sp, #0x30]
+CortexService[0x101dd2344] <+232>: ldp    x22, x21, [sp, #0x20]
+CortexService[0x101dd2348] <+236>: add    sp, sp, #0x50
+CortexService[0x101dd234c] <+240>: ret
+CortexService[0x101dd2350] <+244>: bl     0x10231bba0               ; ___lldb_unnamed_symbol_10231bba0
+CortexService[0x101dd2354] <+248>: mov    x19, x0
+CortexService[0x101dd2358] <+252>: add    x0, sp, #0x8
+CortexService[0x101dd235c] <+256>: bl     0x10011f1bc               ; ___lldb_unnamed_symbol_10011f1bc
+CortexService[0x101dd2360] <+260>: mov    x0, x19
+CortexService[0x101dd2364] <+264>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+(lldb) quit
