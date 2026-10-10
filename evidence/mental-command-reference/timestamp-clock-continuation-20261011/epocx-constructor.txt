@@ -1,0 +1,29 @@
+(lldb) target create --arch arm64 /Applications/EmotivApps/EMOTIV\ Launcher.app/Contents/MacOS/CortexService
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -n Cortex::DataProcessing::EpocXDataProcessing::EpocXDataProcessing
+CortexService`Cortex::DataProcessing::EpocXDataProcessing::EpocXDataProcessing:
+CortexService[0x1010bcac8] <+0>:  stp    x20, x19, [sp, #-0x20]!
+CortexService[0x1010bcacc] <+4>:  stp    x29, x30, [sp, #0x10]
+CortexService[0x1010bcad0] <+8>:  add    x29, sp, #0x10
+CortexService[0x1010bcad4] <+12>: mov    x20, x1
+CortexService[0x1010bcad8] <+16>: mov    x19, x0
+CortexService[0x1010bcadc] <+20>: bl     0x10106d82c               ; Cortex::DataProcessing::DataProcessing::DataProcessing()
+CortexService[0x1010bcae0] <+24>: adrp   x8, 8325
+CortexService[0x1010bcae4] <+28>: add    x8, x8, #0xb8             ; vtable for Cortex::DataProcessing::EpocXDataProcessing + 16
+CortexService[0x1010bcae8] <+32>: str    x8, [x0], #0x48
+CortexService[0x1010bcaec] <+36>: mov    x1, x20
+CortexService[0x1010bcaf0] <+40>: bl     0x101059bac               ; ___lldb_unnamed_symbol_101059bac
+CortexService[0x1010bcaf4] <+44>: ldr    x8, [x19]
+CortexService[0x1010bcaf8] <+48>: ldr    x8, [x8, #0x28]
+CortexService[0x1010bcafc] <+52>: mov    x0, x19
+CortexService[0x1010bcb00] <+56>: blr    x8
+CortexService[0x1010bcb04] <+60>: mov    x0, x19
+CortexService[0x1010bcb08] <+64>: ldp    x29, x30, [sp, #0x10]
+CortexService[0x1010bcb0c] <+68>: ldp    x20, x19, [sp], #0x20
+CortexService[0x1010bcb10] <+72>: ret
+CortexService[0x1010bcb14] <+76>: mov    x20, x0
+CortexService[0x1010bcb18] <+80>: mov    x0, x19
+CortexService[0x1010bcb1c] <+84>: bl     0x10106d88c               ; Cortex::DataProcessing::DataProcessing::~DataProcessing()
+CortexService[0x1010bcb20] <+88>: mov    x0, x20
+CortexService[0x1010bcb24] <+92>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+(lldb) quit

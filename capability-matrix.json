@@ -1,6 +1,6 @@
 {
   "schema_version": "eeg.capability-matrix.v1",
-  "checkpoint": "2026-09-15",
+  "checkpoint": "2026-10-11",
   "source_inventory": {
     "path": "archive/current-state/local-app-analysis/all-symbols.txt",
     "lines": 19935
@@ -163,8 +163,8 @@
     {
       "id": "capability-05",
       "capability": "Timebase, buffering and interpolation \u00b7 Collect",
-      "status": "implemented",
-      "status_scope": "Current loss/timing subset; interpolation unimplemented",
+      "status": "tested",
+      "status_scope": "Bounded offline timestamp/search/interpolation adapters tested; full stage and physical clock qualification pending",
       "symbol_evidence": {
         "readable_names_and_links": "[DataTimeStamp](../archive/current-state/local-app-analysis/all-symbols.txt#L2269), [DataInterpolation](../archive/current-state/local-app-analysis/all-symbols.txt#L2276), [DataTimeStampBuffer](../archive/current-state/local-app-analysis/all-symbols.txt#L2284), [SynchronisedSubscription](../archive/current-state/local-app-analysis/all-symbols.txt#L2330)",
         "references": [
@@ -186,12 +186,12 @@
           }
         ]
       },
-      "body_evidence": "Symbol/class evidence only; routine bodies not established for this category. Oct11 static SamplesBuffer and SynchronisedSubscription bodies now trace complete interval search, inclusive endpoints, covered empty gaps, clipped measured fallback, cached secondary starts and direction-dependent closest-timestamp ties. DataInterpolation counter-distance admission1...65 and temporal scalar linear/FMA kernel are traced separately from Insight spatial channel synthesis.",
-      "missing_parameters_assets_dependencies": "Physical host/device clock characterization, full package interpolation orchestration, same-input reference vectors and prolonged native fault/load measurements. Queued I/O is implemented; its existence does not prove sustained hardware throughput.",
-      "current_implementation": "Arrival timestamps/counters and canonical nonoverlapping windows preserve raw measurements. Native EEGQueuedRecordingStore and EEGLiveInference provide ordered bounded recording/inference queues, generation invalidation and explicit overload/error states. EEGRecordingClockAnchor brackets one host wall-clock observation using receipt-clock readings; clock accuracy remains unmeasured. No reconstructed missing EEG is presented as measured data. Stored v1 clock anchors now decode through validated provenance and numeric checks; this does not select an export timeline or establish clock accuracy. The canonical completed-recording clock reader returns an optional anchor, sample count and file digest; malformed, duplicate or late anchors are rejected without changing raw replay. Analysis, spectrum validation and nominal export share an overflow-safe index/counter adjacency predicate. Finalized Int.max-to-zero fixtures preserve raw samples, reject continuity for analysis and split nominal segments without integer traps; ordinary counter wrap remains supported. See docs/DETECTOR_TIMING.md. ReferenceTimestampSearch and ReferenceTimestampRouting implement these bounded timestamp/index rules on immutable retained arrays; tests compose actual search outcomes through subscription cadence and raw diagnostic features. Transport clock production, concurrent buffer mutation and physical qualification remain separate. ReferenceEEGInterpolation implements scalar missing-sample values and counter gate with explicit endpoints/modulus. Its separate Insight helper preserves measured rows, appends exact arithmetic synthesized channels and takes explicit UInt64 jitter draws; no Insight hardware support or automatic EPOC X routing is implied.",
+      "body_evidence": "Oct11 static SamplesBuffer and SynchronisedSubscription bodies now trace complete interval search, inclusive endpoints, covered empty gaps, clipped measured fallback, cached secondary starts and direction-dependent closest-timestamp ties. DataInterpolation counter-distance admission1...65 and temporal scalar linear/FMA kernel are traced separately from Insight spatial channel synthesis. Clock continuation traces successful last-EEG anchor selection, counter-driven FMA/unrounded accumulation, decimal ties-away rounding and explicit clock-pair synchronization. Gap/CQ composition traces current-real CQ storage before generated samples, retained cache and strict processing-call history reset. Continuation proves constructor precision/history/transition values, anchored epoch-steady clock source, previous-versus-next adaptive rates, pre-offset timestamp retention and EPOC X stage identities/order.",
+      "missing_parameters_assets_dependencies": "Complete startup/reset/history repair, motion/offline routes, upstream caller-selected positive time source, full outer-stage integration, concurrent retention and same-input reference vectors; physical host/device clock and fault/load characterization.",
+      "current_implementation": "Arrival timestamps/counters and canonical nonoverlapping windows preserve raw measurements. Native EEGQueuedRecordingStore and EEGLiveInference provide ordered bounded recording/inference queues, generation invalidation and explicit overload/error states. EEGRecordingClockAnchor brackets one host wall-clock observation using receipt-clock readings; clock accuracy remains unmeasured. No reconstructed missing EEG is presented as measured data. Stored v1 clock anchors now decode through validated provenance and numeric checks; this does not select an export timeline or establish clock accuracy. The canonical completed-recording clock reader returns an optional anchor, sample count and file digest; malformed, duplicate or late anchors are rejected without changing raw replay. Analysis, spectrum validation and nominal export share an overflow-safe index/counter adjacency predicate. Finalized Int.max-to-zero fixtures preserve raw samples, reject continuity for analysis and split nominal segments without integer traps; ordinary counter wrap remains supported. See docs/DETECTOR_TIMING.md. ReferenceTimestampSearch and ReferenceTimestampRouting implement these bounded timestamp/index rules on immutable retained arrays; tests compose actual search outcomes through subscription cadence and raw diagnostic features. Transport clock production, concurrent buffer mutation and physical qualification remain separate. ReferenceEEGInterpolation implements scalar missing-sample values and counter gate with explicit endpoints/modulus. Its separate Insight helper preserves measured rows, appends exact arithmetic synthesized channels and takes explicit UInt64 jitter draws; no Insight hardware support or automatic EPOC X routing is implied. ReferenceTimestampClock provides explicit caller-supplied anchor/rate/precision/history and clock correction contracts. ReferenceTypeSevenGapReconstruction composes counters, scalar interpolation, retained raw CQ cache and bounded type16 processing-call history. Authored composition test routes generated/real provenance through clock/history and timestamp search into spectral diagnostics without a fitted model or command dispatch. Neither adapter changes live acquisition or invents missing package fields. Explicit pure adaptive-rate and hardware-offset helpers preserve current-batch versus next-batch rates and pre-offset versus shifted timestamps; they do not replace live acquisition. Short paced authored recording/inference checks completed without discards; these are not Bluetooth or long-duration hardware qualification.",
       "target_component": "Acquisition service owns timing and loss; derived interpolation, if added, must remain separate and flagged in recording metadata.",
       "acceptance_gate": "Fault injection, latency/memory measurements, explicit gap counts; interpolated samples never masquerade as measured samples.",
-      "delivery_notes": "Native queue implementations and software tests exist. Physical startup, sleep/wake, clock drift, sustained throughput and fault qualification remain pending; interpolation is unimplemented.",
+      "delivery_notes": "Software-tested bounded subsets only. Full constructor/reset/adaptive-rate/motion/offline processing, active configuration, same-input reference vectors, physical clocks, sleep/wake and sustained fault/load qualification remain pending.",
       "vendor_equivalence_claimed": false,
       "native_hardware_validated": false,
       "software_evidence": [
@@ -209,7 +209,13 @@
         "evidence/mental-command-reference/timestamp-search-continuation-20261011/TRACE.md",
         "apple/Sources/EEGCore/ReferenceEEGInterpolation.swift",
         "apple/Tests/EEGCoreTests/ReferenceEEGInterpolationTests.swift",
-        "evidence/mental-command-reference/interpolation-continuation-20261011/TRACE.md"
+        "evidence/mental-command-reference/interpolation-continuation-20261011/TRACE.md",
+        "apple/Sources/EEGCore/ReferenceTimestampClock.swift",
+        "apple/Tests/EEGCoreTests/ReferenceTimestampClockTests.swift",
+        "evidence/mental-command-reference/timestamp-clock-continuation-20261011/TRACE.md",
+        "apple/Sources/EEGCore/ReferenceTypeSevenGapReconstruction.swift",
+        "apple/Tests/EEGCoreTests/ReferenceTypeSevenGapReconstructionTests.swift",
+        "evidence/mental-command-reference/gap-cq-composition-20261011/TRACE.md"
       ]
     },
     {
@@ -238,9 +244,9 @@
           }
         ]
       },
-      "body_evidence": "Raw CQ packet extraction plus body-derived scaling, configured class thresholds and lowest-three aggregation are traced. Current type-7 constructor calibration and verified hardware configuration are traced in the Oct11 quality continuation evidence. Signal-quality estimator bodies and physical contact transitions remain unqualified. Oct11 continuation also traces packet-type/counter gates, counter-mod64 CQ slots, remembered raw/mapped state, batch-final CQ broadcast and final-row versus epoch-minimum detector CQ routing.",
-      "missing_parameters_assets_dependencies": "Synchronous raw/class/overall Cortex outputs and controlled contact-transition timing/labels across sessions; separate signal-quality algorithm evidence. Constructor states are not physical readiness.",
-      "current_implementation": "Raw per-channel contact observations; Python CQ extraction matches reference raw values. Quality-class mapping remains unvalidated. Comparison-only ReferenceContactQualityMapping now composes explicit hardware scaling, configured normalization/thresholds, per-channel states and worst-three aggregate while preserving raw/mapped diagnostics. Synthetic numerical tests do not qualify live contact transitions or signal quality. ReferenceTypeSevenCQRecipe pins the verified hardware tuple and constructor calibration with explicit CQ ordinal versus EEG row mapping; other configurations reject. ReferenceContactQualityRouting implements those bounded routes for the verified type-7 recipe, preserving original raw observations and explicit extracted packet inputs; authored tests cover ignored slots, overwrites, batch broadcast, malformed atomic rejection and special metadata IDs.",
+      "body_evidence": "Raw CQ packet extraction plus body-derived scaling, configured class thresholds and lowest-three aggregation are traced. Current type-7 constructor calibration and verified hardware configuration are traced in the Oct11 quality continuation evidence. Physical contact transitions remain unqualified. Oct11 continuation also traces packet-type/counter gates, counter-mod64 CQ slots, remembered raw/mapped state, batch-final CQ broadcast and final-row versus epoch-minimum detector CQ routing. Fresh SQ bodies trace uncentered RMS, adjacent-difference RMS, range, scalar Gaussian logPDF thresholding, RMS gates and CQ fusion. Parameter loader proves external per-channel model and active recipe dependencies; complete estimator is not claimed.",
+      "missing_parameters_assets_dependencies": "Synchronous raw/class/overall reference outputs and controlled contact transitions. Exact SQ comparison needs locally retained per-channel selectedFeatures, multivariateMeans/covariances and scoreThresholds plus active filter/window/step/band/SMQ settings. Full filter/band/window/history/lifecycle orchestration and Gaussian edge paths remain unqualified; no vendor model asset is bundled.",
+      "current_implementation": "Raw per-channel contact observations; Python CQ extraction matches reference raw values. Quality-class mapping remains unvalidated. Comparison-only ReferenceContactQualityMapping now composes explicit hardware scaling, configured normalization/thresholds, per-channel states and worst-three aggregate while preserving raw/mapped diagnostics. Synthetic numerical tests do not qualify live contact transitions or signal quality. ReferenceTypeSevenCQRecipe pins the verified hardware tuple and constructor calibration with explicit CQ ordinal versus EEG row mapping; other configurations reject. ReferenceContactQualityRouting implements those bounded routes for the verified type-7 recipe, preserving original raw observations and explicit extracted packet inputs; authored tests cover ignored slots, overwrites, batch broadcast, malformed atomic rejection and special metadata IDs. ReferenceSignalQualityKernel adds bounded explicit-window feature arithmetic and scalar logDensity/threshold/CQ-fusion calculations with analytic tests. It supplies no model, deployed recipe, CQ history scheduler or physical readiness indication.",
       "target_component": "Quality service distinguishes transport health, raw contact, signal artifacts and validated electrode-contact labels.",
       "acceptance_gate": "Controlled electrode-contact changes with reference labels across sessions; missing evidence produces unavailable, not an invented green score.",
       "delivery_notes": "Raw observations implemented; calibrated classes pending.",
@@ -255,7 +261,10 @@
         "evidence/mental-command-reference/quality-recipe-continuation-20261011/TRACE.md",
         "apple/Sources/EEGCore/ReferenceContactQualityRouting.swift",
         "apple/Tests/EEGCoreTests/ReferenceContactQualityRoutingTests.swift",
-        "evidence/mental-command-reference/quality-routing-continuation-20261011/TRACE.md"
+        "evidence/mental-command-reference/quality-routing-continuation-20261011/TRACE.md",
+        "apple/Sources/EEGCore/ReferenceSignalQualityKernel.swift",
+        "apple/Tests/EEGCoreTests/ReferenceSignalQualityKernelTests.swift",
+        "evidence/mental-command-reference/signal-quality-audit-20261011/TRACE.md"
       ]
     },
     {

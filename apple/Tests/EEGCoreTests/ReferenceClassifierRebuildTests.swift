@@ -100,4 +100,27 @@ final class ReferenceClassifierRebuildTests: XCTestCase {
         XCTAssertEqual(try errors.get(actions: [0, 1], channels: [0])?.reuseCount, 1)
         XCTAssertNotNil(ordinary.get([0, 1]))
     }
+
+    func testPublicFitWithSingularInputRetainsScoreableSubspace() throws {
+        // Regression at the full fitter boundary: singular input is not the same
+        // as a singular final class density. No variance floor is introduced.
+        let covariance = [[4.0, 4, 0], [4, 4, 0], [0, 0, 2]]
+        let means = [[2.0, 2, 6], [4, 4, 6]]
+        let classes = (0..<2).map { index in
+            ReferenceSignatureTraining.ClassAlgebra(classReferenceID: Int32(index), distributions: [
+                .init(counts: [20,20,20], mean: means[index], covariance: covariance, updateTime: UInt32(index))])
+        }
+        let signature = try ReferenceClassifierRebuild.fit(classes,
+            featureChannelMetadata: [[0,0],[1,0],[2,0]], maximumClasses: 2,
+            maximumCanonicalDiagonalAdditions: 3)
+        let parameters = ReferenceGaussianPipeline.Parameters(pca: signature.pca,
+            canonical: signature.canonical, canonicalClassCount: 2,
+            classes: signature.classes, classPriors: [1,1], neutralScale: 1)
+        for index in means.indices {
+            let features = signature.preparation.selectedCoordinates.map { means[index][$0] }
+            let result = try ReferenceGaussianPipeline.infer(featureVector: features, parameters: parameters)
+            XCTAssertGreaterThan(result.classDensity[index], result.classDensity[1-index])
+            XCTAssertTrue(result.posterior.allSatisfy(\.isFinite))
+        }
+    }
 }

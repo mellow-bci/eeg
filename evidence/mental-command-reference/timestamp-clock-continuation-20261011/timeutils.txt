@@ -1,0 +1,175 @@
+(lldb) target create --arch arm64 /Applications/EmotivApps/EMOTIV\ Launcher.app/Contents/MacOS/CortexService
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -n Cortex::Core::TimeUtils::getCurrEpochSteady
+CortexService`Cortex::Core::TimeUtils::getCurrEpochSteady:
+CortexService[0x101fca6d8] <+0>:   stp    x20, x19, [sp, #-0x20]!
+CortexService[0x101fca6dc] <+4>:   stp    x29, x30, [sp, #0x10]
+CortexService[0x101fca6e0] <+8>:   add    x29, sp, #0x10
+CortexService[0x101fca6e4] <+12>:  mov    x19, x0
+CortexService[0x101fca6e8] <+16>:  bl     0x1024b7390               ; symbol stub for: std::__1::chrono::steady_clock::now()
+CortexService[0x101fca6ec] <+20>:  mov    x8, #0xf7cf               ; =63439
+CortexService[0x101fca6f0] <+24>:  movk   x8, #0xe353, lsl #16
+CortexService[0x101fca6f4] <+28>:  movk   x8, #0x9ba5, lsl #32
+CortexService[0x101fca6f8] <+32>:  movk   x8, #0x20c4, lsl #48
+CortexService[0x101fca6fc] <+36>:  smulh  x8, x0, x8
+CortexService[0x101fca700] <+40>:  asr    x9, x8, #7
+CortexService[0x101fca704] <+44>:  add    x8, x9, x8, lsr #63
+CortexService[0x101fca708] <+48>:  scvtf  d0, x8
+CortexService[0x101fca70c] <+52>:  mov    x8, #0x848000000000       ; =145685290680320
+CortexService[0x101fca710] <+56>:  movk   x8, #0x412e, lsl #48
+CortexService[0x101fca714] <+60>:  fmov   d1, x8
+CortexService[0x101fca718] <+64>:  fdiv   d0, d0, d1
+CortexService[0x101fca71c] <+68>:  fmul   d0, d0, d1
+CortexService[0x101fca720] <+72>:  fcvtzs d0, d0
+CortexService[0x101fca724] <+76>:  scvtf  d0, d0
+CortexService[0x101fca728] <+80>:  fdiv   d0, d0, d1
+CortexService[0x101fca72c] <+84>:  ldp    d1, d2, [x19]
+CortexService[0x101fca730] <+88>:  fadd   d0, d1, d0
+CortexService[0x101fca734] <+92>:  fsub   d0, d0, d2
+CortexService[0x101fca738] <+96>:  ldp    x29, x30, [sp, #0x10]
+CortexService[0x101fca73c] <+100>: ldp    x20, x19, [sp], #0x20
+CortexService[0x101fca740] <+104>: ret
+(lldb) disassemble -n Cortex::Core::TimeUtils::getCurrSteadyClock
+CortexService`Cortex::Core::TimeUtils::getCurrSteadyClock:
+CortexService[0x101fca684] <+0>:  stp    x29, x30, [sp, #-0x10]!
+CortexService[0x101fca688] <+4>:  mov    x29, sp
+CortexService[0x101fca68c] <+8>:  bl     0x1024b7390               ; symbol stub for: std::__1::chrono::steady_clock::now()
+CortexService[0x101fca690] <+12>: mov    x8, #0xf7cf               ; =63439
+CortexService[0x101fca694] <+16>: movk   x8, #0xe353, lsl #16
+CortexService[0x101fca698] <+20>: movk   x8, #0x9ba5, lsl #32
+CortexService[0x101fca69c] <+24>: movk   x8, #0x20c4, lsl #48
+CortexService[0x101fca6a0] <+28>: smulh  x8, x0, x8
+CortexService[0x101fca6a4] <+32>: asr    x9, x8, #7
+CortexService[0x101fca6a8] <+36>: add    x8, x9, x8, lsr #63
+CortexService[0x101fca6ac] <+40>: scvtf  d0, x8
+CortexService[0x101fca6b0] <+44>: mov    x8, #0x848000000000       ; =145685290680320
+CortexService[0x101fca6b4] <+48>: movk   x8, #0x412e, lsl #48
+CortexService[0x101fca6b8] <+52>: fmov   d1, x8
+CortexService[0x101fca6bc] <+56>: fdiv   d0, d0, d1
+CortexService[0x101fca6c0] <+60>: fmul   d0, d0, d1
+CortexService[0x101fca6c4] <+64>: fcvtzs d0, d0
+CortexService[0x101fca6c8] <+68>: scvtf  d0, d0
+CortexService[0x101fca6cc] <+72>: fdiv   d0, d0, d1
+CortexService[0x101fca6d0] <+76>: ldp    x29, x30, [sp], #0x10
+CortexService[0x101fca6d4] <+80>: ret
+(lldb) disassemble -n Cortex::Core::getEpochNow
+CortexService`Cortex::Core::getEpochNow:
+CortexService[0x101fca64c] <+0>:  stp    x29, x30, [sp, #-0x10]!
+CortexService[0x101fca650] <+4>:  mov    x29, sp
+CortexService[0x101fca654] <+8>:  bl     0x1024b73a8               ; symbol stub for: std::__1::chrono::system_clock::now()
+CortexService[0x101fca658] <+12>: scvtf  d0, x0
+CortexService[0x101fca65c] <+16>: mov    x8, #0x848000000000       ; =145685290680320
+CortexService[0x101fca660] <+20>: movk   x8, #0x412e, lsl #48
+CortexService[0x101fca664] <+24>: fmov   d1, x8
+CortexService[0x101fca668] <+28>: fdiv   d0, d0, d1
+CortexService[0x101fca66c] <+32>: fmul   d0, d0, d1
+CortexService[0x101fca670] <+36>: fcvtzs d0, d0
+CortexService[0x101fca674] <+40>: scvtf  d0, d0
+CortexService[0x101fca678] <+44>: fdiv   d0, d0, d1
+CortexService[0x101fca67c] <+48>: ldp    x29, x30, [sp], #0x10
+CortexService[0x101fca680] <+52>: ret
+(lldb) image lookup -rn Cortex::DataProcessing::.*process
+51 matches found in /Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService:
+        Address: CortexService[0x0000000101077970] (CortexService.__TEXT.__text + 17222000)
+        Summary: CortexService`Cortex::DataProcessing::TimesProcess::process(QList<Cortex::DataProcessing::ExtractedPackage>&, double)
+        Address: CortexService[0x00000001010f97c4] (CortexService.__TEXT.__text + 17754052)
+        Summary: CortexService`Cortex::DataProcessing::UpSampleRate::process(QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x0000000101075050] (CortexService.__TEXT.__text + 17211472)
+        Summary: CortexService`Cortex::DataProcessing::DataTimeStamp::processEeg(Cortex::DataProcessing::ExtractedPackage&, double)
+        Address: CortexService[0x0000000101075198] (CortexService.__TEXT.__text + 17211800)
+        Summary: CortexService`Cortex::DataProcessing::DataTimeStamp::processMotion(Cortex::DataProcessing::ExtractedPackage&, double)
+        Address: CortexService[0x0000000101073848] (CortexService.__TEXT.__text + 17205320)
+        Summary: CortexService`Cortex::DataProcessing::DataTimeStamp::processOfflineData(QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x0000000101073310] (CortexService.__TEXT.__text + 17203984)
+        Summary: CortexService`Cortex::DataProcessing::DataTimeStamp::process(QList<Cortex::DataProcessing::ExtractedPackage>&, double)
+        Address: CortexService[0x00000001010e194c] (CortexService.__TEXT.__text + 17656140)
+        Summary: CortexService`Cortex::DataProcessing::MN8DataOutput::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, Cortex::DeviceCore::DeviceData&)
+        Address: CortexService[0x00000001010f08b4] (CortexService.__TEXT.__text + 17717428)
+        Summary: CortexService`Cortex::DataProcessing::MNDDataOutput::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, Cortex::DeviceCore::DeviceData&)
+        Address: CortexService[0x000000010105a1f0] (CortexService.__TEXT.__text + 17101296)
+        Summary: CortexService`Cortex::DataProcessing::DataDecryption::processAES(QByteArray const&, unsigned char (&) [32], int)
+        Address: CortexService[0x0000000101059ebc] (CortexService.__TEXT.__text + 17100476)
+        Summary: CortexService`Cortex::DataProcessing::DataDecryption::processMotion(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x000000010106dcdc] (CortexService.__TEXT.__text + 17181916)
+        Summary: CortexService`Cortex::DataProcessing::DataProcessing::processMotion(QByteArray const&, Cortex::DeviceCore::DeviceData&, double)
+        Address: CortexService[0x000000010106dce4] (CortexService.__TEXT.__text + 17181924)
+        Summary: CortexService`Cortex::DataProcessing::DataProcessing::process(QByteArray const&, Cortex::DeviceCore::DeviceData&, double)
+        Address: CortexService[0x000000010107df0c] (CortexService.__TEXT.__text + 17248012)
+        Summary: CortexService`Cortex::DataProcessing::Epoc4DataOutput::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, Cortex::DeviceCore::DeviceData&)
+        Address: CortexService[0x00000001010b7940] (CortexService.__TEXT.__text + 17484096)
+        Summary: CortexService`Cortex::DataProcessing::EpocXDataOutput::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, Cortex::DeviceCore::DeviceData&)
+        Address: CortexService[0x00000001010c4cb8] (CortexService.__TEXT.__text + 17538232)
+        Summary: CortexService`Cortex::DataProcessing::Flex2DataOutput::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, Cortex::DeviceCore::DeviceData&)
+        Address: CortexService[0x000000010106152c] (CortexService.__TEXT.__text + 17130796)
+        Summary: CortexService`Cortex::DataProcessing::DataInterpolation::processSignalStrength(int, double)
+        Address: CortexService[0x00000001010600bc] (CortexService.__TEXT.__text + 17125564)
+        Summary: CortexService`Cortex::DataProcessing::DataInterpolation::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010acb84] (CortexService.__TEXT.__text + 17439620)
+        Summary: CortexService`Cortex::DataProcessing::EpocStdDataOutput::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, Cortex::DeviceCore::DeviceData&)
+        Address: CortexService[0x00000001010d3f50] (CortexService.__TEXT.__text + 17600336)
+        Summary: CortexService`Cortex::DataProcessing::InsightDataOutput::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, Cortex::DeviceCore::DeviceData&)
+        Address: CortexService[0x00000001010de300] (CortexService.__TEXT.__text + 17642240)
+        Summary: CortexService`Cortex::DataProcessing::MN8DataDecryption::process(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010e98e0] (CortexService.__TEXT.__text + 17688800)
+        Summary: CortexService`Cortex::DataProcessing::MNDDataDecryption::process(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x0000000101101b94] (CortexService.__TEXT.__text + 17787796)
+        Summary: CortexService`Cortex::DataProcessing::XtrodesDataOutput::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, Cortex::DeviceCore::DeviceData&)
+        Address: CortexService[0x0000000101092e50] (CortexService.__TEXT.__text + 17333840)
+        Summary: CortexService`Cortex::DataProcessing::EpocFlexDataOutput::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, Cortex::DeviceCore::DeviceData&)
+        Address: CortexService[0x000000010109ffb8] (CortexService.__TEXT.__text + 17387448)
+        Summary: CortexService`Cortex::DataProcessing::EpocPlusDataOutput::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, Cortex::DeviceCore::DeviceData&)
+        Address: CortexService[0x0000000101077f2c] (CortexService.__TEXT.__text + 17223468)
+        Summary: CortexService`Cortex::DataProcessing::DataTimeStampBuffer::processMotion(QList<Cortex::DataProcessing::ExtractedPackage>&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x000000010107768c] (CortexService.__TEXT.__text + 17221260)
+        Summary: CortexService`Cortex::DataProcessing::DataTimeStampBuffer::process(QList<Cortex::DataProcessing::ExtractedPackage>&, double)
+        Address: CortexService[0x0000000101079d84] (CortexService.__TEXT.__text + 17231236)
+        Summary: CortexService`Cortex::DataProcessing::DataValueCorrection::process(QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x000000010107bec8] (CortexService.__TEXT.__text + 17239752)
+        Summary: CortexService`Cortex::DataProcessing::Epoc4DataDecryption::processEeg(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x000000010107c1ec] (CortexService.__TEXT.__text + 17240556)
+        Summary: CortexService`Cortex::DataProcessing::Epoc4DataDecryption::processMot(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x000000010107bc50] (CortexService.__TEXT.__text + 17239120)
+        Summary: CortexService`Cortex::DataProcessing::Epoc4DataDecryption::process(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010b5940] (CortexService.__TEXT.__text + 17475904)
+        Summary: CortexService`Cortex::DataProcessing::EpocXDataDecryption::processMotion(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010b54a0] (CortexService.__TEXT.__text + 17474720)
+        Summary: CortexService`Cortex::DataProcessing::EpocXDataDecryption::process(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010bcf14] (CortexService.__TEXT.__text + 17506068)
+        Summary: CortexService`Cortex::DataProcessing::EpocXDataProcessing::processMotion(QByteArray const&, Cortex::DeviceCore::DeviceData&, double)
+        Address: CortexService[0x00000001010c28fc] (CortexService.__TEXT.__text + 17529084)
+        Summary: CortexService`Cortex::DataProcessing::Flex2DataDecryption::process(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010ec134] (CortexService.__TEXT.__text + 17699124)
+        Summary: CortexService`Cortex::DataProcessing::MNDDataInterpolation::processEEG(Cortex::DataProcessing::ExtractedPackage const&, QList<Cortex::DataProcessing::ExtractedPackage>&, int&)
+        Address: CortexService[0x00000001010ecd70] (CortexService.__TEXT.__text + 17702256)
+        Summary: CortexService`Cortex::DataProcessing::MNDDataInterpolation::processDataPart(Cortex::DataProcessing::ExtractedPackage const&, Cortex::DataProcessing::DataInterpolation::DATA_TYPE_INFO const&, QList<Cortex::DataProcessing::ExtractedPackage>&, QList<Cortex::DataProcessing::ExtractedPackage>&, int&, bool&)
+        Address: CortexService[0x00000001010ebfe0] (CortexService.__TEXT.__text + 17698784)
+        Summary: CortexService`Cortex::DataProcessing::MNDDataInterpolation::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010aaa24] (CortexService.__TEXT.__text + 17431076)
+        Summary: CortexService`Cortex::DataProcessing::EpocStdDataDecryption::process(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010cdf28] (CortexService.__TEXT.__text + 17575720)
+        Summary: CortexService`Cortex::DataProcessing::InsightDataDecryption::process(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010ff6ec] (CortexService.__TEXT.__text + 17778412)
+        Summary: CortexService`Cortex::DataProcessing::XtrodesDataDecryption::processPacket(QByteArray const&, QByteArray&, Cortex::DataProcessing::XtrodesDataDecryption::X_PACK&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010ff3f0] (CortexService.__TEXT.__text + 17777648)
+        Summary: CortexService`Cortex::DataProcessing::XtrodesDataDecryption::process(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010882a8] (CortexService.__TEXT.__text + 17289896)
+        Summary: CortexService`Cortex::DataProcessing::EpocFlexDataDecryption::process(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x000000010109c740] (CortexService.__TEXT.__text + 17372992)
+        Summary: CortexService`Cortex::DataProcessing::EpocPlusDataDecryption::processMotion(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x000000010109c4c8] (CortexService.__TEXT.__text + 17372360)
+        Summary: CortexService`Cortex::DataProcessing::EpocPlusDataDecryption::process(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x00000001010a5e20] (CortexService.__TEXT.__text + 17411616)
+        Summary: CortexService`Cortex::DataProcessing::EpocPlusDataProcessing::processMotion(QByteArray const&, Cortex::DeviceCore::DeviceData&, double)
+        Address: CortexService[0x0000000101069638] (CortexService.__TEXT.__text + 17163832)
+        Summary: CortexService`Cortex::DataProcessing::DataOutputContactQuality::processMND(QList<Cortex::DataProcessing::ExtractedPackage>&, double&)
+        Address: CortexService[0x0000000101068c24] (CortexService.__TEXT.__text + 17161252)
+        Summary: CortexService`Cortex::DataProcessing::DataOutputContactQuality::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, QMap<int, Cortex::Core::ContactQualityValue>&, double&)
+        Address: CortexService[0x000000010108be68] (CortexService.__TEXT.__text + 17305192)
+        Summary: CortexService`Cortex::DataProcessing::EpocFlexDataDecryption_v2::process(QByteArray const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x000000010108e97c] (CortexService.__TEXT.__text + 17316220)
+        Summary: CortexService`Cortex::DataProcessing::EpocFlexDataInterpolation::processEEG(Cortex::DataProcessing::ExtractedPackage&, QList<Cortex::DataProcessing::ExtractedPackage>&, int&)
+        Address: CortexService[0x000000010108ef00] (CortexService.__TEXT.__text + 17317632)
+        Summary: CortexService`Cortex::DataProcessing::EpocFlexDataInterpolation::processMotion(Cortex::DataProcessing::ExtractedPackage&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+        Address: CortexService[0x000000010108e6e8] (CortexService.__TEXT.__text + 17315560)
+        Summary: CortexService`Cortex::DataProcessing::EpocFlexDataInterpolation::process(QList<Cortex::DataProcessing::ExtractedPackage> const&, QList<Cortex::DataProcessing::ExtractedPackage>&)
+(lldb) quit
