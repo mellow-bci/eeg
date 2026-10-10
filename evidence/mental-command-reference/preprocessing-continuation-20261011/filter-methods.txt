@@ -1,0 +1,100 @@
+(lldb) target create --arch arm64 "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) image lookup -rn RealTimeFilter
+19 matches found in /Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService:
+        Address: CortexService[0x0000000102134d50] (CortexService.__TEXT.__text + 34774352)
+        Summary: CortexService`QtSharedPointer::ExternalRefCountWithContiguousData<Cortex::Math::RealTimeFilter>::deleter(QtSharedPointer::ExternalRefCountData*)
+        Address: CortexService[0x0000000102134d58] (CortexService.__TEXT.__text + 34774360)
+        Summary: CortexService`QtSharedPointer::ExternalRefCountWithContiguousData<Cortex::Math::RealTimeFilter>::noDeleter(QtSharedPointer::ExternalRefCountData*)
+        Address: CortexService[0x000000010213474c] (CortexService.__TEXT.__text + 34772812)
+        Summary: CortexService`QtSharedPointer::ExternalRefCountWithContiguousData<Cortex::Math::NewRealTimeFilter>::deleter(QtSharedPointer::ExternalRefCountData*)
+        Address: CortexService[0x0000000102134754] (CortexService.__TEXT.__text + 34772820)
+        Summary: CortexService`QtSharedPointer::ExternalRefCountWithContiguousData<Cortex::Math::NewRealTimeFilter>::noDeleter(QtSharedPointer::ExternalRefCountData*)
+        Address: CortexService[0x0000000102141774] (CortexService.__TEXT.__text + 34826100)
+        Summary: CortexService`Cortex::Math::RealTimeFilter::setInitialValue(QList<double> const&, QList<double> const&)
+        Address: CortexService[0x0000000102141828] (CortexService.__TEXT.__text + 34826280)
+        Summary: CortexService`Cortex::Math::RealTimeFilter::resetInitialValue(double, double)
+        Address: CortexService[0x0000000102141870] (CortexService.__TEXT.__text + 34826352)
+        Summary: CortexService`Cortex::Math::RealTimeFilter::scaleInitialValue(double, double)
+        Address: CortexService[0x00000001021415c8] (CortexService.__TEXT.__text + 34825672)
+        Summary: CortexService`Cortex::Math::RealTimeFilter::init(int, QList<double> const&, QList<double> const&)
+        Address: CortexService[0x00000001021419b0] (CortexService.__TEXT.__text + 34826672)
+        Summary: CortexService`Cortex::Math::RealTimeFilter::filter(int, double const*, double*)
+        Address: CortexService[0x0000000102141690] (CortexService.__TEXT.__text + 34825872)
+        Summary: CortexService`Cortex::Math::RealTimeFilter::RealTimeFilter(int, QList<double> const&, QList<double> const&)
+        Address: CortexService[0x0000000102141598] (CortexService.__TEXT.__text + 34825624)
+        Summary: CortexService`Cortex::Math::RealTimeFilter::RealTimeFilter()
+        Address: CortexService[0x0000000102141088] (CortexService.__TEXT.__text + 34824328)
+        Summary: CortexService`Cortex::Math::NewRealTimeFilter::setInitialValue(QList<double> const&, QList<double> const&)
+        Address: CortexService[0x0000000102140d10] (CortexService.__TEXT.__text + 34823440)
+        Summary: CortexService`Cortex::Math::NewRealTimeFilter::resetInitialValue(int, double const*)
+        Address: CortexService[0x0000000102140b64] (CortexService.__TEXT.__text + 34823012)
+        Summary: CortexService`Cortex::Math::NewRealTimeFilter::init(int, QList<double> const&, QList<double> const&)
+        Address: CortexService[0x0000000102141140] (CortexService.__TEXT.__text + 34824512)
+        Summary: CortexService`Cortex::Math::NewRealTimeFilter::filter(int, double const*, double*)
+        Address: CortexService[0x00000001021408ec] (CortexService.__TEXT.__text + 34822380)
+        Summary: CortexService`Cortex::Math::NewRealTimeFilter::lfiltic(QList<double> const&, QList<double> const&, QList<double> const&, QList<double> const&)
+        Address: CortexService[0x0000000102140c24] (CortexService.__TEXT.__text + 34823204)
+        Summary: CortexService`Cortex::Math::NewRealTimeFilter::NewRealTimeFilter(int, QList<double> const&, QList<double> const&)
+        Address: CortexService[0x0000000102141708] (CortexService.__TEXT.__text + 34825992)
+        Summary: CortexService`Cortex::Math::RealTimeFilter::checkIsValid() const
+        Address: CortexService[0x0000000102140ca0] (CortexService.__TEXT.__text + 34823328)
+        Summary: CortexService`Cortex::Math::NewRealTimeFilter::checkIsValid() const
+(lldb) disassemble -n Cortex::Math::RealTimeFilter::init
+CortexService`Cortex::Math::RealTimeFilter::init:
+CortexService[0x1021415c8] <+0>:   stp    x20, x19, [sp, #-0x20]!
+CortexService[0x1021415cc] <+4>:   stp    x29, x30, [sp, #0x10]
+CortexService[0x1021415d0] <+8>:   add    x29, sp, #0x10
+CortexService[0x1021415d4] <+12>:  mov    x20, x3
+CortexService[0x1021415d8] <+16>:  mov    x19, x0
+CortexService[0x1021415dc] <+20>:  str    w1, [x0, #0x68]
+CortexService[0x1021415e0] <+24>:  ldr    q0, [x2]
+CortexService[0x1021415e4] <+28>:  ldr    x8, [x2, #0x10]
+CortexService[0x1021415e8] <+32>:  fmov   x9, d0
+CortexService[0x1021415ec] <+36>:  cbz    x9, 0x1021415f8           ; <+48>
+CortexService[0x1021415f0] <+40>:  mov    w10, #0x1                 ; =1
+CortexService[0x1021415f4] <+44>:  ldaddal w10, w9, [x9]
+CortexService[0x1021415f8] <+48>:  ldr    x0, [x19, #0x38]
+CortexService[0x1021415fc] <+52>:  stur   q0, [x19, #0x38]
+CortexService[0x102141600] <+56>:  str    x8, [x19, #0x48]
+CortexService[0x102141604] <+60>:  cbz    x0, 0x102141624           ; <+92>
+CortexService[0x102141608] <+64>:  mov    w8, #-0x1                 ; =-1
+CortexService[0x10214160c] <+68>:  ldaddal w8, w8, [x0]
+CortexService[0x102141610] <+72>:  cmp    w8, #0x1
+CortexService[0x102141614] <+76>:  b.ne   0x102141624               ; <+92>
+CortexService[0x102141618] <+80>:  ldr    w8, [x0]
+CortexService[0x10214161c] <+84>:  cbnz   w8, 0x102141688           ; <+192>
+CortexService[0x102141620] <+88>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x102141624] <+92>:  ldr    q0, [x20]
+CortexService[0x102141628] <+96>:  ldr    x8, [x20, #0x10]
+CortexService[0x10214162c] <+100>: fmov   x9, d0
+CortexService[0x102141630] <+104>: cbz    x9, 0x10214163c           ; <+116>
+CortexService[0x102141634] <+108>: mov    w10, #0x1                 ; =1
+CortexService[0x102141638] <+112>: ldaddal w10, w9, [x9]
+CortexService[0x10214163c] <+116>: ldr    x0, [x19, #0x50]
+CortexService[0x102141640] <+120>: str    q0, [x19, #0x50]
+CortexService[0x102141644] <+124>: str    x8, [x19, #0x60]
+CortexService[0x102141648] <+128>: cbz    x0, 0x102141668           ; <+160>
+CortexService[0x10214164c] <+132>: mov    w8, #-0x1                 ; =-1
+CortexService[0x102141650] <+136>: ldaddal w8, w8, [x0]
+CortexService[0x102141654] <+140>: cmp    w8, #0x1
+CortexService[0x102141658] <+144>: b.ne   0x102141668               ; <+160>
+CortexService[0x10214165c] <+148>: ldr    w8, [x0]
+CortexService[0x102141660] <+152>: cbnz   w8, 0x10214168c           ; <+196>
+CortexService[0x102141664] <+156>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x102141668] <+160>: add    x0, x19, #0x8
+CortexService[0x10214166c] <+164>: bl     0x10014e31c               ; ___lldb_unnamed_symbol_10014e31c
+CortexService[0x102141670] <+168>: add    x0, x19, #0x20
+CortexService[0x102141674] <+172>: bl     0x10014e31c               ; ___lldb_unnamed_symbol_10014e31c
+CortexService[0x102141678] <+176>: mov    x0, x19
+CortexService[0x10214167c] <+180>: ldp    x29, x30, [sp, #0x10]
+CortexService[0x102141680] <+184>: ldp    x20, x19, [sp], #0x20
+CortexService[0x102141684] <+188>: b      0x102141708               ; Cortex::Math::RealTimeFilter::checkIsValid() const
+CortexService[0x102141688] <+192>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x10214168c] <+196>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+(lldb) memory read -f x -s8 -c8 0x1031a0280
+0x1031a0280: 0x0000000000000000 0x00000001030bbc3c
+0x1031a0290: 0x00000001030bbc3c 0x000000080000049c
+0x1031a02a0: 0x0000000102ff858c 0x0000000000000000
+0x1031a02b0: 0x00000001030bbc5e 0x00000001030bbc5e
+(lldb) quit

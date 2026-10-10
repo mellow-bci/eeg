@@ -1,0 +1,60 @@
+(lldb) target create --arch arm64 "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -n Cortex::Math::MatrixStream::next
+CortexService`Cortex::Math::MatrixStream::next:
+CortexService[0x10213eedc] <+0>:   stp    x22, x21, [sp, #-0x30]!
+CortexService[0x10213eee0] <+4>:   stp    x20, x19, [sp, #0x10]
+CortexService[0x10213eee4] <+8>:   stp    x29, x30, [sp, #0x20]
+CortexService[0x10213eee8] <+12>:  add    x29, sp, #0x20
+CortexService[0x10213eeec] <+16>:  mov    x19, x0
+CortexService[0x10213eef0] <+20>:  mov    x20, x8
+CortexService[0x10213eef4] <+24>:  ldr    x0, [x0, #0x20]
+CortexService[0x10213eef8] <+28>:  bl     0x1021350b0               ; Cortex::Math::Matrix::isEmpty() const
+CortexService[0x10213eefc] <+32>:  cbnz   w0, 0x10213ef18           ; <+60>
+CortexService[0x10213ef00] <+36>:  ldr    x8, [x19, #0x8]
+CortexService[0x10213ef04] <+40>:  ldp    x9, x0, [x19, #0x18]
+CortexService[0x10213ef08] <+44>:  add    x21, x8, x9
+CortexService[0x10213ef0c] <+48>:  bl     0x102135044               ; Cortex::Math::Matrix::cols() const
+CortexService[0x10213ef10] <+52>:  cmp    x21, w0, sxtw
+CortexService[0x10213ef14] <+56>:  b.ls   0x10213ef2c               ; <+80>
+CortexService[0x10213ef18] <+60>:  mov    x0, x20
+CortexService[0x10213ef1c] <+64>:  ldp    x29, x30, [sp, #0x20]
+CortexService[0x10213ef20] <+68>:  ldp    x20, x19, [sp, #0x10]
+CortexService[0x10213ef24] <+72>:  ldp    x22, x21, [sp], #0x30
+CortexService[0x10213ef28] <+76>:  b      0x102134d5c               ; Cortex::Math::Matrix::Matrix()
+CortexService[0x10213ef2c] <+80>:  ldr    x21, [x19, #0x20]
+CortexService[0x10213ef30] <+84>:  mov    x0, x21
+CortexService[0x10213ef34] <+88>:  bl     0x10213503c               ; Cortex::Math::Matrix::rows() const
+CortexService[0x10213ef38] <+92>:  sub    w2, w0, #0x1
+CortexService[0x10213ef3c] <+96>:  ldr    w3, [x19, #0x18]
+CortexService[0x10213ef40] <+100>: ldr    w8, [x19, #0x8]
+CortexService[0x10213ef44] <+104>: add    w8, w8, w3
+CortexService[0x10213ef48] <+108>: sub    w4, w8, #0x1
+CortexService[0x10213ef4c] <+112>: mov    x8, x20
+CortexService[0x10213ef50] <+116>: mov    x0, x21
+CortexService[0x10213ef54] <+120>: mov    w1, #0x0                  ; =0
+CortexService[0x10213ef58] <+124>: bl     0x102138734               ; Cortex::Math::Matrix::subset(Cortex::Math::Matrix const&, int, int, int, int)
+CortexService[0x10213ef5c] <+128>: ldp    x8, x9, [x19, #0x10]
+CortexService[0x10213ef60] <+132>: add    x8, x9, x8
+CortexService[0x10213ef64] <+136>: str    x8, [x19, #0x18]
+CortexService[0x10213ef68] <+140>: ldp    x29, x30, [sp, #0x20]
+CortexService[0x10213ef6c] <+144>: ldp    x20, x19, [sp, #0x10]
+CortexService[0x10213ef70] <+148>: ldp    x22, x21, [sp], #0x30
+CortexService[0x10213ef74] <+152>: ret
+(lldb) image lookup -rn MatrixStream
+7 matches found in /Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService:
+        Address: CortexService[0x000000010213ef78] (CortexService.__TEXT.__text + 34815864)
+        Summary: CortexService`Cortex::Math::MatrixStream::nextWithRemoval()
+        Address: CortexService[0x000000010213eedc] (CortexService.__TEXT.__text + 34815708)
+        Summary: CortexService`Cortex::Math::MatrixStream::next()
+        Address: CortexService[0x000000010213ee2c] (CortexService.__TEXT.__text + 34815532)
+        Summary: CortexService`Cortex::Math::MatrixStream::reset()
+        Address: CortexService[0x000000010213ee04] (CortexService.__TEXT.__text + 34815492)
+        Summary: CortexService`Cortex::Math::MatrixStream::MatrixStream(Cortex::Math::Matrix&, int, double, double, unsigned long)
+        Address: CortexService[0x000000010213f15c] (CortexService.__TEXT.__text + 34816348)
+        Summary: CortexService`Cortex::Math::MatrixStream::operator<<(Cortex::Math::Matrix const&)
+        Address: CortexService[0x000000010213f0ac] (CortexService.__TEXT.__text + 34816172)
+        Summary: CortexService`Cortex::Math::MatrixStream::operator>>(Cortex::Math::Matrix&)
+        Address: CortexService[0x000000010213ee24] (CortexService.__TEXT.__text + 34815524)
+        Summary: CortexService`Cortex::Math::MatrixStream::stepSizeInSample() const
+(lldb) quit

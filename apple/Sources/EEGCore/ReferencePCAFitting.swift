@@ -1,11 +1,11 @@
 import Foundation
 
-/// Comparison-only normal-support branch of runPCA/princompMultiClass.
-/// The vendor low-epoch clipping and singular eigensolver branches are explicit
-/// unsupported states. LAPACK/sign conventions remain our documented choices.
+/// Comparison-only runPCA/princompMultiClass with finite low-epoch clipping.
+/// The covariance eigensolver remains strict positive definite; LAPACK/sign
+/// conventions remain our documented choices.
 enum ReferencePCAFitting {
     enum InputError: Error, Equatable {
-        case invalidClasses, lowEpochClippingUnsupported
+        case invalidClasses
     }
     struct Fit {
         let pooled: ReferenceGaussianPooling.Distribution
@@ -24,19 +24,14 @@ enum ReferencePCAFitting {
             pooled = try ReferenceGaussianPooling.combine(pooled, value, useFirstUpdateTime: false)
         }
         guard let pooled else { throw InputError.invalidClasses }
-        let dimension = pooled.mean.count
-        // 0x100b48798..48850 counts all n[f]<=p. If all satisfy that relation,
-        // 48854..488cc clips eigenpairs using a scratch count. Keep that branch
-        // separate instead of replacing it with an inferred effective rank.
-        guard pooled.counts.contains(where: { $0 > Double(dimension) }) else {
-            throw InputError.lowEpochClippingUnsupported
-        }
         let eigenbasis = try ReferenceGaussianPipeline.covarianceEigenbasis(pooled.covariance)
+        let clipped = try ReferencePCALowEpoch.apply(counts: pooled.counts,
+            descendingEigenvalues: eigenbasis.eigenvalues, basis: eigenbasis.basis)
         let indices = try ReferenceCanonicalTraining.pcaSelectedIndices(
-            descendingEigenvalues: eigenbasis.eigenvalues, classCount: classes.count)
+            descendingEigenvalues: clipped.eigenvalues, classCount: classes.count)
         let transform: ReferenceGaussianPipeline.CenteredTransform? = indices.isEmpty ? nil :
-            .init(mean: pooled.mean, basis: eigenbasis.basis.map { row in indices.map { row[$0] } })
-        return Fit(pooled: pooled, eigenvalues: eigenbasis.eigenvalues,
+            .init(mean: pooled.mean, basis: clipped.basis.map { row in indices.map { row[$0] } })
+        return Fit(pooled: pooled, eigenvalues: clipped.eigenvalues,
                    selectedIndices: indices, transform: transform)
     }
 }

@@ -73,15 +73,11 @@ struct ReferenceMentalPipeline {
         let bands = try spectra.map {
             try ReferenceSpectralPipeline.bands($0, sampleRate: recipe.sampleRate, bands: recipe.bands)
         }
-        // returnBandPowerOnly 0x10212fae4..0x10212fafc: selected row/column
-        // power -> log10 -> multiply by 10. No guessed epsilon or floor.
-        let features = try recipe.features.map { coordinate -> Double in
-            let power = bands[coordinate.series][coordinate.band]
-            guard power.isFinite, power > 0 else { throw InputError.invalidWindow }
-            let value = 10 * log10(power)
-            guard value.isFinite else { throw InputError.invalidWindow }
-            return value
-        }
+        let features: [Double]
+        do {
+            features = try ReferenceDeployedFeatures.extract(channelBands: bands,
+                features: recipe.features.map { .power(.init(row: $0.series, band: $0.band)) })
+        } catch { throw InputError.invalidWindow }
         let classification = try ReferenceGaussianPipeline.infer(featureVector: features,
                                                                  parameters: recipe.classifier)
         var nextFilters = filters

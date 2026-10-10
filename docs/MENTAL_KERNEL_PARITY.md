@@ -269,13 +269,13 @@ claim that all offline work, full Cortex parity or production qualification is d
 
 Further Oct11 body tracing reduces the fitting boundary: `ReferencePCAFitting`
 folds selected single-class Gaussians in order, eigendecomposes pooled covariance
-and uses pooled mean as PCA center, with the recovered rank policy. Low-epoch
-clipping and singular spectra reject in this composed normal-support path;
+and uses pooled mean as PCA center, with the recovered rank policy. At that checkpoint low-epoch
+clipping and singular spectra rejected in the composed normal-support path;
 separate edge kernels do not establish the complete singular recipe.
 `ReferenceCanonicalScatter` projects each class first, then pools projected
 Gaussians and constructs T=(N−1)Cpooled, E=sum((ni−1)Ci), H=T−E, df=N−K.
 This order matters with heterogeneous counts. The pooled mean is retained as
-provenance; its role as a runtime canonical center remains unverified.
+provenance; its role as a runtime canonical center was unverified at that checkpoint (resolved below).
 `ReferenceTrainingProfileUpdates` increments/reconstructs training counts using
 an explicit supplied action-column catalogue, and retains surviving trained-action
 ordering before appending newly present actions. Database existence flags are
@@ -288,3 +288,45 @@ preceded final epoch assembly/persistence refinements and PCA/scatter/profile
 additions, all covered by the final focused run. No skipped Cortex fixture is
 counted as passing. Commands: `swift test --package-path apple --filter EEGCoreTests`
 and `swift test --package-path apple --filter 'Reference|Decoder'`.
+
+
+## Deployed recipe, low-epoch PCA, runtime centers and cache — 2026-10-11
+
+| Area | Body-supported implementation in this checkpoint | Explicit remaining boundary |
+|---|---|---|
+| Deployed input filter | Order-two RealTimeFilter recurrence with captured b/a lists, first-sample seeded x/y history, row-count reset and chunk continuity. | Finite nonempty bounded support; alternate filter implementations and full raw correction/reset lifecycle still separate. |
+| Deployed feature recipe | Ordered power and ratio metadata coordinates; both wrappers use mode1: 10 log10(P) or 10 log10(Pnum/Pden); computation gate includes training with no classifier. Existing comparison pipeline reuses the extraction kernel. | Actual deployed coordinates/bands/settings must be supplied. Preprocessing and noise-derived detection validity remain separate from contact quality. |
+| Contact gate and training background | Default headset branch overallCQ>=50; optional training background subtraction initializes on first clean feature and saturates counter480 into (479*mean+x)/480. Detection uses original features. | Input CQ remains vendor numeric data; this is not raw quality decoder validation. Special untested headsets not enabled. |
+| Epoch stream | Positive finite rate-duration products truncate; append columns; one window per next call; nextWithRemoval removes advanced cursor prefix; reset clears buffer. | Explicit caller capacity and step<=window are independent support boundaries. No guessed profile cadence. |
+| Low-epoch PCA | If every feature count<=p, clips descending eigenpairs using first feature scratch count min(n[0]-1,p), then inclusive endpoint trunc(scratch[0]-1). Wired before rank selection in ReferencePCAFitting. | Counts>=2 finite support only. Composed eigensolver still strict SPD; singular/exceptional conversion semantics are not silently approximated. |
+| Runtime centers | Original pooled mean is PCA center; canonical runtime center is zero on traced builder path. Final class mean=(projected class mean-pooled projected mean)*B; covariance=B'CB. | Heterogeneous-count training/runtime center differences are exposed, not corrected. LAPACK basis/sign policy remains independently chosen. |
+| Classifier cache | Ordered comma keys; exact action-vector insertion check; disable and size changes clear entries; minimum reuse-count eviction with lexical ties; manager reuse increment wrapsUInt64; dirty action removal. | Database cache serialization and full manager persistence integration remain documented boundaries. Zero vendor maximum is uncapped; our explicit storageLimit is a safety policy. |
+
+Evidence: `deployed-feature-continuation-20261011`, `low-epoch-continuation-20261011`,
+`runtime-centering-continuation-20261011`, `cache-continuation-20261011` and
+`stream-continuation-20261011` and `preprocessing-continuation-20261011`, each with captured bodies, address-level explanation
+and pinned hash manifest. ReferenceFittedWorkflowTests composes pooled fit→PCA→
+canonical scatter/fit→runtime centers→Gaussian inference using analytic inputs;
+it is not an observed Cortex comparison or participant experiment.
+
+No vendor learned asset was needed for these primitives. Completing comparison
+with a particular deployed Cortex classifier still requires its actual feature
+configuration, trained transforms/Gaussians and matched reference outputs. The
+checked training store was empty. Remaining offline questions include full
+singular decomposition composition, sensitivity/configuration values, error-set
+and noise handling, and persistence orchestration. Hardware and physiological
+validation remain separate. Full Cortex parity and production readiness are not
+claimed; optional unavailable Cortex fixtures are skipped, never counted passing.
+
+
+Checkpoint reproduction: `swift test --package-path apple --filter 'Reference|Decoder'`
+executed143 tests:141 passed,2 explicitly skipped,0 failures. Evidence integrity
+checks and `python3 tools/render_capability_matrix.py --check` passed. The
+optional matched Cortex fixtures remain absent; analytic fixture success does
+not reopen their validation gate.
+
+Final broader checkpoint: `swift test --package-path apple --filter EEGCoreTests`
+executed335 tests:331 passed,4 skipped,0 failures in158.2seconds. This run includes
+all new comparison kernels. The warm single-channel spectrum benchmark was
+4.96ms/window in this test build; it is not end-to-end command latency or hardware
+qualification. The test suite did not obtain missing trained Cortex fixtures.

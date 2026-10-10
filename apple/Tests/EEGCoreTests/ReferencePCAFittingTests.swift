@@ -28,7 +28,7 @@ final class ReferencePCAFittingTests: XCTestCase {
         XCTAssertNil(fit.transform)
     }
 
-    func testLowEpochAndInsufficientClassesAreExplicitFailures() throws {
+    func testLowEpochClipsBeforeRankSelectionAndInsufficientClassesFail() throws {
         let value = ReferenceGaussianPooling.Distribution(counts: [1, 1], mean: [0, 0],
             covariance: [[1, 0], [0, 1]], updateTime: 0)
         XCTAssertThrowsError(try ReferencePCAFitting.fit(classes: [value])) {
@@ -39,8 +39,10 @@ final class ReferencePCAFittingTests: XCTestCase {
         XCTAssertThrowsError(try ReferencePCAFitting.fit(classes: [value, value]))
         let low = ReferenceGaussianPooling.Distribution(counts: [2, 2, 2, 2], mean: [0, 0, 0, 0],
             covariance: [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]], updateTime: 0)
-        XCTAssertThrowsError(try ReferencePCAFitting.fit(classes: [low, low])) {
-            XCTAssertEqual($0 as? ReferencePCAFitting.InputError, .lowEpochClippingUnsupported)
-        }
+        let fit = try ReferencePCAFitting.fit(classes: [low, low])
+        XCTAssertEqual(fit.eigenvalues.count, 3)
+        XCTAssertEqual(fit.selectedIndices, [0, 1])
+        XCTAssertEqual(fit.transform?.basis.count, 4)
+        XCTAssertEqual(fit.transform?.basis.first?.count, 2)
     }
 }
