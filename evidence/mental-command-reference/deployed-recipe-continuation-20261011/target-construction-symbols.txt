@@ -1,0 +1,84 @@
+(lldb) target create /Applications/EmotivApps/EMOTIV\ Launcher.app/Contents/MacOS/CortexService
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) image lookup -rn setTargetChannels
+4 matches found in /Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService:
+        Address: CortexService[0x0000000100f32c10] (CortexService.__TEXT.__text + 15891472)
+        Summary: CortexService`Cortex::FacialExpressions::NTExpressivDetectionManager::setTargetChannels(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x0000000100c58528] (CortexService.__TEXT.__text + 12899624)
+        Summary: CortexService`Cortex::PerformanceMetrics::ValenceDetector::setTargetChannels(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x0000000100c4fc34] (CortexService.__TEXT.__text + 12864564)
+        Summary: CortexService`Cortex::PerformanceMetrics::MeditationDetector::setTargetChannels(QList<Cortex::Core::Channel_t> const&)
+        Address: CortexService[0x0000000100c47014] (CortexService.__TEXT.__text + 12828692)
+        Summary: CortexService`Cortex::PerformanceMetrics::InsightAffectivDetector::setTargetChannels(QList<Cortex::Core::Channel_t> const&)
+(lldb) image lookup -rn EmoProfile::
+13 matches found in /Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService:
+        Address: CortexService[0x00000001012357f0] (CortexService.__TEXT.__text + 19048432)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::set(QString const&, QVariant const&)
+        Address: CortexService[0x0000000101235b60] (CortexService.__TEXT.__text + 19049312)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::set(QString const&, arma::Mat<double> const&)
+        Address: CortexService[0x0000000101235acc] (CortexService.__TEXT.__text + 19049164)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::set(QString const&, Cortex::Math::Matrix const&)
+        Address: CortexService[0x0000000101235a1c] (CortexService.__TEXT.__text + 19048988)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::set(QString const&, double)
+        Address: CortexService[0x0000000101235740] (CortexService.__TEXT.__text + 19048256)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::set(QString const&, int)
+        Address: CortexService[0x0000000101235cf0] (CortexService.__TEXT.__text + 19049712)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::lock(QString const&)
+        Address: CortexService[0x0000000101235464] (CortexService.__TEXT.__text + 19047524)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::clear()
+        Address: CortexService[0x0000000101235d14] (CortexService.__TEXT.__text + 19049748)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::unlock(QString const&)
+        Address: CortexService[0x000000010123558c] (CortexService.__TEXT.__text + 19047820)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::get(QString const&) const
+        Address: CortexService[0x0000000101235588] (CortexService.__TEXT.__text + 19047816)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::items() const
+        Address: CortexService[0x0000000101235568] (CortexService.__TEXT.__text + 19047784)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::isEmpty() const
+        Address: CortexService[0x0000000101235c50] (CortexService.__TEXT.__text + 19049552)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::isExist(QString const&) const
+        Address: CortexService[0x000000010123569c] (CortexService.__TEXT.__text + 19048092)
+        Summary: CortexService`Cortex::DetectionCore::EmoProfile::getMatrix(QString const&) const
+(lldb) disassemble -n Cortex::DetectionCore::Detection::Detection
+CortexService`Cortex::DetectionCore::Detection::Detection:
+CortexService[0x1012340f8] <+0>:   stp    x22, x21, [sp, #-0x30]!
+CortexService[0x1012340fc] <+4>:   stp    x20, x19, [sp, #0x10]
+CortexService[0x101234100] <+8>:   stp    x29, x30, [sp, #0x20]
+CortexService[0x101234104] <+12>:  add    x29, sp, #0x20
+CortexService[0x101234108] <+16>:  mov    x19, x0
+CortexService[0x10123410c] <+20>:  adrp   x8, 7952
+CortexService[0x101234110] <+24>:  add    x8, x8, #0xdd0            ; vtable for Cortex::DetectionCore::Detection + 16
+CortexService[0x101234114] <+28>:  str    x8, [x0]
+CortexService[0x101234118] <+32>:  mov    w8, #0x1                  ; =1
+CortexService[0x10123411c] <+36>:  strb   w8, [x0, #0x8]
+CortexService[0x101234120] <+40>:  movi.2d v0, #0000000000000000
+CortexService[0x101234124] <+44>:  stur   q0, [x0, #0xc]
+CortexService[0x101234128] <+48>:  stur   q0, [x0, #0x1c]
+CortexService[0x10123412c] <+52>:  stur   q0, [x0, #0x2c]
+CortexService[0x101234130] <+56>:  stur   q0, [x0, #0x3c]
+CortexService[0x101234134] <+60>:  stur   q0, [x0, #0x48]
+CortexService[0x101234138] <+64>:  stp    xzr, xzr, [x0, #0x60]
+CortexService[0x10123413c] <+68>:  strb   wzr, [x0, #0x70]
+CortexService[0x101234140] <+72>:  strb   w8, [x0, #0x88]
+CortexService[0x101234144] <+76>:  add    x0, x0, #0x90
+CortexService[0x101234148] <+80>:  stp    xzr, xzr, [x19, #0x78]
+CortexService[0x10123414c] <+84>:  bl     0x1012327a8               ; Cortex::DetectionCore::ContactQuality::ContactQuality()
+CortexService[0x101234150] <+88>:  mov    w8, #0x100                ; =256
+CortexService[0x101234154] <+92>:  strh   w8, [x19, #0xb8]
+CortexService[0x101234158] <+96>:  mov    w8, #0x80                 ; =128
+CortexService[0x10123415c] <+100>: str    w8, [x19, #0x58]
+CortexService[0x101234160] <+104>: mov    x0, x19
+CortexService[0x101234164] <+108>: ldp    x29, x30, [sp, #0x20]
+CortexService[0x101234168] <+112>: ldp    x20, x19, [sp, #0x10]
+CortexService[0x10123416c] <+116>: ldp    x22, x21, [sp], #0x30
+CortexService[0x101234170] <+120>: ret
+CortexService[0x101234174] <+124>: mov    x20, x0
+CortexService[0x101234178] <+128>: add    x0, x19, #0x40
+CortexService[0x10123417c] <+132>: add    x21, x19, #0x28
+CortexService[0x101234180] <+136>: add    x19, x19, #0x10
+CortexService[0x101234184] <+140>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101234188] <+144>: mov    x0, x21
+CortexService[0x10123418c] <+148>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101234190] <+152>: mov    x0, x19
+CortexService[0x101234194] <+156>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101234198] <+160>: mov    x0, x20
+CortexService[0x10123419c] <+164>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume

@@ -1,0 +1,7 @@
+# Archived measurements through the default recipe
+
+ReferenceRecordedRecipeTests reads the existing private LFS archive/current-state/epoc-paired-20260915-02.jsonl: 3858 decoded measurements, including original continuity flags and named electrode microvolts. The archived conversion is already checked by DecoderTests against packet decoding. This test does not relabel the archive as a mental-command dataset or derive quality from a screenshot.
+
+The test explicitly chooses the archived 14-electrode montage, 128Hz sampling and the separately body-derived default-profile windows/bands/power coordinates (98 features). It resets on recorded discontinuities and compares two complete deterministic replays. More than100 available feature epochs must be finite. Unknown classified CQ is represented by a deliberately rejected zero input: every emitted epoch remains qualityRejected, no classifier or command is supplied, and original/filter/spectrum/feature diagnostics remain inspectable. Zero is this test's fail-closed sentinel, not an observed hardware quality value.
+
+A passing test establishes that real archived numeric measurements can traverse the recovered default recipe reproducibly within supported arithmetic. It does not prove that this default recipe was loaded in the recording's Cortex session, that the numerical FFT is bit-identical, or that the derived features indicate participant intent. No new recording, asset or participant experiment is introduced.

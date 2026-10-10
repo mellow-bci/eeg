@@ -1,0 +1,55 @@
+(lldb) target create /Applications/EmotivApps/EMOTIV\ Launcher.app/Contents/MacOS/CortexService
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) memory read -f u -s 4 -c 12 0x102647c7c
+0x102647c7c: 40
+0x102647c80: 43
+0x102647c84: 45
+0x102647c88: 51
+0x102647c8c: 54
+0x102647c90: 64
+0x102647c94: 69
+0x102647c98: 77
+0x102647c9c: 82
+0x102647ca0: 92
+0x102647ca4: 95
+0x102647ca8: 101
+(lldb) memory read -f u -s 4 -c 4 0x102647cb4
+0x102647cb4: 40
+0x102647cb8: 54
+0x102647cbc: 72
+0x102647cc0: 92
+(lldb) disassemble -n Cortex::Core::headsetTypeToString
+CortexService`Cortex::Core::headsetTypeToString:
+CortexService[0x101fc87f0] <+0>:   adrp   x9, 5368
+CortexService[0x101fc87f4] <+4>:   ldr    x9, [x9, #0x458]
+CortexService[0x101fc87f8] <+8>:   cbz    x9, 0x101fc8838           ; <+72>
+CortexService[0x101fc87fc] <+12>:  ldr    x11, [x9, #0x10]!
+CortexService[0x101fc8800] <+16>:  cbz    x11, 0x101fc8838          ; <+72>
+CortexService[0x101fc8804] <+20>:  mov    x10, x9
+CortexService[0x101fc8808] <+24>:  ldr    w12, [x11, #0x20]
+CortexService[0x101fc880c] <+28>:  add    x13, x11, #0x8
+CortexService[0x101fc8810] <+32>:  cmp    w12, w0
+CortexService[0x101fc8814] <+36>:  csel   x12, x13, x11, lt
+CortexService[0x101fc8818] <+40>:  csel   x10, x10, x11, lt
+CortexService[0x101fc881c] <+44>:  ldr    x11, [x12]
+CortexService[0x101fc8820] <+48>:  cbnz   x11, 0x101fc8808          ; <+24>
+CortexService[0x101fc8824] <+52>:  cmp    x10, x9
+CortexService[0x101fc8828] <+56>:  b.eq   0x101fc8838               ; <+72>
+CortexService[0x101fc882c] <+60>:  ldr    w9, [x10, #0x20]
+CortexService[0x101fc8830] <+64>:  cmp    w9, w0
+CortexService[0x101fc8834] <+68>:  b.le   0x101fc8864               ; <+116>
+CortexService[0x101fc8838] <+72>:  adrp   x9, 5368
+CortexService[0x101fc883c] <+76>:  add    x9, x9, #0x2a0
+CortexService[0x101fc8840] <+80>:  ldr    q0, [x9]
+CortexService[0x101fc8844] <+84>:  str    q0, [x8]
+CortexService[0x101fc8848] <+88>:  ldr    x9, [x9, #0x10]
+CortexService[0x101fc884c] <+92>:  str    x9, [x8, #0x10]
+CortexService[0x101fc8850] <+96>:  fmov   x8, d0
+CortexService[0x101fc8854] <+100>: cbz    x8, 0x101fc8860           ; <+112>
+CortexService[0x101fc8858] <+104>: mov    w9, #0x1                  ; =1
+CortexService[0x101fc885c] <+108>: ldaddal w9, w8, [x8]
+CortexService[0x101fc8860] <+112>: ret
+CortexService[0x101fc8864] <+116>: ldur   q0, [x10, #0x28]
+CortexService[0x101fc8868] <+120>: str    q0, [x8]
+CortexService[0x101fc886c] <+124>: ldr    x9, [x10, #0x38]
+CortexService[0x101fc8870] <+128>: b      0x101fc884c               ; <+92>

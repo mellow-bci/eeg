@@ -1,0 +1,7 @@
+(lldb) command source -s 0 '/dev/stdin'
+Executing commands in '/dev/stdin'.
+(lldb) target create "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) script exec('import struct\nsec=lldb.debugger.GetSelectedTarget().GetModuleAtIndex(0).FindSection("__TEXT").FindSubSection("__text")\ne=lldb.SBError(); b=sec.GetSectionData().ReadRawData(e,0,sec.GetByteSize()); vm=sec.GetFileAddress()\nfor j in range(0,len(b)-128,4):\n w=struct.unpack_from("<I",b,j)[0]\n if w&0x9f000000!=0x90000000: continue\n r=w&31; imm=((w>>5)&0x7ffff)*4+((w>>29)&3)\n if imm&(1<<20): imm-=1<<21\n pc=vm+j; page=(pc&~4095)+(imm<<12)\n if page!=0x1033a3000: continue\n for k in range(1,32):\n  v=struct.unpack_from("<I",b,j+4*k)[0]\n  if (v>>5)&31==r and v&0xffc00000==0x91000000 and (v>>10)&4095 in (0xa18,0xa20,0xa28): print(hex(pc),hex(pc+4*k),hex((v>>10)&4095))\n')
+0x100b2a578 0x100b2a5c0 0xa18
+0x100b2a5bc 0x100b2a5c0 0xa18
