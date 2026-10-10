@@ -1,0 +1,17 @@
+# True-append training and acceptance composition
+
+Pinned installed arm64 CortexService SHA256 cdb5083641488056ceacfb8f2a0a0db724c8ce50585fd48aecbdcd1d179f936a reverified by SSH shasum this checkpoint. No process execution, vendor model assets or credentials.
+
+Source bodies already captured in refit-builder-continuation-20261011/builder-init-copy.txt (buildClassifier0x100b2f64c) and training-lifecycle-continuation-20261011/lifecycle-bodies.txt (onTrainingAccepted0x100b33570), training-bank-continuation-20261011/bank-bodies.txt (addUpdate0x100b45bdc). Existing captures are referenced instead of duplicated.
+
+Builder checks equal pending list lengths, returns false for append=true with no pending primary entries, validates training action against current ordered actions, dirties ordinary cache entries containing that action when enabled, then checks cache. It loads feature/timestamp slots then Gaussian bank. Pending primary/timestamp matrices combine independently using Matrix::combine method1, ordered column joins. addUpdate consumes Matrix::operator()(0) timestamp and converts to UInt32. It updates the first bank payload whose class ID matches training action; requested action slot independently selects the payload subsequently saved.
+
+Features/timestamps for the current action are saved at0x100b2ff34, then that action's Gaussian payload at0x100b2ff94 with append=false. Saves precede missing-class/fit rejection; no rollback. All current classes, including newly appended distribution before storage cap effects, feed existing fit kernels. Thus storage retention does not silently truncate current fit inputs. Our explicit cell/class/distribution/time/shape support bounds remain independent policies.
+
+onTrainingAccepted builds with append=true, saves classifier property on success; false build clears classifier then attempts property save. Regardless of ordinary fit/save result it clears error bank, updates training count/actions, applies eligible brain-map update and unlocks settings. Property save is in-memory EmoProfile::set, not durable file acknowledgement. Concrete brain-map eligibility/coordinate operations remain caller-owned, not mocked here.
+
+ReferenceClassifierRebuild.append and acceptTraining now compose existing EpochAssembly, TrainingBank, TrainingDatabase, fitted transforms, ClassifierCache and TrainingPersistence. Actual fit success/explicit rejected fit, typed data writes, cache invalidation and clear-before-save behavior are tested with independent data. The shared minimum count20 feature-ranking gate rejected the original four-epoch analytic successful-fit fixture; the test was corrected to collect20 independent authored epochs rather than weaken the gate. No vendor trained outputs are present.
+
+Focused final verification: `swift test --package-path apple --filter 'Reference|Decoder'` executed213 tests,211passed,2explicitly skipped,0failures. Both skipped comparisons require absent matched Cortex fixtures. Full log is `focused-tests.log`. Codec fixes were made before this final run; the earlier failing exploratory run is not reported as passed. The final tests include direct acceptTraining composition, classifier and Gaussian-bank caller-key envelope roundtrips and bounded inverse profile dispatch.
+
+Broad core final verification: `swift test --package-path apple --filter EEGCoreTests` executed405 tests,401passed,4explicitly skipped,0failures; full log `core-tests.log`. No hardware or vendor-trained-model equivalence follows.

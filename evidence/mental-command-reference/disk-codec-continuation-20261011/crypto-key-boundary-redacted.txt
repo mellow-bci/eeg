@@ -1,0 +1,755 @@
+(lldb) target create --arch arm64 "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -s 0x101e80108 -c 100
+CortexService`___lldb_unnamed_symbol_101e80108:
+CortexService[0x101e80108] <+0>:   sub    sp, sp, #0x70
+CortexService[0x101e8010c] <+4>:   stp    x22, x21, [sp, #0x40]
+CortexService[0x101e80110] <+8>:   stp    x20, x19, [sp, #0x50]
+CortexService[0x101e80114] <+12>:  stp    x29, x30, [sp, #0x60]
+CortexService[0x101e80118] <+16>:  add    x29, sp, #0x60
+CortexService[0x101e8011c] <+20>:  mov    x20, x0
+CortexService[0x101e80120] <+24>:  mov    x19, x8
+CortexService[0x101e80124] <+28>:  adrp   x1, 4642
+CortexService[0x101e80128] <+32>:  add    x1, x1, #0xdb0            ; [REDACTED embedded vendor salt;37 bytes]
+CortexService[0x101e8012c] <+36>:  add    x8, sp, #0x28
+CortexService[0x101e80130] <+40>:  mov    w0, #0x25                 ; =37
+CortexService[0x101e80134] <+44>:  bl     0x1024b58cc               ; symbol stub for: QString::fromUtf8(QByteArrayView)
+CortexService[0x101e80138] <+48>:  ldp    x8, x21, [sp, #0x28]
+CortexService[0x101e8013c] <+52>:  stp    x8, x21, [sp, #0x10]
+CortexService[0x101e80140] <+56>:  ldr    x22, [sp, #0x38]
+CortexService[0x101e80144] <+60>:  str    x22, [sp, #0x20]
+CortexService[0x101e80148] <+64>:  add    x0, sp, #0x8
+CortexService[0x101e8014c] <+68>:  mov    w1, #0x4                  ; =4
+CortexService[0x101e80150] <+72>:  bl     0x1024b4e34               ; symbol stub for: QCryptographicHash::QCryptographicHash(QCryptographicHash::Algorithm)
+CortexService[0x101e80154] <+76>:  add    x8, sp, #0x28
+CortexService[0x101e80158] <+80>:  mov    x0, x21
+CortexService[0x101e8015c] <+84>:  mov    x1, x22
+CortexService[0x101e80160] <+88>:  bl     0x1024b5794               ; symbol stub for: QString::toLocal8Bit_helper(QChar const*, long long)
+CortexService[0x101e80164] <+92>:  ldr    x1, [sp, #0x38]
+CortexService[0x101e80168] <+96>:  tbnz   x1, #0x3f, 0x101e80254    ; <+332>
+CortexService[0x101e8016c] <+100>: ldr    x2, [sp, #0x30]
+CortexService[0x101e80170] <+104>: cbnz   x2, 0x101e80178           ; <+112>
+CortexService[0x101e80174] <+108>: cbnz   x1, 0x101e80258           ; <+336>
+CortexService[0x101e80178] <+112>: add    x0, sp, #0x8
+CortexService[0x101e8017c] <+116>: bl     0x1024b4e28               ; symbol stub for: QCryptographicHash::addData(QByteArrayView)
+CortexService[0x101e80180] <+120>: ldr    x8, [sp, #0x28]
+CortexService[0x101e80184] <+124>: cbz    x8, 0x101e801ac           ; <+164>
+CortexService[0x101e80188] <+128>: mov    w9, #-0x1                 ; =-1
+CortexService[0x101e8018c] <+132>: ldaddal w9, w8, [x8]
+CortexService[0x101e80190] <+136>: cmp    w8, #0x1
+CortexService[0x101e80194] <+140>: b.ne   0x101e801ac               ; <+164>
+CortexService[0x101e80198] <+144>: ldr    x0, [sp, #0x28]
+CortexService[0x101e8019c] <+148>: cbz    x0, 0x101e80264           ; <+348>
+CortexService[0x101e801a0] <+152>: ldr    w8, [x0]
+CortexService[0x101e801a4] <+156>: cbnz   w8, 0x101e80268           ; <+352>
+CortexService[0x101e801a8] <+160>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e801ac] <+164>: ldp    x0, x1, [x20, #0x8]
+CortexService[0x101e801b0] <+168>: add    x8, sp, #0x28
+CortexService[0x101e801b4] <+172>: bl     0x1024b5794               ; symbol stub for: QString::toLocal8Bit_helper(QChar const*, long long)
+CortexService[0x101e801b8] <+176>: ldr    x1, [sp, #0x38]
+CortexService[0x101e801bc] <+180>: tbnz   x1, #0x3f, 0x101e8025c    ; <+340>
+CortexService[0x101e801c0] <+184>: ldr    x2, [sp, #0x30]
+CortexService[0x101e801c4] <+188>: cbnz   x2, 0x101e801cc           ; <+196>
+CortexService[0x101e801c8] <+192>: cbnz   x1, 0x101e80260           ; <+344>
+CortexService[0x101e801cc] <+196>: add    x0, sp, #0x8
+CortexService[0x101e801d0] <+200>: bl     0x1024b4e28               ; symbol stub for: QCryptographicHash::addData(QByteArrayView)
+CortexService[0x101e801d4] <+204>: ldr    x8, [sp, #0x28]
+CortexService[0x101e801d8] <+208>: cbz    x8, 0x101e80200           ; <+248>
+CortexService[0x101e801dc] <+212>: mov    w9, #-0x1                 ; =-1
+CortexService[0x101e801e0] <+216>: ldaddal w9, w8, [x8]
+CortexService[0x101e801e4] <+220>: cmp    w8, #0x1
+CortexService[0x101e801e8] <+224>: b.ne   0x101e80200               ; <+248>
+CortexService[0x101e801ec] <+228>: ldr    x0, [sp, #0x28]
+CortexService[0x101e801f0] <+232>: cbz    x0, 0x101e8026c           ; <+356>
+CortexService[0x101e801f4] <+236>: ldr    w8, [x0]
+CortexService[0x101e801f8] <+240>: cbnz   w8, 0x101e80270           ; <+360>
+CortexService[0x101e801fc] <+244>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e80200] <+248>: add    x0, sp, #0x8
+CortexService[0x101e80204] <+252>: mov    x8, x19
+CortexService[0x101e80208] <+256>: bl     0x1024b6448               ; symbol stub for: QCryptographicHash::result() const
+CortexService[0x101e8020c] <+260>: add    x0, sp, #0x8
+CortexService[0x101e80210] <+264>: bl     0x1024b4e40               ; symbol stub for: QCryptographicHash::~QCryptographicHash()
+CortexService[0x101e80214] <+268>: ldr    x8, [sp, #0x10]
+CortexService[0x101e80218] <+272>: cbz    x8, 0x101e80240           ; <+312>
+CortexService[0x101e8021c] <+276>: mov    w9, #-0x1                 ; =-1
+CortexService[0x101e80220] <+280>: ldaddal w9, w8, [x8]
+CortexService[0x101e80224] <+284>: cmp    w8, #0x1
+CortexService[0x101e80228] <+288>: b.ne   0x101e80240               ; <+312>
+CortexService[0x101e8022c] <+292>: ldr    x0, [sp, #0x10]
+CortexService[0x101e80230] <+296>: cbz    x0, 0x101e80274           ; <+364>
+CortexService[0x101e80234] <+300>: ldr    w8, [x0]
+CortexService[0x101e80238] <+304>: cbnz   w8, 0x101e80278           ; <+368>
+CortexService[0x101e8023c] <+308>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e80240] <+312>: ldp    x29, x30, [sp, #0x60]
+CortexService[0x101e80244] <+316>: ldp    x20, x19, [sp, #0x50]
+CortexService[0x101e80248] <+320>: ldp    x22, x21, [sp, #0x40]
+CortexService[0x101e8024c] <+324>: add    sp, sp, #0x70
+CortexService[0x101e80250] <+328>: ret
+CortexService[0x101e80254] <+332>: bl     0x1022f6bb4               ; ___lldb_unnamed_symbol_1022f6bb4
+CortexService[0x101e80258] <+336>: bl     0x1022f6b98               ; ___lldb_unnamed_symbol_1022f6b98
+CortexService[0x101e8025c] <+340>: bl     0x1022f6bb4               ; ___lldb_unnamed_symbol_1022f6bb4
+CortexService[0x101e80260] <+344>: bl     0x1022f6b98               ; ___lldb_unnamed_symbol_1022f6b98
+CortexService[0x101e80264] <+348>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e80268] <+352>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e8026c] <+356>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e80270] <+360>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e80274] <+364>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e80278] <+368>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e8027c] <+372>: b      0x101e80284               ; <+380>
+CortexService[0x101e80280] <+376>: b      0x101e80284               ; <+380>
+CortexService[0x101e80284] <+380>: mov    x19, x0
+CortexService[0x101e80288] <+384>: add    x0, sp, #0x8
+CortexService[0x101e8028c] <+388>: bl     0x1024b4e40               ; symbol stub for: QCryptographicHash::~QCryptographicHash()
+CortexService[0x101e80290] <+392>: b      0x101e80298               ; <+400>
+CortexService[0x101e80294] <+396>: mov    x19, x0
+(lldb) disassemble -s 0x101fdb4f8 -e 0x101fdbb00
+CortexService`AesCrypto::encrypt:
+CortexService[0x101fdb4f8] <+0>:   sub    sp, sp, #0x90
+CortexService[0x101fdb4fc] <+4>:   stp    x24, x23, [sp, #0x50]
+CortexService[0x101fdb500] <+8>:   stp    x22, x21, [sp, #0x60]
+CortexService[0x101fdb504] <+12>:  stp    x20, x19, [sp, #0x70]
+CortexService[0x101fdb508] <+16>:  stp    x29, x30, [sp, #0x80]
+CortexService[0x101fdb50c] <+20>:  add    x29, sp, #0x80
+CortexService[0x101fdb510] <+24>:  adrp   x8, 4419
+CortexService[0x101fdb514] <+28>:  ldr    x8, [x8, #0xcf0]
+CortexService[0x101fdb518] <+32>:  ldr    x8, [x8]
+CortexService[0x101fdb51c] <+36>:  stur   x8, [x29, #-0x38]
+CortexService[0x101fdb520] <+40>:  ldr    x8, [x1, #0x10]
+CortexService[0x101fdb524] <+44>:  cmp    x8, #0x20
+CortexService[0x101fdb528] <+48>:  b.ne   0x101fdb77c               ; <+644>
+CortexService[0x101fdb52c] <+52>:  mov    x19, x3
+CortexService[0x101fdb530] <+56>:  mov    x22, x2
+CortexService[0x101fdb534] <+60>:  ldr    x8, [x1, #0x8]
+CortexService[0x101fdb538] <+64>:  adrp   x9, 4417
+CortexService[0x101fdb53c] <+68>:  ldr    x9, [x9, #0x5f8]
+CortexService[0x101fdb540] <+72>:  cmp    x8, #0x0
+CortexService[0x101fdb544] <+76>:  csel   x20, x9, x8, eq
+CortexService[0x101fdb548] <+80>:  ldr    x8, [x2, #0x8]
+CortexService[0x101fdb54c] <+84>:  cmp    x8, #0x0
+CortexService[0x101fdb550] <+88>:  csel   x21, x9, x8, eq
+CortexService[0x101fdb554] <+92>:  str    wzr, [sp, #0x34]
+CortexService[0x101fdb558] <+96>:  cmp    w4, #0x1
+CortexService[0x101fdb55c] <+100>: b.eq   0x101fdb5e0               ; <+232>
+CortexService[0x101fdb560] <+104>: cbnz   w4, 0x101fdb6a8           ; <+432>
+CortexService[0x101fdb564] <+108>: ldr    x8, [x22, #0x10]
+CortexService[0x101fdb568] <+112>: add    x1, x8, #0x20
+CortexService[0x101fdb56c] <+116>: mov    x0, x19
+CortexService[0x101fdb570] <+120>: bl     0x1024b439c               ; symbol stub for: QByteArray::resize(long long)
+CortexService[0x101fdb574] <+124>: ldr    x8, [x19]
+CortexService[0x101fdb578] <+128>: cbz    x8, 0x101fdb588           ; <+144>
+CortexService[0x101fdb57c] <+132>: ldr    w8, [x8]
+CortexService[0x101fdb580] <+136>: cmp    w8, #0x2
+CortexService[0x101fdb584] <+140>: b.lt   0x101fdb598               ; <+160>
+CortexService[0x101fdb588] <+144>: ldr    x1, [x19, #0x10]
+CortexService[0x101fdb58c] <+148>: mov    x0, x19
+CortexService[0x101fdb590] <+152>: mov    w2, #0x1                  ; =1
+CortexService[0x101fdb594] <+156>: bl     0x1024b4300               ; symbol stub for: QByteArray::reallocData(long long, QArrayData::AllocationOption)
+CortexService[0x101fdb598] <+160>: ldr    x23, [x19, #0x8]
+CortexService[0x101fdb59c] <+164>: cbz    x23, 0x101fdb788          ; <+656>
+CortexService[0x101fdb5a0] <+168>: bl     0x1020b1938               ; EVP_aes_256_ecb
+CortexService[0x101fdb5a4] <+172>: mov    x1, x0
+CortexService[0x101fdb5a8] <+176>: ldr    w5, [x22, #0x10]
+CortexService[0x101fdb5ac] <+180>: add    x7, sp, #0x34
+CortexService[0x101fdb5b0] <+184>: mov    w0, #0x1                  ; =1
+CortexService[0x101fdb5b4] <+188>: mov    x2, x20
+CortexService[0x101fdb5b8] <+192>: mov    x3, #0x0                  ; =0
+CortexService[0x101fdb5bc] <+196>: mov    x4, x21
+CortexService[0x101fdb5c0] <+200>: mov    x6, x23
+CortexService[0x101fdb5c4] <+204>: bl     0x101fdb7c4               ; ___lldb_unnamed_symbol_101fdb7c4
+CortexService[0x101fdb5c8] <+208>: cbz    w0, 0x101fdb74c           ; <+596>
+CortexService[0x101fdb5cc] <+212>: ldrsw  x1, [sp, #0x34]
+CortexService[0x101fdb5d0] <+216>: mov    x0, x19
+CortexService[0x101fdb5d4] <+220>: bl     0x1024b439c               ; symbol stub for: QByteArray::resize(long long)
+CortexService[0x101fdb5d8] <+224>: mov    w0, #0x1                  ; =1
+CortexService[0x101fdb5dc] <+228>: b      0x101fdb74c               ; <+596>
+CortexService[0x101fdb5e0] <+232>: add    x0, sp, #0x38
+CortexService[0x101fdb5e4] <+236>: mov    w1, #0x10                 ; =16
+CortexService[0x101fdb5e8] <+240>: bl     0x1020f301c               ; RAND_bytes
+CortexService[0x101fdb5ec] <+244>: cmp    w0, #0x1
+CortexService[0x101fdb5f0] <+248>: b.ne   0x101fdb6f8               ; <+512>
+CortexService[0x101fdb5f4] <+252>: ldr    x8, [x22, #0x10]
+CortexService[0x101fdb5f8] <+256>: add    x1, x8, #0x30
+CortexService[0x101fdb5fc] <+260>: mov    x0, x19
+CortexService[0x101fdb600] <+264>: bl     0x1024b439c               ; symbol stub for: QByteArray::resize(long long)
+CortexService[0x101fdb604] <+268>: ldr    x8, [x19]
+CortexService[0x101fdb608] <+272>: cbz    x8, 0x101fdb618           ; <+288>
+CortexService[0x101fdb60c] <+276>: ldr    w8, [x8]
+CortexService[0x101fdb610] <+280>: cmp    w8, #0x2
+CortexService[0x101fdb614] <+284>: b.lt   0x101fdb628               ; <+304>
+CortexService[0x101fdb618] <+288>: ldr    x1, [x19, #0x10]
+CortexService[0x101fdb61c] <+292>: mov    x0, x19
+CortexService[0x101fdb620] <+296>: mov    w2, #0x1                  ; =1
+CortexService[0x101fdb624] <+300>: bl     0x1024b4300               ; symbol stub for: QByteArray::reallocData(long long, QArrayData::AllocationOption)
+CortexService[0x101fdb628] <+304>: ldr    x23, [x19, #0x8]
+CortexService[0x101fdb62c] <+308>: cbz    x23, 0x101fdb790          ; <+664>
+CortexService[0x101fdb630] <+312>: bl     0x1020b192c               ; EVP_aes_256_cbc
+CortexService[0x101fdb634] <+316>: mov    x1, x0
+CortexService[0x101fdb638] <+320>: add    x6, x23, #0x10
+CortexService[0x101fdb63c] <+324>: ldr    w5, [x22, #0x10]
+CortexService[0x101fdb640] <+328>: add    x3, sp, #0x38
+CortexService[0x101fdb644] <+332>: add    x7, sp, #0x34
+CortexService[0x101fdb648] <+336>: mov    w0, #0x1                  ; =1
+CortexService[0x101fdb64c] <+340>: mov    x2, x20
+CortexService[0x101fdb650] <+344>: mov    x4, x21
+CortexService[0x101fdb654] <+348>: bl     0x101fdb7c4               ; ___lldb_unnamed_symbol_101fdb7c4
+CortexService[0x101fdb658] <+352>: cbz    w0, 0x101fdb74c           ; <+596>
+CortexService[0x101fdb65c] <+356>: ldr    x8, [x19]
+CortexService[0x101fdb660] <+360>: cbz    x8, 0x101fdb670           ; <+376>
+CortexService[0x101fdb664] <+364>: ldr    w8, [x8]
+CortexService[0x101fdb668] <+368>: cmp    w8, #0x2
+CortexService[0x101fdb66c] <+372>: b.lt   0x101fdb680               ; <+392>
+CortexService[0x101fdb670] <+376>: ldr    x1, [x19, #0x10]
+CortexService[0x101fdb674] <+380>: mov    x0, x19
+CortexService[0x101fdb678] <+384>: mov    w2, #0x1                  ; =1
+CortexService[0x101fdb67c] <+388>: bl     0x1024b4300               ; symbol stub for: QByteArray::reallocData(long long, QArrayData::AllocationOption)
+CortexService[0x101fdb680] <+392>: ldr    x8, [x19, #0x8]
+CortexService[0x101fdb684] <+396>: cbz    x8, 0x101fdb798           ; <+672>
+CortexService[0x101fdb688] <+400>: ldur   q0, [sp, #0x38]
+CortexService[0x101fdb68c] <+404>: str    q0, [x8]
+CortexService[0x101fdb690] <+408>: ldrsw  x8, [sp, #0x34]
+CortexService[0x101fdb694] <+412>: add    x1, x8, #0x10
+CortexService[0x101fdb698] <+416>: mov    x0, x19
+CortexService[0x101fdb69c] <+420>: bl     0x1024b439c               ; symbol stub for: QByteArray::resize(long long)
+CortexService[0x101fdb6a0] <+424>: mov    w0, #0x1                  ; =1
+CortexService[0x101fdb6a4] <+428>: b      0x101fdb74c               ; <+596>
+CortexService[0x101fdb6a8] <+432>: adrp   x8, 1641
+CortexService[0x101fdb6ac] <+436>: ldr    d0, [x8, #0x5f8]
+CortexService[0x101fdb6b0] <+440>: adrp   x8, 4304
+CortexService[0x101fdb6b4] <+444>: add    x8, x8, #0xd17            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/OpensslCrypto/src/CryptoUtil.cpp"
+CortexService[0x101fdb6b8] <+448>: adrp   x9, 4304
+CortexService[0x101fdb6bc] <+452>: add    x9, x9, #0xd8f            ; "bool AesCrypto::encrypt(const QByteArray &, const QByteArray &, QByteArray &, const CryptoCipher)"
+CortexService[0x101fdb6c0] <+456>: str    d0, [sp, #0x8]
+CortexService[0x101fdb6c4] <+460>: stp    x8, x9, [sp, #0x10]
+CortexService[0x101fdb6c8] <+464>: adrp   x8, 4148
+CortexService[0x101fdb6cc] <+468>: add    x8, x8, #0xa              ; "default"
+CortexService[0x101fdb6d0] <+472>: str    x8, [sp, #0x20]
+CortexService[0x101fdb6d4] <+476>: add    x8, sp, #0x38
+CortexService[0x101fdb6d8] <+480>: add    x0, sp, #0x8
+CortexService[0x101fdb6dc] <+484>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101fdb6e0] <+488>: adrp   x1, 4304
+CortexService[0x101fdb6e4] <+492>: add    x1, x1, #0xe14            ; "[aes_crypto] Unsupported cipher"
+CortexService[0x101fdb6e8] <+496>: add    x0, sp, #0x38
+CortexService[0x101fdb6ec] <+500>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101fdb6f0] <+504>: add    x0, sp, #0x38
+CortexService[0x101fdb6f4] <+508>: b      0x101fdb744               ; <+588>
+CortexService[0x101fdb6f8] <+512>: adrp   x8, 1907
+CortexService[0x101fdb6fc] <+516>: ldr    d0, [x8, #0x50]
+CortexService[0x101fdb700] <+520>: adrp   x8, 4304
+CortexService[0x101fdb704] <+524>: add    x8, x8, #0xd17            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/OpensslCrypto/src/CryptoUtil.cpp"
+CortexService[0x101fdb708] <+528>: adrp   x9, 4304
+CortexService[0x101fdb70c] <+532>: add    x9, x9, #0xd8f            ; "bool AesCrypto::encrypt(const QByteArray &, const QByteArray &, QByteArray &, const CryptoCipher)"
+CortexService[0x101fdb710] <+536>: str    d0, [sp, #0x8]
+CortexService[0x101fdb714] <+540>: stp    x8, x9, [sp, #0x10]
+CortexService[0x101fdb718] <+544>: adrp   x8, 4148
+CortexService[0x101fdb71c] <+548>: add    x8, x8, #0xa              ; "default"
+CortexService[0x101fdb720] <+552>: str    x8, [sp, #0x20]
+CortexService[0x101fdb724] <+556>: add    x8, sp, #0x28
+CortexService[0x101fdb728] <+560>: add    x0, sp, #0x8
+CortexService[0x101fdb72c] <+564>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101fdb730] <+568>: adrp   x1, 4304
+CortexService[0x101fdb734] <+572>: add    x1, x1, #0xdf1            ; "[aes_crypto] Failed to generate IV"
+CortexService[0x101fdb738] <+576>: add    x0, sp, #0x28
+CortexService[0x101fdb73c] <+580>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101fdb740] <+584>: add    x0, sp, #0x28
+CortexService[0x101fdb744] <+588>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101fdb748] <+592>: mov    w0, #0x0                  ; =0
+CortexService[0x101fdb74c] <+596>: ldur   x8, [x29, #-0x38]
+CortexService[0x101fdb750] <+600>: adrp   x9, 4419
+CortexService[0x101fdb754] <+604>: ldr    x9, [x9, #0xcf0]
+CortexService[0x101fdb758] <+608>: ldr    x9, [x9]
+CortexService[0x101fdb75c] <+612>: cmp    x9, x8
+CortexService[0x101fdb760] <+616>: b.ne   0x101fdb784               ; <+652>
+CortexService[0x101fdb764] <+620>: ldp    x29, x30, [sp, #0x80]
+CortexService[0x101fdb768] <+624>: ldp    x20, x19, [sp, #0x70]
+CortexService[0x101fdb76c] <+628>: ldp    x22, x21, [sp, #0x60]
+CortexService[0x101fdb770] <+632>: ldp    x24, x23, [sp, #0x50]
+CortexService[0x101fdb774] <+636>: add    sp, sp, #0x90
+CortexService[0x101fdb778] <+640>: ret
+CortexService[0x101fdb77c] <+644>: bl     0x1024b28d4               ; ___lldb_unnamed_symbol_1024b28d4
+CortexService[0x101fdb780] <+648>: b      0x101fdb79c               ; <+676>
+CortexService[0x101fdb784] <+652>: bl     0x1024b77f8               ; symbol stub for: __stack_chk_fail
+CortexService[0x101fdb788] <+656>: bl     0x10243d174               ; ___lldb_unnamed_symbol_10243d174
+CortexService[0x101fdb78c] <+660>: b      0x101fdb79c               ; <+676>
+CortexService[0x101fdb790] <+664>: bl     0x10243d174               ; ___lldb_unnamed_symbol_10243d174
+CortexService[0x101fdb794] <+668>: b      0x101fdb79c               ; <+676>
+CortexService[0x101fdb798] <+672>: bl     0x10243d174               ; ___lldb_unnamed_symbol_10243d174
+CortexService[0x101fdb79c] <+676>: brk    #0x1
+CortexService[0x101fdb7a0] <+680>: mov    x19, x0
+CortexService[0x101fdb7a4] <+684>: add    x0, sp, #0x28
+CortexService[0x101fdb7a8] <+688>: b      0x101fdb7b4               ; <+700>
+CortexService[0x101fdb7ac] <+692>: mov    x19, x0
+CortexService[0x101fdb7b0] <+696>: add    x0, sp, #0x38
+CortexService[0x101fdb7b4] <+700>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101fdb7b8] <+704>: mov    x0, x19
+CortexService[0x101fdb7bc] <+708>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+CortexService[0x101fdb7c0] <+712>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+
+CortexService`___lldb_unnamed_symbol_101fdb7c4:
+CortexService[0x101fdb7c4] <+0>:   sub    sp, sp, #0x90
+CortexService[0x101fdb7c8] <+4>:   stp    x28, x27, [sp, #0x30]
+CortexService[0x101fdb7cc] <+8>:   stp    x26, x25, [sp, #0x40]
+CortexService[0x101fdb7d0] <+12>:  stp    x24, x23, [sp, #0x50]
+CortexService[0x101fdb7d4] <+16>:  stp    x22, x21, [sp, #0x60]
+CortexService[0x101fdb7d8] <+20>:  stp    x20, x19, [sp, #0x70]
+CortexService[0x101fdb7dc] <+24>:  stp    x29, x30, [sp, #0x80]
+CortexService[0x101fdb7e0] <+28>:  add    x29, sp, #0x80
+CortexService[0x101fdb7e4] <+32>:  mov    x21, x7
+CortexService[0x101fdb7e8] <+36>:  mov    x22, x6
+CortexService[0x101fdb7ec] <+40>:  mov    x23, x5
+CortexService[0x101fdb7f0] <+44>:  mov    x24, x4
+CortexService[0x101fdb7f4] <+48>:  mov    x25, x3
+CortexService[0x101fdb7f8] <+52>:  mov    x26, x2
+CortexService[0x101fdb7fc] <+56>:  mov    x27, x1
+CortexService[0x101fdb800] <+60>:  mov    x20, x0
+CortexService[0x101fdb804] <+64>:  str    wzr, [sp, #0x2c]
+CortexService[0x101fdb808] <+68>:  bl     0x1020c1f1c               ; EVP_CIPHER_CTX_new
+CortexService[0x101fdb80c] <+72>:  cbz    x0, 0x101fdb8b0           ; <+236>
+CortexService[0x101fdb810] <+76>:  mov    x19, x0
+CortexService[0x101fdb814] <+80>:  mov    x1, x27
+CortexService[0x101fdb818] <+84>:  mov    x2, #0x0                  ; =0
+CortexService[0x101fdb81c] <+88>:  mov    x3, x26
+CortexService[0x101fdb820] <+92>:  mov    x4, x25
+CortexService[0x101fdb824] <+96>:  mov    x5, x20
+CortexService[0x101fdb828] <+100>: bl     0x1020c1f78               ; EVP_CipherInit_ex
+CortexService[0x101fdb82c] <+104>: cmp    w0, #0x1
+CortexService[0x101fdb830] <+108>: b.ne   0x101fdb940               ; <+380>
+CortexService[0x101fdb834] <+112>: add    x2, sp, #0x2c
+CortexService[0x101fdb838] <+116>: mov    x0, x19
+CortexService[0x101fdb83c] <+120>: mov    x1, x22
+CortexService[0x101fdb840] <+124>: mov    x3, x24
+CortexService[0x101fdb844] <+128>: mov    x4, x23
+CortexService[0x101fdb848] <+132>: bl     0x1020c27a8               ; EVP_CipherUpdate
+CortexService[0x101fdb84c] <+136>: cmp    w0, #0x1
+CortexService[0x101fdb850] <+140>: b.ne   0x101fdb9c4               ; <+512>
+CortexService[0x101fdb854] <+144>: ldrsw  x8, [sp, #0x2c]
+CortexService[0x101fdb858] <+148>: str    w8, [x21]
+CortexService[0x101fdb85c] <+152>: add    x1, x22, x8
+CortexService[0x101fdb860] <+156>: add    x2, sp, #0x2c
+CortexService[0x101fdb864] <+160>: mov    x0, x19
+CortexService[0x101fdb868] <+164>: bl     0x1020c2d1c               ; EVP_CipherFinal_ex
+CortexService[0x101fdb86c] <+168>: cmp    w0, #0x1
+CortexService[0x101fdb870] <+172>: b.ne   0x101fdba48               ; <+644>
+CortexService[0x101fdb874] <+176>: ldr    w8, [sp, #0x2c]
+CortexService[0x101fdb878] <+180>: ldr    w9, [x21]
+CortexService[0x101fdb87c] <+184>: add    w8, w9, w8
+CortexService[0x101fdb880] <+188>: str    w8, [x21]
+CortexService[0x101fdb884] <+192>: mov    x0, x19
+CortexService[0x101fdb888] <+196>: bl     0x1020c1f40               ; EVP_CIPHER_CTX_free
+CortexService[0x101fdb88c] <+200>: mov    w0, #0x1                  ; =1
+CortexService[0x101fdb890] <+204>: ldp    x29, x30, [sp, #0x80]
+CortexService[0x101fdb894] <+208>: ldp    x20, x19, [sp, #0x70]
+CortexService[0x101fdb898] <+212>: ldp    x22, x21, [sp, #0x60]
+CortexService[0x101fdb89c] <+216>: ldp    x24, x23, [sp, #0x50]
+CortexService[0x101fdb8a0] <+220>: ldp    x26, x25, [sp, #0x40]
+CortexService[0x101fdb8a4] <+224>: ldp    x28, x27, [sp, #0x30]
+CortexService[0x101fdb8a8] <+228>: add    sp, sp, #0x90
+CortexService[0x101fdb8ac] <+232>: ret
+CortexService[0x101fdb8b0] <+236>: adrp   x8, 1555
+CortexService[0x101fdb8b4] <+240>: ldr    d0, [x8, #0x880]
+CortexService[0x101fdb8b8] <+244>: adrp   x8, 4304
+CortexService[0x101fdb8bc] <+248>: add    x8, x8, #0xd17            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/OpensslCrypto/src/CryptoUtil.cpp"
+CortexService[0x101fdb8c0] <+252>: adrp   x9, 4304
+CortexService[0x101fdb8c4] <+256>: add    x9, x9, #0xec2            ; "bool doCrypt(bool, const EVP_CIPHER *, const uint8_t *, const uint8_t *, const uint8_t *, int, uint8_t *, int &)"
+CortexService[0x101fdb8c8] <+260>: str    d0, [sp]
+CortexService[0x101fdb8cc] <+264>: stp    x8, x9, [sp, #0x8]
+CortexService[0x101fdb8d0] <+268>: adrp   x8, 4148
+CortexService[0x101fdb8d4] <+272>: add    x8, x8, #0xa              ; "default"
+CortexService[0x101fdb8d8] <+276>: str    x8, [sp, #0x18]
+CortexService[0x101fdb8dc] <+280>: add    x8, sp, #0x20
+CortexService[0x101fdb8e0] <+284>: mov    x0, sp
+CortexService[0x101fdb8e4] <+288>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101fdb8e8] <+292>: adrp   x1, 4304
+CortexService[0x101fdb8ec] <+296>: add    x1, x1, #0xf33            ; "[aes_crypto] Failed to create context, encrypt:"
+CortexService[0x101fdb8f0] <+300>: add    x0, sp, #0x20
+CortexService[0x101fdb8f4] <+304>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101fdb8f8] <+308>: mov    x19, x0
+CortexService[0x101fdb8fc] <+312>: ldr    x0, [x0]
+CortexService[0x101fdb900] <+316>: adrp   x8, 4269
+CortexService[0x101fdb904] <+320>: add    x8, x8, #0xa4c            ; "false"
+CortexService[0x101fdb908] <+324>: adrp   x9, 4148
+CortexService[0x101fdb90c] <+328>: add    x9, x9, #0x12             ; "true"
+CortexService[0x101fdb910] <+332>: cmp    w20, #0x0
+CortexService[0x101fdb914] <+336>: csel   x1, x9, x8, ne
+CortexService[0x101fdb918] <+340>: bl     0x1024b48ac               ; symbol stub for: QTextStream::operator<<(char const*)
+CortexService[0x101fdb91c] <+344>: ldr    x0, [x19]
+CortexService[0x101fdb920] <+348>: ldrb   w8, [x0, #0x30]
+CortexService[0x101fdb924] <+352>: cbz    w8, 0x101fdb930           ; <+364>
+CortexService[0x101fdb928] <+356>: mov    w1, #0x20                 ; =32
+CortexService[0x101fdb92c] <+360>: bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101fdb930] <+364>: add    x0, sp, #0x20
+CortexService[0x101fdb934] <+368>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101fdb938] <+372>: mov    w0, #0x0                  ; =0
+CortexService[0x101fdb93c] <+376>: b      0x101fdb890               ; <+204>
+CortexService[0x101fdb940] <+380>: adrp   x8, 1547
+CortexService[0x101fdb944] <+384>: ldr    d0, [x8, #0xf40]
+CortexService[0x101fdb948] <+388>: adrp   x8, 4304
+CortexService[0x101fdb94c] <+392>: add    x8, x8, #0xd17            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/OpensslCrypto/src/CryptoUtil.cpp"
+CortexService[0x101fdb950] <+396>: adrp   x9, 4304
+CortexService[0x101fdb954] <+400>: add    x9, x9, #0xec2            ; "bool doCrypt(bool, const EVP_CIPHER *, const uint8_t *, const uint8_t *, const uint8_t *, int, uint8_t *, int &)"
+CortexService[0x101fdb958] <+404>: str    d0, [sp]
+CortexService[0x101fdb95c] <+408>: stp    x8, x9, [sp, #0x8]
+CortexService[0x101fdb960] <+412>: adrp   x8, 4148
+CortexService[0x101fdb964] <+416>: add    x8, x8, #0xa              ; "default"
+CortexService[0x101fdb968] <+420>: str    x8, [sp, #0x18]
+CortexService[0x101fdb96c] <+424>: add    x8, sp, #0x20
+CortexService[0x101fdb970] <+428>: mov    x0, sp
+CortexService[0x101fdb974] <+432>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101fdb978] <+436>: adrp   x1, 4304
+CortexService[0x101fdb97c] <+440>: add    x1, x1, #0xf63            ; "[aes_crypto] CipherInit failed, encrypt:"
+CortexService[0x101fdb980] <+444>: add    x0, sp, #0x20
+CortexService[0x101fdb984] <+448>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101fdb988] <+452>: mov    x21, x0
+CortexService[0x101fdb98c] <+456>: ldr    x0, [x0]
+CortexService[0x101fdb990] <+460>: adrp   x8, 4269
+CortexService[0x101fdb994] <+464>: add    x8, x8, #0xa4c            ; "false"
+CortexService[0x101fdb998] <+468>: adrp   x9, 4148
+CortexService[0x101fdb99c] <+472>: add    x9, x9, #0x12             ; "true"
+CortexService[0x101fdb9a0] <+476>: cmp    w20, #0x0
+CortexService[0x101fdb9a4] <+480>: csel   x1, x9, x8, ne
+CortexService[0x101fdb9a8] <+484>: bl     0x1024b48ac               ; symbol stub for: QTextStream::operator<<(char const*)
+CortexService[0x101fdb9ac] <+488>: ldr    x0, [x21]
+CortexService[0x101fdb9b0] <+492>: ldrb   w8, [x0, #0x30]
+CortexService[0x101fdb9b4] <+496>: cbz    w8, 0x101fdbac8           ; <+772>
+CortexService[0x101fdb9b8] <+500>: mov    w1, #0x20                 ; =32
+CortexService[0x101fdb9bc] <+504>: bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101fdb9c0] <+508>: b      0x101fdbac8               ; <+772>
+CortexService[0x101fdb9c4] <+512>: adrp   x8, 1552
+CortexService[0x101fdb9c8] <+516>: ldr    d0, [x8, #0xda0]
+CortexService[0x101fdb9cc] <+520>: adrp   x8, 4304
+CortexService[0x101fdb9d0] <+524>: add    x8, x8, #0xd17            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/OpensslCrypto/src/CryptoUtil.cpp"
+CortexService[0x101fdb9d4] <+528>: adrp   x9, 4304
+CortexService[0x101fdb9d8] <+532>: add    x9, x9, #0xec2            ; "bool doCrypt(bool, const EVP_CIPHER *, const uint8_t *, const uint8_t *, const uint8_t *, int, uint8_t *, int &)"
+CortexService[0x101fdb9dc] <+536>: str    d0, [sp]
+CortexService[0x101fdb9e0] <+540>: stp    x8, x9, [sp, #0x8]
+CortexService[0x101fdb9e4] <+544>: adrp   x8, 4148
+CortexService[0x101fdb9e8] <+548>: add    x8, x8, #0xa              ; "default"
+CortexService[0x101fdb9ec] <+552>: str    x8, [sp, #0x18]
+CortexService[0x101fdb9f0] <+556>: add    x8, sp, #0x20
+CortexService[0x101fdb9f4] <+560>: mov    x0, sp
+CortexService[0x101fdb9f8] <+564>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101fdb9fc] <+568>: adrp   x1, 4304
+CortexService[0x101fdba00] <+572>: add    x1, x1, #0xf8c            ; "[aes_crypto] CipherUpdate failed, encrypt:"
+CortexService[0x101fdba04] <+576>: add    x0, sp, #0x20
+CortexService[0x101fdba08] <+580>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101fdba0c] <+584>: mov    x21, x0
+CortexService[0x101fdba10] <+588>: ldr    x0, [x0]
+CortexService[0x101fdba14] <+592>: adrp   x8, 4269
+CortexService[0x101fdba18] <+596>: add    x8, x8, #0xa4c            ; "false"
+CortexService[0x101fdba1c] <+600>: adrp   x9, 4148
+CortexService[0x101fdba20] <+604>: add    x9, x9, #0x12             ; "true"
+CortexService[0x101fdba24] <+608>: cmp    w20, #0x0
+CortexService[0x101fdba28] <+612>: csel   x1, x9, x8, ne
+CortexService[0x101fdba2c] <+616>: bl     0x1024b48ac               ; symbol stub for: QTextStream::operator<<(char const*)
+CortexService[0x101fdba30] <+620>: ldr    x0, [x21]
+CortexService[0x101fdba34] <+624>: ldrb   w8, [x0, #0x30]
+CortexService[0x101fdba38] <+628>: cbz    w8, 0x101fdbac8           ; <+772>
+CortexService[0x101fdba3c] <+632>: mov    w1, #0x20                 ; =32
+CortexService[0x101fdba40] <+636>: bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101fdba44] <+640>: b      0x101fdbac8               ; <+772>
+CortexService[0x101fdba48] <+644>: adrp   x8, 1641
+CortexService[0x101fdba4c] <+648>: ldr    d0, [x8, #0xcf0]
+CortexService[0x101fdba50] <+652>: adrp   x8, 4304
+CortexService[0x101fdba54] <+656>: add    x8, x8, #0xd17            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/OpensslCrypto/src/CryptoUtil.cpp"
+CortexService[0x101fdba58] <+660>: adrp   x9, 4304
+CortexService[0x101fdba5c] <+664>: add    x9, x9, #0xec2            ; "bool doCrypt(bool, const EVP_CIPHER *, const uint8_t *, const uint8_t *, const uint8_t *, int, uint8_t *, int &)"
+CortexService[0x101fdba60] <+668>: str    d0, [sp]
+CortexService[0x101fdba64] <+672>: stp    x8, x9, [sp, #0x8]
+CortexService[0x101fdba68] <+676>: adrp   x8, 4148
+CortexService[0x101fdba6c] <+680>: add    x8, x8, #0xa              ; "default"
+CortexService[0x101fdba70] <+684>: str    x8, [sp, #0x18]
+CortexService[0x101fdba74] <+688>: add    x8, sp, #0x20
+CortexService[0x101fdba78] <+692>: mov    x0, sp
+CortexService[0x101fdba7c] <+696>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101fdba80] <+700>: adrp   x1, 4304
+CortexService[0x101fdba84] <+704>: add    x1, x1, #0xfb7            ; "[aes_crypto] CipherFinal failed, encrypt:"
+CortexService[0x101fdba88] <+708>: add    x0, sp, #0x20
+CortexService[0x101fdba8c] <+712>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101fdba90] <+716>: mov    x21, x0
+CortexService[0x101fdba94] <+720>: ldr    x0, [x0]
+CortexService[0x101fdba98] <+724>: adrp   x8, 4269
+CortexService[0x101fdba9c] <+728>: add    x8, x8, #0xa4c            ; "false"
+CortexService[0x101fdbaa0] <+732>: adrp   x9, 4148
+CortexService[0x101fdbaa4] <+736>: add    x9, x9, #0x12             ; "true"
+CortexService[0x101fdbaa8] <+740>: cmp    w20, #0x0
+CortexService[0x101fdbaac] <+744>: csel   x1, x9, x8, ne
+CortexService[0x101fdbab0] <+748>: bl     0x1024b48ac               ; symbol stub for: QTextStream::operator<<(char const*)
+CortexService[0x101fdbab4] <+752>: ldr    x0, [x21]
+CortexService[0x101fdbab8] <+756>: ldrb   w8, [x0, #0x30]
+CortexService[0x101fdbabc] <+760>: cbz    w8, 0x101fdbac8           ; <+772>
+CortexService[0x101fdbac0] <+764>: mov    w1, #0x20                 ; =32
+CortexService[0x101fdbac4] <+768>: bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101fdbac8] <+772>: add    x0, sp, #0x20
+CortexService[0x101fdbacc] <+776>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101fdbad0] <+780>: mov    x0, x19
+CortexService[0x101fdbad4] <+784>: bl     0x1020c1f40               ; EVP_CIPHER_CTX_free
+CortexService[0x101fdbad8] <+788>: mov    w0, #0x0                  ; =0
+CortexService[0x101fdbadc] <+792>: b      0x101fdb890               ; <+204>
+CortexService[0x101fdbae0] <+796>: b      0x101fdbaec               ; <+808>
+CortexService[0x101fdbae4] <+800>: b      0x101fdbaec               ; <+808>
+CortexService[0x101fdbae8] <+804>: b      0x101fdbaec               ; <+808>
+CortexService[0x101fdbaec] <+808>: mov    x19, x0
+CortexService[0x101fdbaf0] <+812>: add    x0, sp, #0x20
+CortexService[0x101fdbaf4] <+816>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101fdbaf8] <+820>: mov    x0, x19
+CortexService[0x101fdbafc] <+824>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+(lldb) disassemble -s 0x101fdbb00 -c 170
+CortexService`AesCrypto::decrypt:
+CortexService[0x101fdbb00] <+0>:   sub    sp, sp, #0x80
+CortexService[0x101fdbb04] <+4>:   stp    x24, x23, [sp, #0x40]
+CortexService[0x101fdbb08] <+8>:   stp    x22, x21, [sp, #0x50]
+CortexService[0x101fdbb0c] <+12>:  stp    x20, x19, [sp, #0x60]
+CortexService[0x101fdbb10] <+16>:  stp    x29, x30, [sp, #0x70]
+CortexService[0x101fdbb14] <+20>:  add    x29, sp, #0x70
+CortexService[0x101fdbb18] <+24>:  adrp   x8, 4419
+CortexService[0x101fdbb1c] <+28>:  ldr    x8, [x8, #0xcf0]
+CortexService[0x101fdbb20] <+32>:  ldr    x8, [x8]
+CortexService[0x101fdbb24] <+36>:  str    x8, [sp, #0x38]
+CortexService[0x101fdbb28] <+40>:  ldr    x8, [x1, #0x10]
+CortexService[0x101fdbb2c] <+44>:  cmp    x8, #0x20
+CortexService[0x101fdbb30] <+48>:  b.ne   0x101fdbd5c               ; <+604>
+CortexService[0x101fdbb34] <+52>:  mov    x19, x3
+CortexService[0x101fdbb38] <+56>:  mov    x21, x2
+CortexService[0x101fdbb3c] <+60>:  ldr    x9, [x1, #0x8]
+CortexService[0x101fdbb40] <+64>:  adrp   x8, 4417
+CortexService[0x101fdbb44] <+68>:  ldr    x8, [x8, #0x5f8]
+CortexService[0x101fdbb48] <+72>:  cmp    x9, #0x0
+CortexService[0x101fdbb4c] <+76>:  csel   x20, x8, x9, eq
+CortexService[0x101fdbb50] <+80>:  str    wzr, [sp, #0xc]
+CortexService[0x101fdbb54] <+84>:  cmp    w4, #0x1
+CortexService[0x101fdbb58] <+88>:  b.eq   0x101fdbbe4               ; <+228>
+CortexService[0x101fdbb5c] <+92>:  cbnz   w4, 0x101fdbc3c           ; <+316>
+CortexService[0x101fdbb60] <+96>:  ldp    x9, x10, [x21, #0x8]
+CortexService[0x101fdbb64] <+100>: cmp    x9, #0x0
+CortexService[0x101fdbb68] <+104>: csel   x22, x8, x9, eq
+CortexService[0x101fdbb6c] <+108>: add    x1, x10, #0x20
+CortexService[0x101fdbb70] <+112>: mov    x0, x19
+CortexService[0x101fdbb74] <+116>: bl     0x1024b439c               ; symbol stub for: QByteArray::resize(long long)
+CortexService[0x101fdbb78] <+120>: ldr    x8, [x19]
+CortexService[0x101fdbb7c] <+124>: cbz    x8, 0x101fdbb8c           ; <+140>
+CortexService[0x101fdbb80] <+128>: ldr    w8, [x8]
+CortexService[0x101fdbb84] <+132>: cmp    w8, #0x2
+CortexService[0x101fdbb88] <+136>: b.lt   0x101fdbb9c               ; <+156>
+CortexService[0x101fdbb8c] <+140>: ldr    x1, [x19, #0x10]
+CortexService[0x101fdbb90] <+144>: mov    x0, x19
+CortexService[0x101fdbb94] <+148>: mov    w2, #0x1                  ; =1
+CortexService[0x101fdbb98] <+152>: bl     0x1024b4300               ; symbol stub for: QByteArray::reallocData(long long, QArrayData::AllocationOption)
+CortexService[0x101fdbb9c] <+156>: ldr    x23, [x19, #0x8]
+CortexService[0x101fdbba0] <+160>: cbz    x23, 0x101fdbd68          ; <+616>
+CortexService[0x101fdbba4] <+164>: bl     0x1020b1938               ; EVP_aes_256_ecb
+CortexService[0x101fdbba8] <+168>: mov    x1, x0
+CortexService[0x101fdbbac] <+172>: ldr    w5, [x21, #0x10]
+CortexService[0x101fdbbb0] <+176>: add    x7, sp, #0xc
+CortexService[0x101fdbbb4] <+180>: mov    w0, #0x0                  ; =0
+CortexService[0x101fdbbb8] <+184>: mov    x2, x20
+CortexService[0x101fdbbbc] <+188>: mov    x3, #0x0                  ; =0
+CortexService[0x101fdbbc0] <+192>: mov    x4, x22
+CortexService[0x101fdbbc4] <+196>: mov    x6, x23
+CortexService[0x101fdbbc8] <+200>: bl     0x101fdb7c4               ; ___lldb_unnamed_symbol_101fdb7c4
+CortexService[0x101fdbbcc] <+204>: cbz    w0, 0x101fdbc8c           ; <+396>
+CortexService[0x101fdbbd0] <+208>: ldrsw  x1, [sp, #0xc]
+CortexService[0x101fdbbd4] <+212>: mov    x0, x19
+CortexService[0x101fdbbd8] <+216>: bl     0x1024b439c               ; symbol stub for: QByteArray::resize(long long)
+CortexService[0x101fdbbdc] <+220>: mov    w20, #0x1                 ; =1
+CortexService[0x101fdbbe0] <+224>: b      0x101fdbc90               ; <+400>
+CortexService[0x101fdbbe4] <+228>: ldr    x23, [x21, #0x10]
+CortexService[0x101fdbbe8] <+232>: cmp    x23, #0xf
+CortexService[0x101fdbbec] <+236>: b.gt   0x101fdbcc4               ; <+452>
+CortexService[0x101fdbbf0] <+240>: adrp   x8, 3994
+CortexService[0x101fdbbf4] <+244>: ldr    d0, [x8, #0xb48]
+CortexService[0x101fdbbf8] <+248>: adrp   x8, 4304
+CortexService[0x101fdbbfc] <+252>: add    x8, x8, #0xd17            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/OpensslCrypto/src/CryptoUtil.cpp"
+CortexService[0x101fdbc00] <+256>: adrp   x9, 4304
+CortexService[0x101fdbc04] <+260>: add    x9, x9, #0xe34            ; "bool AesCrypto::decrypt(const QByteArray &, const QByteArray &, QByteArray &, const CryptoCipher)"
+CortexService[0x101fdbc08] <+264>: str    d0, [sp, #0x10]
+CortexService[0x101fdbc0c] <+268>: stp    x8, x9, [sp, #0x18]
+CortexService[0x101fdbc10] <+272>: adrp   x8, 4148
+CortexService[0x101fdbc14] <+276>: add    x8, x8, #0xa              ; "default"
+CortexService[0x101fdbc18] <+280>: str    x8, [sp, #0x28]
+CortexService[0x101fdbc1c] <+284>: mov    x8, sp
+CortexService[0x101fdbc20] <+288>: add    x0, sp, #0x10
+CortexService[0x101fdbc24] <+292>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101fdbc28] <+296>: adrp   x1, 4304
+CortexService[0x101fdbc2c] <+300>: add    x1, x1, #0xe96            ; "[aes_crypto] Invalid cipherData (too small)"
+CortexService[0x101fdbc30] <+304>: mov    x0, sp
+CortexService[0x101fdbc34] <+308>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101fdbc38] <+312>: b      0x101fdbc84               ; <+388>
+CortexService[0x101fdbc3c] <+316>: adrp   x8, 1568
+CortexService[0x101fdbc40] <+320>: ldr    d0, [x8, #0x7a0]
+CortexService[0x101fdbc44] <+324>: adrp   x8, 4304
+CortexService[0x101fdbc48] <+328>: add    x8, x8, #0xd17            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/OpensslCrypto/src/CryptoUtil.cpp"
+CortexService[0x101fdbc4c] <+332>: adrp   x9, 4304
+CortexService[0x101fdbc50] <+336>: add    x9, x9, #0xe34            ; "bool AesCrypto::decrypt(const QByteArray &, const QByteArray &, QByteArray &, const CryptoCipher)"
+CortexService[0x101fdbc54] <+340>: str    d0, [sp, #0x10]
+CortexService[0x101fdbc58] <+344>: stp    x8, x9, [sp, #0x18]
+CortexService[0x101fdbc5c] <+348>: adrp   x8, 4148
+CortexService[0x101fdbc60] <+352>: add    x8, x8, #0xa              ; "default"
+CortexService[0x101fdbc64] <+356>: str    x8, [sp, #0x28]
+CortexService[0x101fdbc68] <+360>: mov    x8, sp
+CortexService[0x101fdbc6c] <+364>: add    x0, sp, #0x10
+CortexService[0x101fdbc70] <+368>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101fdbc74] <+372>: adrp   x1, 4304
+CortexService[0x101fdbc78] <+376>: add    x1, x1, #0xe14            ; "[aes_crypto] Unsupported cipher"
+CortexService[0x101fdbc7c] <+380>: mov    x0, sp
+CortexService[0x101fdbc80] <+384>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101fdbc84] <+388>: mov    x0, sp
+CortexService[0x101fdbc88] <+392>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101fdbc8c] <+396>: mov    w20, #0x0                 ; =0
+CortexService[0x101fdbc90] <+400>: ldr    x8, [sp, #0x38]
+CortexService[0x101fdbc94] <+404>: adrp   x9, 4419
+CortexService[0x101fdbc98] <+408>: ldr    x9, [x9, #0xcf0]
+CortexService[0x101fdbc9c] <+412>: ldr    x9, [x9]
+CortexService[0x101fdbca0] <+416>: cmp    x9, x8
+CortexService[0x101fdbca4] <+420>: b.ne   0x101fdbd64               ; <+612>
+CortexService[0x101fdbca8] <+424>: mov    x0, x20
+CortexService[0x101fdbcac] <+428>: ldp    x29, x30, [sp, #0x70]
+CortexService[0x101fdbcb0] <+432>: ldp    x20, x19, [sp, #0x60]
+CortexService[0x101fdbcb4] <+436>: ldp    x22, x21, [sp, #0x50]
+CortexService[0x101fdbcb8] <+440>: ldp    x24, x23, [sp, #0x40]
+CortexService[0x101fdbcbc] <+444>: add    sp, sp, #0x80
+CortexService[0x101fdbcc0] <+448>: ret
+CortexService[0x101fdbcc4] <+452>: ldr    x9, [x21, #0x8]
+CortexService[0x101fdbcc8] <+456>: cmp    x9, #0x0
+CortexService[0x101fdbccc] <+460>: csel   x22, x8, x9, eq
+CortexService[0x101fdbcd0] <+464>: ldr    q0, [x22]
+CortexService[0x101fdbcd4] <+468>: str    q0, [sp, #0x10]
+CortexService[0x101fdbcd8] <+472>: add    w8, w23, #0x10
+CortexService[0x101fdbcdc] <+476>: sxtw   x1, w8
+CortexService[0x101fdbce0] <+480>: mov    x0, x19
+CortexService[0x101fdbce4] <+484>: bl     0x1024b439c               ; symbol stub for: QByteArray::resize(long long)
+CortexService[0x101fdbce8] <+488>: ldr    x8, [x19]
+CortexService[0x101fdbcec] <+492>: cbz    x8, 0x101fdbcfc           ; <+508>
+CortexService[0x101fdbcf0] <+496>: ldr    w8, [x8]
+CortexService[0x101fdbcf4] <+500>: cmp    w8, #0x2
+CortexService[0x101fdbcf8] <+504>: b.lt   0x101fdbd0c               ; <+524>
+CortexService[0x101fdbcfc] <+508>: ldr    x1, [x19, #0x10]
+CortexService[0x101fdbd00] <+512>: mov    x0, x19
+CortexService[0x101fdbd04] <+516>: mov    w2, #0x1                  ; =1
+CortexService[0x101fdbd08] <+520>: bl     0x1024b4300               ; symbol stub for: QByteArray::reallocData(long long, QArrayData::AllocationOption)
+CortexService[0x101fdbd0c] <+524>: ldr    x21, [x19, #0x8]
+CortexService[0x101fdbd10] <+528>: cbz    x21, 0x101fdbd70          ; <+624>
+CortexService[0x101fdbd14] <+532>: add    x22, x22, #0x10
+CortexService[0x101fdbd18] <+536>: sub    w23, w23, #0x10
+CortexService[0x101fdbd1c] <+540>: bl     0x1020b192c               ; EVP_aes_256_cbc
+CortexService[0x101fdbd20] <+544>: mov    x1, x0
+CortexService[0x101fdbd24] <+548>: add    x3, sp, #0x10
+CortexService[0x101fdbd28] <+552>: add    x7, sp, #0xc
+CortexService[0x101fdbd2c] <+556>: mov    w0, #0x0                  ; =0
+CortexService[0x101fdbd30] <+560>: mov    x2, x20
+CortexService[0x101fdbd34] <+564>: mov    x4, x22
+CortexService[0x101fdbd38] <+568>: mov    x5, x23
+CortexService[0x101fdbd3c] <+572>: mov    x6, x21
+CortexService[0x101fdbd40] <+576>: bl     0x101fdb7c4               ; ___lldb_unnamed_symbol_101fdb7c4
+CortexService[0x101fdbd44] <+580>: mov    x20, x0
+CortexService[0x101fdbd48] <+584>: cbz    w0, 0x101fdbc90           ; <+400>
+CortexService[0x101fdbd4c] <+588>: ldrsw  x1, [sp, #0xc]
+CortexService[0x101fdbd50] <+592>: mov    x0, x19
+CortexService[0x101fdbd54] <+596>: bl     0x1024b439c               ; symbol stub for: QByteArray::resize(long long)
+CortexService[0x101fdbd58] <+600>: b      0x101fdbc90               ; <+400>
+CortexService[0x101fdbd5c] <+604>: bl     0x1024b28f4               ; ___lldb_unnamed_symbol_1024b28f4
+CortexService[0x101fdbd60] <+608>: b      0x101fdbd74               ; <+628>
+CortexService[0x101fdbd64] <+612>: bl     0x1024b77f8               ; symbol stub for: __stack_chk_fail
+CortexService[0x101fdbd68] <+616>: bl     0x10243d174               ; ___lldb_unnamed_symbol_10243d174
+CortexService[0x101fdbd6c] <+620>: b      0x101fdbd74               ; <+628>
+CortexService[0x101fdbd70] <+624>: bl     0x10243d174               ; ___lldb_unnamed_symbol_10243d174
+CortexService[0x101fdbd74] <+628>: brk    #0x1
+CortexService[0x101fdbd78] <+632>: b      0x101fdbd7c               ; <+636>
+CortexService[0x101fdbd7c] <+636>: mov    x19, x0
+CortexService[0x101fdbd80] <+640>: mov    x0, sp
+CortexService[0x101fdbd84] <+644>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101fdbd88] <+648>: mov    x0, x19
+CortexService[0x101fdbd8c] <+652>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+CortexService[0x101fdbd90] <+656>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+
+CortexService`AES_cbc_encrypt:
+CortexService[0x101fdbd94] <+0>:   sub    sp, sp, #0x40
+CortexService[0x101fdbd98] <+4>:   stp    x29, x30, [sp, #0x30]
+CortexService[0x101fdbd9c] <+8>:   add    x29, sp, #0x30
+CortexService[0x101fdbda0] <+12>:  stur   x0, [x29, #-0x8]
+CortexService[0x101fdbda4] <+16>:  stur   x1, [x29, #-0x10]
+(lldb) disassemble -s 0x101e7f450 -e 0x101e7f5a0
+CortexService`LocalFileStore::getThenDecrypt:
+CortexService[0x101e7f450] <+0>:   sub    sp, sp, #0x70
+CortexService[0x101e7f454] <+4>:   stp    x22, x21, [sp, #0x40]
+CortexService[0x101e7f458] <+8>:   stp    x20, x19, [sp, #0x50]
+CortexService[0x101e7f45c] <+12>:  stp    x29, x30, [sp, #0x60]
+CortexService[0x101e7f460] <+16>:  add    x29, sp, #0x60
+CortexService[0x101e7f464] <+20>:  mov    x21, x3
+CortexService[0x101e7f468] <+24>:  mov    x19, x1
+CortexService[0x101e7f46c] <+28>:  stp    xzr, xzr, [sp, #0x28]
+CortexService[0x101e7f470] <+32>:  str    xzr, [sp, #0x38]
+CortexService[0x101e7f474] <+36>:  add    x3, sp, #0x28
+CortexService[0x101e7f478] <+40>:  bl     0x101e7f5a0               ; LocalFileStore::readFile(QString const&, QString const&, QByteArray&)
+CortexService[0x101e7f47c] <+44>:  mov    x20, x0
+CortexService[0x101e7f480] <+48>:  cbnz   w0, 0x101e7f49c           ; <+76>
+CortexService[0x101e7f484] <+52>:  add    x2, sp, #0x28
+CortexService[0x101e7f488] <+56>:  mov    x1, x19
+CortexService[0x101e7f48c] <+60>:  mov    x3, x21
+CortexService[0x101e7f490] <+64>:  bl     0x101e7fb44               ; LocalFileStore::decrypt(QString const&, QByteArray const&, QByteArray&)
+CortexService[0x101e7f494] <+68>:  tbz    w0, #0x0, 0x101e7f4e0     ; <+144>
+CortexService[0x101e7f498] <+72>:  mov    w20, #0x0                 ; =0
+CortexService[0x101e7f49c] <+76>:  ldr    x8, [sp, #0x28]
+CortexService[0x101e7f4a0] <+80>:  cbz    x8, 0x101e7f4c8           ; <+120>
+CortexService[0x101e7f4a4] <+84>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7f4a8] <+88>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7f4ac] <+92>:  cmp    w8, #0x1
+CortexService[0x101e7f4b0] <+96>:  b.ne   0x101e7f4c8               ; <+120>
+CortexService[0x101e7f4b4] <+100>: ldr    x0, [sp, #0x28]
+CortexService[0x101e7f4b8] <+104>: cbz    x0, 0x101e7f570           ; <+288>
+CortexService[0x101e7f4bc] <+108>: ldr    w8, [x0]
+CortexService[0x101e7f4c0] <+112>: cbnz   w8, 0x101e7f574           ; <+292>
+CortexService[0x101e7f4c4] <+116>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7f4c8] <+120>: mov    x0, x20
+CortexService[0x101e7f4cc] <+124>: ldp    x29, x30, [sp, #0x60]
+CortexService[0x101e7f4d0] <+128>: ldp    x20, x19, [sp, #0x50]
+CortexService[0x101e7f4d4] <+132>: ldp    x22, x21, [sp, #0x40]
+CortexService[0x101e7f4d8] <+136>: add    sp, sp, #0x70
+CortexService[0x101e7f4dc] <+140>: ret
+CortexService[0x101e7f4e0] <+144>: adrp   x8, 1911
+CortexService[0x101e7f4e4] <+148>: ldr    d0, [x8, #0x500]
+CortexService[0x101e7f4e8] <+152>: adrp   x8, 4643
+CortexService[0x101e7f4ec] <+156>: add    x8, x8, #0x966            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/UtilityFileStore/LocalFileStore.cpp"
+CortexService[0x101e7f4f0] <+160>: adrp   x9, 4643
+CortexService[0x101e7f4f4] <+164>: add    x9, x9, #0xb57            ; "FileStoreError LocalFileStore::getThenDecrypt(const QString &, const QString &, QByteArray &)"
+CortexService[0x101e7f4f8] <+168>: str    d0, [sp]
+CortexService[0x101e7f4fc] <+172>: stp    x8, x9, [sp, #0x8]
+CortexService[0x101e7f500] <+176>: adrp   x8, 4496
+CortexService[0x101e7f504] <+180>: add    x8, x8, #0xa              ; "default"
+CortexService[0x101e7f508] <+184>: str    x8, [sp, #0x18]
+CortexService[0x101e7f50c] <+188>: add    x8, sp, #0x20
+CortexService[0x101e7f510] <+192>: mov    x0, sp
+CortexService[0x101e7f514] <+196>: bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101e7f518] <+200>: adrp   x1, 4643
+CortexService[0x101e7f51c] <+204>: add    x1, x1, #0xbb5            ; "[file_store] failed to decrypt, uuid:"
+CortexService[0x101e7f520] <+208>: add    x0, sp, #0x20
+CortexService[0x101e7f524] <+212>: bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101e7f528] <+216>: mov    x20, x0
+CortexService[0x101e7f52c] <+220>: adrp   x8, 4766
+CortexService[0x101e7f530] <+224>: ldr    x8, [x8, #0xdc0]
+CortexService[0x101e7f534] <+228>: ldp    x9, x2, [x19, #0x8]
+CortexService[0x101e7f538] <+232>: cmp    x9, #0x0
+CortexService[0x101e7f53c] <+236>: csel   x1, x8, x9, eq
+CortexService[0x101e7f540] <+240>: bl     0x1024b541c               ; symbol stub for: QDebug::putString(QChar const*, unsigned long)
+CortexService[0x101e7f544] <+244>: ldr    x0, [x20]
+CortexService[0x101e7f548] <+248>: ldrb   w8, [x0, #0x30]
+CortexService[0x101e7f54c] <+252>: cbz    w8, 0x101e7f558           ; <+264>
+CortexService[0x101e7f550] <+256>: mov    w1, #0x20                 ; =32
+CortexService[0x101e7f554] <+260>: bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101e7f558] <+264>: add    x0, sp, #0x20
+CortexService[0x101e7f55c] <+268>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e7f560] <+272>: mov    w20, #0x7                 ; =7
+CortexService[0x101e7f564] <+276>: ldr    x8, [sp, #0x28]
+CortexService[0x101e7f568] <+280>: cbnz   x8, 0x101e7f4a4           ; <+84>
+CortexService[0x101e7f56c] <+284>: b      0x101e7f4c8               ; <+120>
+CortexService[0x101e7f570] <+288>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e7f574] <+292>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e7f578] <+296>: b      0x101e7f58c               ; <+316>
+CortexService[0x101e7f57c] <+300>: mov    x19, x0
+CortexService[0x101e7f580] <+304>: add    x0, sp, #0x20
+CortexService[0x101e7f584] <+308>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e7f588] <+312>: b      0x101e7f590               ; <+320>
+CortexService[0x101e7f58c] <+316>: mov    x19, x0
+CortexService[0x101e7f590] <+320>: add    x0, sp, #0x28
+CortexService[0x101e7f594] <+324>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e7f598] <+328>: mov    x0, x19
+CortexService[0x101e7f59c] <+332>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+(lldb) quit

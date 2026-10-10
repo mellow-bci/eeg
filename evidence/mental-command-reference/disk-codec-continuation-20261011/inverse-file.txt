@@ -1,0 +1,949 @@
+(lldb) target create --arch arm64 "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/MacOS/CortexService' (arm64).
+(lldb) disassemble -s 0x101e72870 -c 200
+CortexService`Cortex::FileStore::FileCompress::eUncompress:
+CortexService[0x101e72870] <+0>:   stp    x22, x21, [sp, #-0x30]!
+CortexService[0x101e72874] <+4>:   stp    x20, x19, [sp, #0x10]
+CortexService[0x101e72878] <+8>:   stp    x29, x30, [sp, #0x20]
+CortexService[0x101e7287c] <+12>:  add    x29, sp, #0x20
+CortexService[0x101e72880] <+16>:  sub    sp, sp, #0x490
+CortexService[0x101e72884] <+20>:  mov    x19, x8
+CortexService[0x101e72888] <+24>:  adrp   x8, 4780
+CortexService[0x101e7288c] <+28>:  ldr    x8, [x8, #0xcf0]
+CortexService[0x101e72890] <+32>:  ldr    x8, [x8]
+CortexService[0x101e72894] <+36>:  stur   x8, [x29, #-0x28]
+CortexService[0x101e72898] <+40>:  ldr    x8, [x1, #0x10]
+CortexService[0x101e7289c] <+44>:  cmp    x8, #0x4
+CortexService[0x101e728a0] <+48>:  b.gt   0x101e728b0               ; <+64>
+CortexService[0x101e728a4] <+52>:  mov    x0, x19
+CortexService[0x101e728a8] <+56>:  bl     0x10249ecec               ; ___lldb_unnamed_symbol_10249ecec
+CortexService[0x101e728ac] <+60>:  b      0x101e729c8               ; <+344>
+CortexService[0x101e728b0] <+64>:  stp    xzr, xzr, [sp, #0x70]
+CortexService[0x101e728b4] <+68>:  str    xzr, [sp, #0x80]
+CortexService[0x101e728b8] <+72>:  stp    xzr, xzr, [sp, #0x48]
+CortexService[0x101e728bc] <+76>:  str    xzr, [sp, #0x40]
+CortexService[0x101e728c0] <+80>:  str    w8, [sp, #0x8]
+CortexService[0x101e728c4] <+84>:  ldr    x8, [x1, #0x8]
+CortexService[0x101e728c8] <+88>:  adrp   x9, 4778
+CortexService[0x101e728cc] <+92>:  ldr    x9, [x9, #0x5f8]
+CortexService[0x101e728d0] <+96>:  cmp    x8, #0x0
+CortexService[0x101e728d4] <+100>: csel   x8, x9, x8, eq
+CortexService[0x101e728d8] <+104>: str    x8, [sp]
+CortexService[0x101e728dc] <+108>: adrp   x2, 4559
+CortexService[0x101e728e0] <+112>: add    x2, x2, #0x1b5            ; "1.2.11"
+CortexService[0x101e728e4] <+116>: mov    x0, sp
+CortexService[0x101e728e8] <+120>: mov    w1, #0x2f                 ; =47
+CortexService[0x101e728ec] <+124>: mov    w3, #0x70                 ; =112
+CortexService[0x101e728f0] <+128>: bl     0x101e793c8               ; inflateInit2_
+CortexService[0x101e728f4] <+132>: cbnz   w0, 0x101e72994           ; <+292>
+CortexService[0x101e728f8] <+136>: mov    w20, #0x400               ; =1024
+CortexService[0x101e728fc] <+140>: add    x21, sp, #0x88
+CortexService[0x101e72900] <+144>: str    w20, [sp, #0x20]
+CortexService[0x101e72904] <+148>: str    x21, [sp, #0x18]
+CortexService[0x101e72908] <+152>: mov    x0, sp
+CortexService[0x101e7290c] <+156>: mov    w1, #0x0                  ; =0
+CortexService[0x101e72910] <+160>: bl     0x101e795f4               ; inflate
+CortexService[0x101e72914] <+164>: add    w8, w0, #0x4
+CortexService[0x101e72918] <+168>: cmp    w8, #0x2
+CortexService[0x101e7291c] <+172>: ccmp   w0, #0x2, #0x4, hs
+CortexService[0x101e72920] <+176>: b.eq   0x101e7298c               ; <+284>
+CortexService[0x101e72924] <+180>: cmn    w0, #0x2
+CortexService[0x101e72928] <+184>: b.eq   0x101e729f4               ; <+388>
+CortexService[0x101e7292c] <+188>: ldr    w8, [sp, #0x20]
+CortexService[0x101e72930] <+192>: subs   w2, w20, w8
+CortexService[0x101e72934] <+196>: b.pl   0x101e72948               ; <+216>
+CortexService[0x101e72938] <+200>: add    x0, sp, #0x88
+CortexService[0x101e7293c] <+204>: bl     0x1024b883c               ; symbol stub for: strlen
+CortexService[0x101e72940] <+208>: mov    x2, x0
+CortexService[0x101e72944] <+212>: tbnz   x0, #0x3f, 0x101e72a00    ; <+400>
+CortexService[0x101e72948] <+216>: ldr    x1, [sp, #0x80]
+CortexService[0x101e7294c] <+220>: add    x0, sp, #0x70
+CortexService[0x101e72950] <+224>: add    x3, sp, #0x88
+CortexService[0x101e72954] <+228>: bl     0x1024b4378               ; symbol stub for: QByteArray::insert(long long, QByteArrayView)
+CortexService[0x101e72958] <+232>: ldr    w8, [sp, #0x20]
+CortexService[0x101e7295c] <+236>: cbz    w8, 0x101e72900           ; <+144>
+CortexService[0x101e72960] <+240>: mov    x0, sp
+CortexService[0x101e72964] <+244>: bl     0x101e7b5ac               ; inflateEnd
+CortexService[0x101e72968] <+248>: ldr    q0, [sp, #0x70]
+CortexService[0x101e7296c] <+252>: stp    xzr, xzr, [sp, #0x70]
+CortexService[0x101e72970] <+256>: str    q0, [x19]
+CortexService[0x101e72974] <+260>: ldr    x8, [sp, #0x80]
+CortexService[0x101e72978] <+264>: str    xzr, [sp, #0x80]
+CortexService[0x101e7297c] <+268>: str    x8, [x19, #0x10]
+CortexService[0x101e72980] <+272>: ldr    x8, [sp, #0x70]
+CortexService[0x101e72984] <+276>: cbnz   x8, 0x101e729a4           ; <+308>
+CortexService[0x101e72988] <+280>: b      0x101e729c8               ; <+344>
+CortexService[0x101e7298c] <+284>: mov    x0, sp
+CortexService[0x101e72990] <+288>: bl     0x101e7b5ac               ; inflateEnd
+CortexService[0x101e72994] <+292>: stp    xzr, xzr, [x19]
+CortexService[0x101e72998] <+296>: str    xzr, [x19, #0x10]
+CortexService[0x101e7299c] <+300>: ldr    x8, [sp, #0x70]
+CortexService[0x101e729a0] <+304>: cbz    x8, 0x101e729c8           ; <+344>
+CortexService[0x101e729a4] <+308>: mov    w9, #-0x1                 ; =-1
+CortexService[0x101e729a8] <+312>: ldaddal w9, w8, [x8]
+CortexService[0x101e729ac] <+316>: cmp    w8, #0x1
+CortexService[0x101e729b0] <+320>: b.ne   0x101e729c8               ; <+344>
+CortexService[0x101e729b4] <+324>: ldr    x0, [sp, #0x70]
+CortexService[0x101e729b8] <+328>: cbz    x0, 0x101e72a08           ; <+408>
+CortexService[0x101e729bc] <+332>: ldr    w8, [x0]
+CortexService[0x101e729c0] <+336>: cbnz   w8, 0x101e72a10           ; <+416>
+CortexService[0x101e729c4] <+340>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e729c8] <+344>: ldur   x8, [x29, #-0x28]
+CortexService[0x101e729cc] <+348>: adrp   x9, 4780
+CortexService[0x101e729d0] <+352>: ldr    x9, [x9, #0xcf0]
+CortexService[0x101e729d4] <+356>: ldr    x9, [x9]
+CortexService[0x101e729d8] <+360>: cmp    x9, x8
+CortexService[0x101e729dc] <+364>: b.ne   0x101e729fc               ; <+396>
+CortexService[0x101e729e0] <+368>: add    sp, sp, #0x490
+CortexService[0x101e729e4] <+372>: ldp    x29, x30, [sp, #0x20]
+CortexService[0x101e729e8] <+376>: ldp    x20, x19, [sp, #0x10]
+CortexService[0x101e729ec] <+380>: ldp    x22, x21, [sp], #0x30
+CortexService[0x101e729f0] <+384>: ret
+CortexService[0x101e729f4] <+388>: bl     0x10249ed54               ; ___lldb_unnamed_symbol_10249ed54
+CortexService[0x101e729f8] <+392>: b      0x101e72a14               ; <+420>
+CortexService[0x101e729fc] <+396>: bl     0x1024b77f8               ; symbol stub for: __stack_chk_fail
+CortexService[0x101e72a00] <+400>: bl     0x10233dd7c               ; ___lldb_unnamed_symbol_10233dd7c
+CortexService[0x101e72a04] <+404>: b      0x101e72a14               ; <+420>
+CortexService[0x101e72a08] <+408>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e72a0c] <+412>: b      0x101e72a14               ; <+420>
+CortexService[0x101e72a10] <+416>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e72a14] <+420>: brk    #0x1
+CortexService[0x101e72a18] <+424>: b      0x101e72a20               ; <+432>
+CortexService[0x101e72a1c] <+428>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+CortexService[0x101e72a20] <+432>: mov    x19, x0
+CortexService[0x101e72a24] <+436>: add    x0, sp, #0x70
+CortexService[0x101e72a28] <+440>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e72a2c] <+444>: mov    x0, x19
+CortexService[0x101e72a30] <+448>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+
+CortexService`Cortex::FileStore::ParquetFileStore::ParquetFileStore:
+CortexService[0x101e72a34] <+0>:   stp    xzr, xzr, [x0]
+CortexService[0x101e72a38] <+4>:   str    xzr, [x0, #0x10]
+CortexService[0x101e72a3c] <+8>:   ret
+
+CortexService`Cortex::FileStore::ParquetFileStore::open:
+CortexService[0x101e72a40] <+0>:   sub    sp, sp, #0x60
+CortexService[0x101e72a44] <+4>:   stp    x20, x19, [sp, #0x40]
+CortexService[0x101e72a48] <+8>:   stp    x29, x30, [sp, #0x50]
+CortexService[0x101e72a4c] <+12>:  add    x29, sp, #0x50
+CortexService[0x101e72a50] <+16>:  mov    x20, x1
+CortexService[0x101e72a54] <+20>:  mov    x19, x0
+CortexService[0x101e72a58] <+24>:  ldr    q0, [x1]
+CortexService[0x101e72a5c] <+28>:  str    q0, [sp, #0x20]
+CortexService[0x101e72a60] <+32>:  ldr    x8, [x1, #0x10]
+CortexService[0x101e72a64] <+36>:  str    x8, [sp, #0x30]
+CortexService[0x101e72a68] <+40>:  fmov   x8, d0
+CortexService[0x101e72a6c] <+44>:  cbz    x8, 0x101e72a78           ; <+56>
+CortexService[0x101e72a70] <+48>:  mov    w9, #0x1                  ; =1
+CortexService[0x101e72a74] <+52>:  ldaddal w9, w8, [x8]
+CortexService[0x101e72a78] <+56>:  adrp   x1, 4512
+CortexService[0x101e72a7c] <+60>:  add    x1, x1, #0x619            ; "'/'"
+CortexService[0x101e72a80] <+64>:  add    x0, sp, #0x20
+CortexService[0x101e72a84] <+68>:  mov    w2, #0x1                  ; =1
+CortexService[0x101e72a88] <+72>:  bl     0x1024b57b8               ; symbol stub for: QString::append(QBasicUtf8StringView<false>)
+CortexService[0x101e72a8c] <+76>:  adrp   x1, 5661
+CortexService[0x101e72a90] <+80>:  add    x1, x1, #0x760
+CortexService[0x101e72a94] <+84>:  add    x0, sp, #0x20
+CortexService[0x101e72a98] <+88>:  bl     0x1024b57d0               ; symbol stub for: QString::append(QString const&)
+CortexService[0x101e72a9c] <+92>:  ldr    q0, [x0]
+CortexService[0x101e72aa0] <+96>:  stp    xzr, xzr, [x0]
+CortexService[0x101e72aa4] <+100>: str    q0, [sp]
+CortexService[0x101e72aa8] <+104>: ldr    x8, [x0, #0x10]
+CortexService[0x101e72aac] <+108>: str    xzr, [x0, #0x10]
+CortexService[0x101e72ab0] <+112>: str    x8, [sp, #0x10]
+CortexService[0x101e72ab4] <+116>: sub    x0, x29, #0x18
+CortexService[0x101e72ab8] <+120>: mov    x1, sp
+CortexService[0x101e72abc] <+124>: bl     0x1024b529c               ; symbol stub for: QDir::QDir(QString const&)
+CortexService[0x101e72ac0] <+128>: ldr    x8, [sp]
+CortexService[0x101e72ac4] <+132>: cbz    x8, 0x101e72aec           ; <+172>
+CortexService[0x101e72ac8] <+136>: mov    w9, #-0x1                 ; =-1
+CortexService[0x101e72acc] <+140>: ldaddal w9, w8, [x8]
+CortexService[0x101e72ad0] <+144>: cmp    w8, #0x1
+CortexService[0x101e72ad4] <+148>: b.ne   0x101e72aec               ; <+172>
+CortexService[0x101e72ad8] <+152>: ldr    x0, [sp]
+CortexService[0x101e72adc] <+156>: cbz    x0, 0x101e72c78           ; <+568>
+CortexService[0x101e72ae0] <+160>: ldr    w8, [x0]
+CortexService[0x101e72ae4] <+164>: cbnz   w8, 0x101e72c7c           ; <+572>
+CortexService[0x101e72ae8] <+168>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e72aec] <+172>: ldr    x8, [sp, #0x20]
+CortexService[0x101e72af0] <+176>: cbz    x8, 0x101e72b18           ; <+216>
+CortexService[0x101e72af4] <+180>: mov    w9, #-0x1                 ; =-1
+CortexService[0x101e72af8] <+184>: ldaddal w9, w8, [x8]
+CortexService[0x101e72afc] <+188>: cmp    w8, #0x1
+CortexService[0x101e72b00] <+192>: b.ne   0x101e72b18               ; <+216>
+CortexService[0x101e72b04] <+196>: ldr    x0, [sp, #0x20]
+CortexService[0x101e72b08] <+200>: cbz    x0, 0x101e72c80           ; <+576>
+CortexService[0x101e72b0c] <+204>: ldr    w8, [x0]
+CortexService[0x101e72b10] <+208>: cbnz   w8, 0x101e72c84           ; <+580>
+CortexService[0x101e72b14] <+212>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e72b18] <+216>: sub    x0, x29, #0x18
+CortexService[0x101e72b1c] <+220>: bl     0x1024b66e8               ; symbol stub for: QDir::exists() const
+CortexService[0x101e72b20] <+224>: tbz    w0, #0x0, 0x101e72b7c     ; <+316>
+CortexService[0x101e72b24] <+228>: mov    x8, sp
+CortexService[0x101e72b28] <+232>: sub    x0, x29, #0x18
+CortexService[0x101e72b2c] <+236>: bl     0x1024b66b8               ; symbol stub for: QDir::absolutePath() const
+CortexService[0x101e72b30] <+240>: ldr    q0, [sp]
+CortexService[0x101e72b34] <+244>: ldr    q1, [x19]
+CortexService[0x101e72b38] <+248>: str    q0, [x19]
+CortexService[0x101e72b3c] <+252>: str    q1, [sp]
+CortexService[0x101e72b40] <+256>: ldr    x8, [x19, #0x10]
+CortexService[0x101e72b44] <+260>: ldr    x9, [sp, #0x10]
+CortexService[0x101e72b48] <+264>: str    x9, [x19, #0x10]
+CortexService[0x101e72b4c] <+268>: str    x8, [sp, #0x10]
+CortexService[0x101e72b50] <+272>: fmov   x8, d1
+CortexService[0x101e72b54] <+276>: cbz    x8, 0x101e72c00           ; <+448>
+CortexService[0x101e72b58] <+280>: mov    w9, #-0x1                 ; =-1
+CortexService[0x101e72b5c] <+284>: ldaddal w9, w8, [x8]
+CortexService[0x101e72b60] <+288>: cmp    w8, #0x1
+CortexService[0x101e72b64] <+292>: b.ne   0x101e72c00               ; <+448>
+CortexService[0x101e72b68] <+296>: ldr    x0, [sp]
+CortexService[0x101e72b6c] <+300>: cbz    x0, 0x101e72c88           ; <+584>
+CortexService[0x101e72b70] <+304>: ldr    w8, [x0]
+CortexService[0x101e72b74] <+308>: cbz    w8, 0x101e72bfc           ; <+444>
+CortexService[0x101e72b78] <+312>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e72b7c] <+316>: mov    x0, sp
+CortexService[0x101e72b80] <+320>: mov    x1, x20
+CortexService[0x101e72b84] <+324>: bl     0x1024b529c               ; symbol stub for: QDir::QDir(QString const&)
+CortexService[0x101e72b88] <+328>: adrp   x1, 5661
+CortexService[0x101e72b8c] <+332>: add    x1, x1, #0x760
+(lldb) disassemble -s 0x101e7f5a0 -e 0x101e7fb44
+CortexService`LocalFileStore::readFile:
+CortexService[0x101e7f5a0] <+0>:    sub    sp, sp, #0xa0
+CortexService[0x101e7f5a4] <+4>:    stp    x22, x21, [sp, #0x70]
+CortexService[0x101e7f5a8] <+8>:    stp    x20, x19, [sp, #0x80]
+CortexService[0x101e7f5ac] <+12>:   stp    x29, x30, [sp, #0x90]
+CortexService[0x101e7f5b0] <+16>:   add    x29, sp, #0x90
+CortexService[0x101e7f5b4] <+20>:   mov    x20, x3
+CortexService[0x101e7f5b8] <+24>:   mov    x22, x2
+CortexService[0x101e7f5bc] <+28>:   mov    x19, x1
+CortexService[0x101e7f5c0] <+32>:   mov    x21, x0
+CortexService[0x101e7f5c4] <+36>:   ldur   q0, [x0, #0x8]
+CortexService[0x101e7f5c8] <+40>:   str    q0, [sp, #0x30]
+CortexService[0x101e7f5cc] <+44>:   ldr    x8, [x0, #0x18]
+CortexService[0x101e7f5d0] <+48>:   str    x8, [sp, #0x40]
+CortexService[0x101e7f5d4] <+52>:   fmov   x8, d0
+CortexService[0x101e7f5d8] <+56>:   cbz    x8, 0x101e7f5e4           ; <+68>
+CortexService[0x101e7f5dc] <+60>:   mov    w9, #0x1                  ; =1
+CortexService[0x101e7f5e0] <+64>:   ldaddal w9, w8, [x8]
+CortexService[0x101e7f5e4] <+68>:   adrp   x1, 4499
+CortexService[0x101e7f5e8] <+72>:   add    x1, x1, #0x619            ; "'/'"
+CortexService[0x101e7f5ec] <+76>:   add    x0, sp, #0x30
+CortexService[0x101e7f5f0] <+80>:   mov    w2, #0x1                  ; =1
+CortexService[0x101e7f5f4] <+84>:   bl     0x1024b57b8               ; symbol stub for: QString::append(QBasicUtf8StringView<false>)
+CortexService[0x101e7f5f8] <+88>:   add    x0, sp, #0x30
+CortexService[0x101e7f5fc] <+92>:   mov    x1, x19
+CortexService[0x101e7f600] <+96>:   bl     0x1024b57d0               ; symbol stub for: QString::append(QString const&)
+CortexService[0x101e7f604] <+100>:  ldr    q0, [x0]
+CortexService[0x101e7f608] <+104>:  stp    xzr, xzr, [x0]
+CortexService[0x101e7f60c] <+108>:  str    q0, [sp]
+CortexService[0x101e7f610] <+112>:  ldr    x8, [x0, #0x10]
+CortexService[0x101e7f614] <+116>:  str    xzr, [x0, #0x10]
+CortexService[0x101e7f618] <+120>:  str    x8, [sp, #0x10]
+CortexService[0x101e7f61c] <+124>:  mov    x0, sp
+CortexService[0x101e7f620] <+128>:  mov    x1, x22
+CortexService[0x101e7f624] <+132>:  bl     0x1024b57d0               ; symbol stub for: QString::append(QString const&)
+CortexService[0x101e7f628] <+136>:  ldr    q0, [x0]
+CortexService[0x101e7f62c] <+140>:  stp    xzr, xzr, [x0]
+CortexService[0x101e7f630] <+144>:  stur   q0, [x29, #-0x40]
+CortexService[0x101e7f634] <+148>:  ldr    x8, [x0, #0x10]
+CortexService[0x101e7f638] <+152>:  str    xzr, [x0, #0x10]
+CortexService[0x101e7f63c] <+156>:  stur   x8, [x29, #-0x30]
+CortexService[0x101e7f640] <+160>:  ldr    x8, [sp]
+CortexService[0x101e7f644] <+164>:  cbz    x8, 0x101e7f66c           ; <+204>
+CortexService[0x101e7f648] <+168>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7f64c] <+172>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7f650] <+176>:  cmp    w8, #0x1
+CortexService[0x101e7f654] <+180>:  b.ne   0x101e7f66c               ; <+204>
+CortexService[0x101e7f658] <+184>:  ldr    x0, [sp]
+CortexService[0x101e7f65c] <+188>:  cbz    x0, 0x101e7f8e4           ; <+836>
+CortexService[0x101e7f660] <+192>:  ldr    w8, [x0]
+CortexService[0x101e7f664] <+196>:  cbnz   w8, 0x101e7f8e8           ; <+840>
+CortexService[0x101e7f668] <+200>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7f66c] <+204>:  ldr    x8, [sp, #0x30]
+CortexService[0x101e7f670] <+208>:  cbz    x8, 0x101e7f698           ; <+248>
+CortexService[0x101e7f674] <+212>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7f678] <+216>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7f67c] <+220>:  cmp    w8, #0x1
+CortexService[0x101e7f680] <+224>:  b.ne   0x101e7f698               ; <+248>
+CortexService[0x101e7f684] <+228>:  ldr    x0, [sp, #0x30]
+CortexService[0x101e7f688] <+232>:  cbz    x0, 0x101e7f8ec           ; <+844>
+CortexService[0x101e7f68c] <+236>:  ldr    w8, [x0]
+CortexService[0x101e7f690] <+240>:  cbnz   w8, 0x101e7f8f0           ; <+848>
+CortexService[0x101e7f694] <+244>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7f698] <+248>:  add    x0, sp, #0x30
+CortexService[0x101e7f69c] <+252>:  sub    x1, x29, #0x40
+CortexService[0x101e7f6a0] <+256>:  bl     0x1024b5398               ; symbol stub for: QFile::QFile(QString const&)
+CortexService[0x101e7f6a4] <+260>:  add    x0, sp, #0x30
+CortexService[0x101e7f6a8] <+264>:  bl     0x1024b67e4               ; symbol stub for: QFile::exists() const
+CortexService[0x101e7f6ac] <+268>:  tbz    w0, #0x0, 0x101e7f6dc     ; <+316>
+CortexService[0x101e7f6b0] <+272>:  ldrb   w8, [x21]
+CortexService[0x101e7f6b4] <+276>:  cbz    w8, 0x101e7f764           ; <+452>
+CortexService[0x101e7f6b8] <+280>:  add    x1, sp, #0x30
+CortexService[0x101e7f6bc] <+284>:  mov    x2, x20
+CortexService[0x101e7f6c0] <+288>:  bl     0x101e7f990               ; LocalFileStore::readData(QFile&, QByteArray&)
+CortexService[0x101e7f6c4] <+292>:  mov    x21, x0
+CortexService[0x101e7f6c8] <+296>:  cbnz   w0, 0x101e7f898           ; <+760>
+CortexService[0x101e7f6cc] <+300>:  ldr    x8, [x20, #0x10]
+CortexService[0x101e7f6d0] <+304>:  cbz    x8, 0x101e7f804           ; <+612>
+CortexService[0x101e7f6d4] <+308>:  mov    w21, #0x0                 ; =0
+CortexService[0x101e7f6d8] <+312>:  b      0x101e7f898               ; <+760>
+CortexService[0x101e7f6dc] <+316>:  adrp   x8, 1911
+CortexService[0x101e7f6e0] <+320>:  ldr    d0, [x8, #0x1f0]
+CortexService[0x101e7f6e4] <+324>:  adrp   x8, 4643
+CortexService[0x101e7f6e8] <+328>:  add    x8, x8, #0x966            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/UtilityFileStore/LocalFileStore.cpp"
+CortexService[0x101e7f6ec] <+332>:  adrp   x9, 4643
+CortexService[0x101e7f6f0] <+336>:  add    x9, x9, #0xaa3            ; "FileStoreError LocalFileStore::readFile(const QString &, const QString &, QByteArray &)"
+CortexService[0x101e7f6f4] <+340>:  str    d0, [sp]
+CortexService[0x101e7f6f8] <+344>:  stp    x8, x9, [sp, #0x8]
+CortexService[0x101e7f6fc] <+348>:  adrp   x8, 4496
+CortexService[0x101e7f700] <+352>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x101e7f704] <+356>:  str    x8, [sp, #0x18]
+CortexService[0x101e7f708] <+360>:  add    x8, sp, #0x28
+CortexService[0x101e7f70c] <+364>:  mov    x0, sp
+CortexService[0x101e7f710] <+368>:  bl     0x1024b631c               ; symbol stub for: QMessageLogger::info() const
+CortexService[0x101e7f714] <+372>:  adrp   x1, 4643
+CortexService[0x101e7f718] <+376>:  add    x1, x1, #0xafb            ; "[file_store] file doesn't exist, fileName:"
+CortexService[0x101e7f71c] <+380>:  add    x0, sp, #0x28
+CortexService[0x101e7f720] <+384>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101e7f724] <+388>:  mov    x20, x0
+CortexService[0x101e7f728] <+392>:  adrp   x8, 4766
+CortexService[0x101e7f72c] <+396>:  ldr    x8, [x8, #0xdc0]
+CortexService[0x101e7f730] <+400>:  ldp    x9, x2, [x19, #0x8]
+CortexService[0x101e7f734] <+404>:  cmp    x9, #0x0
+CortexService[0x101e7f738] <+408>:  csel   x1, x8, x9, eq
+CortexService[0x101e7f73c] <+412>:  bl     0x1024b541c               ; symbol stub for: QDebug::putString(QChar const*, unsigned long)
+CortexService[0x101e7f740] <+416>:  ldr    x0, [x20]
+CortexService[0x101e7f744] <+420>:  ldrb   w8, [x0, #0x30]
+CortexService[0x101e7f748] <+424>:  cbz    w8, 0x101e7f754           ; <+436>
+CortexService[0x101e7f74c] <+428>:  mov    w1, #0x20                 ; =32
+CortexService[0x101e7f750] <+432>:  bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101e7f754] <+436>:  add    x0, sp, #0x28
+CortexService[0x101e7f758] <+440>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e7f75c] <+444>:  mov    w21, #0x2                 ; =2
+CortexService[0x101e7f760] <+448>:  b      0x101e7f898               ; <+760>
+CortexService[0x101e7f764] <+452>:  ldur   q0, [x29, #-0x40]
+CortexService[0x101e7f768] <+456>:  str    q0, [sp]
+CortexService[0x101e7f76c] <+460>:  ldur   x8, [x29, #-0x30]
+CortexService[0x101e7f770] <+464>:  str    x8, [sp, #0x10]
+CortexService[0x101e7f774] <+468>:  fmov   x8, d0
+CortexService[0x101e7f778] <+472>:  cbz    x8, 0x101e7f784           ; <+484>
+CortexService[0x101e7f77c] <+476>:  mov    w9, #0x1                  ; =1
+CortexService[0x101e7f780] <+480>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7f784] <+484>:  adrp   x1, 4632
+CortexService[0x101e7f788] <+488>:  add    x1, x1, #0xb07            ; ".lock"
+CortexService[0x101e7f78c] <+492>:  mov    x0, sp
+CortexService[0x101e7f790] <+496>:  mov    w2, #0x5                  ; =5
+CortexService[0x101e7f794] <+500>:  bl     0x1024b57b8               ; symbol stub for: QString::append(QBasicUtf8StringView<false>)
+CortexService[0x101e7f798] <+504>:  add    x0, sp, #0x28
+CortexService[0x101e7f79c] <+508>:  mov    x1, sp
+CortexService[0x101e7f7a0] <+512>:  mov    w2, #0x3e8                ; =1000
+CortexService[0x101e7f7a4] <+516>:  bl     0x101e7e5e8               ; FileLocker::FileLocker(QString const&, int)
+CortexService[0x101e7f7a8] <+520>:  ldr    x8, [sp]
+CortexService[0x101e7f7ac] <+524>:  cbz    x8, 0x101e7f7d4           ; <+564>
+CortexService[0x101e7f7b0] <+528>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7f7b4] <+532>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7f7b8] <+536>:  cmp    w8, #0x1
+CortexService[0x101e7f7bc] <+540>:  b.ne   0x101e7f7d4               ; <+564>
+CortexService[0x101e7f7c0] <+544>:  ldr    x0, [sp]
+CortexService[0x101e7f7c4] <+548>:  cbz    x0, 0x101e7f8fc           ; <+860>
+CortexService[0x101e7f7c8] <+552>:  ldr    w8, [x0]
+CortexService[0x101e7f7cc] <+556>:  cbnz   w8, 0x101e7f900           ; <+864>
+CortexService[0x101e7f7d0] <+560>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7f7d4] <+564>:  add    x0, sp, #0x28
+CortexService[0x101e7f7d8] <+568>:  bl     0x101e7e5ec               ; FileLocker::isLocked()
+CortexService[0x101e7f7dc] <+572>:  tbz    w0, #0x0, 0x101e7f88c     ; <+748>
+CortexService[0x101e7f7e0] <+576>:  add    x1, sp, #0x30
+CortexService[0x101e7f7e4] <+580>:  mov    x2, x20
+CortexService[0x101e7f7e8] <+584>:  bl     0x101e7f990               ; LocalFileStore::readData(QFile&, QByteArray&)
+CortexService[0x101e7f7ec] <+588>:  mov    x21, x0
+CortexService[0x101e7f7f0] <+592>:  cbnz   w0, 0x101e7f890           ; <+752>
+CortexService[0x101e7f7f4] <+596>:  add    x0, sp, #0x28
+CortexService[0x101e7f7f8] <+600>:  bl     0x101e7e674               ; FileLocker::~FileLocker()
+CortexService[0x101e7f7fc] <+604>:  ldr    x8, [x20, #0x10]
+CortexService[0x101e7f800] <+608>:  cbnz   x8, 0x101e7f6d4           ; <+308>
+CortexService[0x101e7f804] <+612>:  adrp   x8, 1905
+CortexService[0x101e7f808] <+616>:  ldr    d0, [x8, #0x138]
+CortexService[0x101e7f80c] <+620>:  adrp   x8, 4643
+CortexService[0x101e7f810] <+624>:  add    x8, x8, #0x966            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/UtilityFileStore/LocalFileStore.cpp"
+CortexService[0x101e7f814] <+628>:  adrp   x9, 4643
+CortexService[0x101e7f818] <+632>:  add    x9, x9, #0xaa3            ; "FileStoreError LocalFileStore::readFile(const QString &, const QString &, QByteArray &)"
+CortexService[0x101e7f81c] <+636>:  str    d0, [sp]
+CortexService[0x101e7f820] <+640>:  stp    x8, x9, [sp, #0x8]
+CortexService[0x101e7f824] <+644>:  adrp   x8, 4496
+CortexService[0x101e7f828] <+648>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x101e7f82c] <+652>:  str    x8, [sp, #0x18]
+CortexService[0x101e7f830] <+656>:  add    x8, sp, #0x28
+CortexService[0x101e7f834] <+660>:  mov    x0, sp
+CortexService[0x101e7f838] <+664>:  bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101e7f83c] <+668>:  adrp   x1, 4643
+CortexService[0x101e7f840] <+672>:  add    x1, x1, #0xb26            ; "[file_store] readAll() return 0 bytes, fileName:"
+CortexService[0x101e7f844] <+676>:  add    x0, sp, #0x28
+CortexService[0x101e7f848] <+680>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101e7f84c] <+684>:  mov    x20, x0
+CortexService[0x101e7f850] <+688>:  adrp   x8, 4766
+CortexService[0x101e7f854] <+692>:  ldr    x8, [x8, #0xdc0]
+CortexService[0x101e7f858] <+696>:  ldp    x9, x2, [x19, #0x8]
+CortexService[0x101e7f85c] <+700>:  cmp    x9, #0x0
+CortexService[0x101e7f860] <+704>:  csel   x1, x8, x9, eq
+CortexService[0x101e7f864] <+708>:  bl     0x1024b541c               ; symbol stub for: QDebug::putString(QChar const*, unsigned long)
+CortexService[0x101e7f868] <+712>:  ldr    x0, [x20]
+CortexService[0x101e7f86c] <+716>:  ldrb   w8, [x0, #0x30]
+CortexService[0x101e7f870] <+720>:  cbz    w8, 0x101e7f87c           ; <+732>
+CortexService[0x101e7f874] <+724>:  mov    w1, #0x20                 ; =32
+CortexService[0x101e7f878] <+728>:  bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101e7f87c] <+732>:  add    x0, sp, #0x28
+CortexService[0x101e7f880] <+736>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e7f884] <+740>:  mov    w21, #0x4                 ; =4
+CortexService[0x101e7f888] <+744>:  b      0x101e7f898               ; <+760>
+CortexService[0x101e7f88c] <+748>:  mov    w21, #0x3                 ; =3
+CortexService[0x101e7f890] <+752>:  add    x0, sp, #0x28
+CortexService[0x101e7f894] <+756>:  bl     0x101e7e674               ; FileLocker::~FileLocker()
+CortexService[0x101e7f898] <+760>:  add    x0, sp, #0x30
+CortexService[0x101e7f89c] <+764>:  bl     0x1024b53b0               ; symbol stub for: QFile::~QFile()
+CortexService[0x101e7f8a0] <+768>:  ldur   x8, [x29, #-0x40]
+CortexService[0x101e7f8a4] <+772>:  cbz    x8, 0x101e7f8cc           ; <+812>
+CortexService[0x101e7f8a8] <+776>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7f8ac] <+780>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7f8b0] <+784>:  cmp    w8, #0x1
+CortexService[0x101e7f8b4] <+788>:  b.ne   0x101e7f8cc               ; <+812>
+CortexService[0x101e7f8b8] <+792>:  ldur   x0, [x29, #-0x40]
+CortexService[0x101e7f8bc] <+796>:  cbz    x0, 0x101e7f8f4           ; <+852>
+CortexService[0x101e7f8c0] <+800>:  ldr    w8, [x0]
+CortexService[0x101e7f8c4] <+804>:  cbnz   w8, 0x101e7f8f8           ; <+856>
+CortexService[0x101e7f8c8] <+808>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7f8cc] <+812>:  mov    x0, x21
+CortexService[0x101e7f8d0] <+816>:  ldp    x29, x30, [sp, #0x90]
+CortexService[0x101e7f8d4] <+820>:  ldp    x20, x19, [sp, #0x80]
+CortexService[0x101e7f8d8] <+824>:  ldp    x22, x21, [sp, #0x70]
+CortexService[0x101e7f8dc] <+828>:  add    sp, sp, #0xa0
+CortexService[0x101e7f8e0] <+832>:  ret
+CortexService[0x101e7f8e4] <+836>:  bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e7f8e8] <+840>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e7f8ec] <+844>:  bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e7f8f0] <+848>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e7f8f4] <+852>:  bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e7f8f8] <+856>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e7f8fc] <+860>:  bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e7f900] <+864>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e7f904] <+868>:  b      0x101e7f93c               ; <+924>
+CortexService[0x101e7f908] <+872>:  b      0x101e7f910               ; <+880>
+CortexService[0x101e7f90c] <+876>:  b      0x101e7f96c               ; <+972>
+CortexService[0x101e7f910] <+880>:  mov    x19, x0
+CortexService[0x101e7f914] <+884>:  add    x0, sp, #0x28
+CortexService[0x101e7f918] <+888>:  bl     0x101e7e674               ; FileLocker::~FileLocker()
+CortexService[0x101e7f91c] <+892>:  b      0x101e7f978               ; <+984>
+CortexService[0x101e7f920] <+896>:  b      0x101e7f924               ; <+900>
+CortexService[0x101e7f924] <+900>:  mov    x19, x0
+CortexService[0x101e7f928] <+904>:  mov    x0, sp
+CortexService[0x101e7f92c] <+908>:  bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e7f930] <+912>:  b      0x101e7f978               ; <+984>
+CortexService[0x101e7f934] <+916>:  b      0x101e7f93c               ; <+924>
+CortexService[0x101e7f938] <+920>:  b      0x101e7f93c               ; <+924>
+CortexService[0x101e7f93c] <+924>:  mov    x19, x0
+CortexService[0x101e7f940] <+928>:  b      0x101e7f978               ; <+984>
+CortexService[0x101e7f944] <+932>:  mov    x19, x0
+CortexService[0x101e7f948] <+936>:  b      0x101e7f980               ; <+992>
+CortexService[0x101e7f94c] <+940>:  mov    x19, x0
+CortexService[0x101e7f950] <+944>:  mov    x0, sp
+CortexService[0x101e7f954] <+948>:  bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e7f958] <+952>:  b      0x101e7f964               ; <+964>
+CortexService[0x101e7f95c] <+956>:  b      0x101e7f960               ; <+960>
+CortexService[0x101e7f960] <+960>:  mov    x19, x0
+CortexService[0x101e7f964] <+964>:  add    x0, sp, #0x30
+CortexService[0x101e7f968] <+968>:  b      0x101e7f984               ; <+996>
+CortexService[0x101e7f96c] <+972>:  mov    x19, x0
+CortexService[0x101e7f970] <+976>:  add    x0, sp, #0x28
+CortexService[0x101e7f974] <+980>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e7f978] <+984>:  add    x0, sp, #0x30
+CortexService[0x101e7f97c] <+988>:  bl     0x1024b53b0               ; symbol stub for: QFile::~QFile()
+CortexService[0x101e7f980] <+992>:  sub    x0, x29, #0x40
+CortexService[0x101e7f984] <+996>:  bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e7f988] <+1000>: mov    x0, x19
+CortexService[0x101e7f98c] <+1004>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+
+CortexService`LocalFileStore::readData:
+CortexService[0x101e7f990] <+0>:    sub    sp, sp, #0x70
+CortexService[0x101e7f994] <+4>:    stp    x20, x19, [sp, #0x50]
+CortexService[0x101e7f998] <+8>:    stp    x29, x30, [sp, #0x60]
+CortexService[0x101e7f99c] <+12>:   add    x29, sp, #0x60
+CortexService[0x101e7f9a0] <+16>:   mov    x20, x2
+CortexService[0x101e7f9a4] <+20>:   mov    x19, x1
+CortexService[0x101e7f9a8] <+24>:   ldr    x8, [x1]
+CortexService[0x101e7f9ac] <+28>:   ldr    x8, [x8, #0x68]
+CortexService[0x101e7f9b0] <+32>:   mov    x0, x1
+CortexService[0x101e7f9b4] <+36>:   mov    w1, #0x1                  ; =1
+CortexService[0x101e7f9b8] <+40>:   blr    x8
+CortexService[0x101e7f9bc] <+44>:   tbz    w0, #0x0, 0x101e7fa3c     ; <+172>
+CortexService[0x101e7f9c0] <+48>:   add    x8, sp, #0x20
+CortexService[0x101e7f9c4] <+52>:   mov    x0, x19
+CortexService[0x101e7f9c8] <+56>:   bl     0x1024b5c80               ; symbol stub for: QIODevice::readAll()
+CortexService[0x101e7f9cc] <+60>:   ldr    q0, [sp, #0x20]
+CortexService[0x101e7f9d0] <+64>:   ldr    q1, [x20]
+CortexService[0x101e7f9d4] <+68>:   str    q0, [x20]
+CortexService[0x101e7f9d8] <+72>:   str    q1, [sp, #0x20]
+CortexService[0x101e7f9dc] <+76>:   ldr    x8, [x20, #0x10]
+CortexService[0x101e7f9e0] <+80>:   ldr    x9, [sp, #0x30]
+CortexService[0x101e7f9e4] <+84>:   str    x9, [x20, #0x10]
+CortexService[0x101e7f9e8] <+88>:   str    x8, [sp, #0x30]
+CortexService[0x101e7f9ec] <+92>:   fmov   x8, d1
+CortexService[0x101e7f9f0] <+96>:   cbz    x8, 0x101e7fa18           ; <+136>
+CortexService[0x101e7f9f4] <+100>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7f9f8] <+104>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7f9fc] <+108>:  cmp    w8, #0x1
+CortexService[0x101e7fa00] <+112>:  b.ne   0x101e7fa18               ; <+136>
+CortexService[0x101e7fa04] <+116>:  ldr    x0, [sp, #0x20]
+CortexService[0x101e7fa08] <+120>:  cbz    x0, 0x101e7fb08           ; <+376>
+CortexService[0x101e7fa0c] <+124>:  ldr    w8, [x0]
+CortexService[0x101e7fa10] <+128>:  cbnz   w8, 0x101e7fb0c           ; <+380>
+CortexService[0x101e7fa14] <+132>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7fa18] <+136>:  ldr    x8, [x19]
+CortexService[0x101e7fa1c] <+140>:  ldr    x8, [x8, #0x70]
+CortexService[0x101e7fa20] <+144>:  mov    x0, x19
+CortexService[0x101e7fa24] <+148>:  blr    x8
+CortexService[0x101e7fa28] <+152>:  mov    w0, #0x0                  ; =0
+CortexService[0x101e7fa2c] <+156>:  ldp    x29, x30, [sp, #0x60]
+CortexService[0x101e7fa30] <+160>:  ldp    x20, x19, [sp, #0x50]
+CortexService[0x101e7fa34] <+164>:  add    sp, sp, #0x70
+CortexService[0x101e7fa38] <+168>:  ret
+CortexService[0x101e7fa3c] <+172>:  adrp   x8, 1989
+CortexService[0x101e7fa40] <+176>:  ldr    d0, [x8, #0x7f0]
+CortexService[0x101e7fa44] <+180>:  adrp   x8, 4643
+CortexService[0x101e7fa48] <+184>:  add    x8, x8, #0x966            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/UtilityFileStore/LocalFileStore.cpp"
+CortexService[0x101e7fa4c] <+188>:  adrp   x9, 4643
+CortexService[0x101e7fa50] <+192>:  add    x9, x9, #0xc66            ; "FileStoreError LocalFileStore::readData(QFile &, QByteArray &)"
+CortexService[0x101e7fa54] <+196>:  str    d0, [sp, #0x20]
+CortexService[0x101e7fa58] <+200>:  stp    x8, x9, [sp, #0x28]
+CortexService[0x101e7fa5c] <+204>:  adrp   x8, 4496
+CortexService[0x101e7fa60] <+208>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x101e7fa64] <+212>:  str    x8, [sp, #0x38]
+CortexService[0x101e7fa68] <+216>:  sub    x8, x29, #0x18
+CortexService[0x101e7fa6c] <+220>:  add    x0, sp, #0x20
+CortexService[0x101e7fa70] <+224>:  bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101e7fa74] <+228>:  adrp   x1, 4643
+CortexService[0x101e7fa78] <+232>:  add    x1, x1, #0xca5            ; "[file_store] cannot open file to read, fileName:"
+CortexService[0x101e7fa7c] <+236>:  sub    x0, x29, #0x18
+CortexService[0x101e7fa80] <+240>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101e7fa84] <+244>:  mov    x20, x0
+CortexService[0x101e7fa88] <+248>:  ldr    x8, [x19]
+CortexService[0x101e7fa8c] <+252>:  ldr    x9, [x8, #0xe8]
+CortexService[0x101e7fa90] <+256>:  add    x8, sp, #0x8
+CortexService[0x101e7fa94] <+260>:  mov    x0, x19
+CortexService[0x101e7fa98] <+264>:  blr    x9
+CortexService[0x101e7fa9c] <+268>:  adrp   x8, 4766
+CortexService[0x101e7faa0] <+272>:  ldr    x8, [x8, #0xdc0]
+CortexService[0x101e7faa4] <+276>:  ldp    x9, x2, [sp, #0x10]
+CortexService[0x101e7faa8] <+280>:  cmp    x9, #0x0
+CortexService[0x101e7faac] <+284>:  csel   x1, x8, x9, eq
+CortexService[0x101e7fab0] <+288>:  mov    x0, x20
+CortexService[0x101e7fab4] <+292>:  bl     0x1024b541c               ; symbol stub for: QDebug::putString(QChar const*, unsigned long)
+CortexService[0x101e7fab8] <+296>:  ldr    x0, [x20]
+CortexService[0x101e7fabc] <+300>:  ldrb   w8, [x0, #0x30]
+CortexService[0x101e7fac0] <+304>:  cbz    w8, 0x101e7facc           ; <+316>
+CortexService[0x101e7fac4] <+308>:  mov    w1, #0x20                 ; =32
+CortexService[0x101e7fac8] <+312>:  bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101e7facc] <+316>:  ldr    x8, [sp, #0x8]
+CortexService[0x101e7fad0] <+320>:  cbz    x8, 0x101e7faf8           ; <+360>
+CortexService[0x101e7fad4] <+324>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7fad8] <+328>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7fadc] <+332>:  cmp    w8, #0x1
+CortexService[0x101e7fae0] <+336>:  b.ne   0x101e7faf8               ; <+360>
+CortexService[0x101e7fae4] <+340>:  ldr    x0, [sp, #0x8]
+CortexService[0x101e7fae8] <+344>:  cbz    x0, 0x101e7fb10           ; <+384>
+CortexService[0x101e7faec] <+348>:  ldr    w8, [x0]
+CortexService[0x101e7faf0] <+352>:  cbnz   w8, 0x101e7fb14           ; <+388>
+CortexService[0x101e7faf4] <+356>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7faf8] <+360>:  sub    x0, x29, #0x18
+CortexService[0x101e7fafc] <+364>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e7fb00] <+368>:  mov    w0, #0x5                  ; =5
+CortexService[0x101e7fb04] <+372>:  b      0x101e7fa2c               ; <+156>
+CortexService[0x101e7fb08] <+376>:  bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e7fb0c] <+380>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e7fb10] <+384>:  bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e7fb14] <+388>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e7fb18] <+392>:  mov    x19, x0
+CortexService[0x101e7fb1c] <+396>:  b      0x101e7fb34               ; <+420>
+CortexService[0x101e7fb20] <+400>:  mov    x19, x0
+CortexService[0x101e7fb24] <+404>:  b      0x101e7fb34               ; <+420>
+CortexService[0x101e7fb28] <+408>:  mov    x19, x0
+CortexService[0x101e7fb2c] <+412>:  add    x0, sp, #0x8
+CortexService[0x101e7fb30] <+416>:  bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e7fb34] <+420>:  sub    x0, x29, #0x18
+CortexService[0x101e7fb38] <+424>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e7fb3c] <+428>:  mov    x0, x19
+CortexService[0x101e7fb40] <+432>:  bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+(lldb) disassemble -s 0x101e7fb44 -e 0x101e7fc7c
+CortexService`LocalFileStore::decrypt:
+CortexService[0x101e7fb44] <+0>:   sub    sp, sp, #0x40
+CortexService[0x101e7fb48] <+4>:   stp    x20, x19, [sp, #0x20]
+CortexService[0x101e7fb4c] <+8>:   stp    x29, x30, [sp, #0x30]
+CortexService[0x101e7fb50] <+12>:  add    x29, sp, #0x30
+CortexService[0x101e7fb54] <+16>:  mov    x19, x3
+CortexService[0x101e7fb58] <+20>:  mov    x20, x2
+CortexService[0x101e7fb5c] <+24>:  mov    x0, x1
+CortexService[0x101e7fb60] <+28>:  add    x8, sp, #0x8
+CortexService[0x101e7fb64] <+32>:  bl     0x101e80108               ; ___lldb_unnamed_symbol_101e80108
+CortexService[0x101e7fb68] <+36>:  add    x0, sp, #0x7
+CortexService[0x101e7fb6c] <+40>:  add    x1, sp, #0x8
+CortexService[0x101e7fb70] <+44>:  mov    x2, x20
+CortexService[0x101e7fb74] <+48>:  mov    x3, x19
+CortexService[0x101e7fb78] <+52>:  mov    w4, #0x1                  ; =1
+CortexService[0x101e7fb7c] <+56>:  bl     0x101fdbb00               ; AesCrypto::decrypt(QByteArray const&, QByteArray const&, QByteArray&, CryptoCipher)
+CortexService[0x101e7fb80] <+60>:  mov    x19, x0
+CortexService[0x101e7fb84] <+64>:  ldr    x8, [sp, #0x8]
+CortexService[0x101e7fb88] <+68>:  cbz    x8, 0x101e7fbb0           ; <+108>
+CortexService[0x101e7fb8c] <+72>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7fb90] <+76>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7fb94] <+80>:  cmp    w8, #0x1
+CortexService[0x101e7fb98] <+84>:  b.ne   0x101e7fbb0               ; <+108>
+CortexService[0x101e7fb9c] <+88>:  ldr    x0, [sp, #0x8]
+CortexService[0x101e7fba0] <+92>:  cbz    x0, 0x101e7fbc4           ; <+128>
+CortexService[0x101e7fba4] <+96>:  ldr    w8, [x0]
+CortexService[0x101e7fba8] <+100>: cbnz   w8, 0x101e7fbc8           ; <+132>
+CortexService[0x101e7fbac] <+104>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7fbb0] <+108>: mov    x0, x19
+CortexService[0x101e7fbb4] <+112>: ldp    x29, x30, [sp, #0x30]
+CortexService[0x101e7fbb8] <+116>: ldp    x20, x19, [sp, #0x20]
+CortexService[0x101e7fbbc] <+120>: add    sp, sp, #0x40
+CortexService[0x101e7fbc0] <+124>: ret
+CortexService[0x101e7fbc4] <+128>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e7fbc8] <+132>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e7fbcc] <+136>: mov    x19, x0
+CortexService[0x101e7fbd0] <+140>: add    x0, sp, #0x8
+CortexService[0x101e7fbd4] <+144>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e7fbd8] <+148>: mov    x0, x19
+CortexService[0x101e7fbdc] <+152>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+
+CortexService`LocalFileStore::encrypt:
+CortexService[0x101e7fbe0] <+0>:   sub    sp, sp, #0x40
+CortexService[0x101e7fbe4] <+4>:   stp    x20, x19, [sp, #0x20]
+CortexService[0x101e7fbe8] <+8>:   stp    x29, x30, [sp, #0x30]
+CortexService[0x101e7fbec] <+12>:  add    x29, sp, #0x30
+CortexService[0x101e7fbf0] <+16>:  mov    x19, x3
+CortexService[0x101e7fbf4] <+20>:  mov    x20, x2
+CortexService[0x101e7fbf8] <+24>:  mov    x0, x1
+CortexService[0x101e7fbfc] <+28>:  add    x8, sp, #0x8
+CortexService[0x101e7fc00] <+32>:  bl     0x101e80108               ; ___lldb_unnamed_symbol_101e80108
+CortexService[0x101e7fc04] <+36>:  add    x0, sp, #0x7
+CortexService[0x101e7fc08] <+40>:  add    x1, sp, #0x8
+CortexService[0x101e7fc0c] <+44>:  mov    x2, x20
+CortexService[0x101e7fc10] <+48>:  mov    x3, x19
+CortexService[0x101e7fc14] <+52>:  mov    w4, #0x1                  ; =1
+CortexService[0x101e7fc18] <+56>:  bl     0x101fdb4f8               ; AesCrypto::encrypt(QByteArray const&, QByteArray const&, QByteArray&, CryptoCipher)
+CortexService[0x101e7fc1c] <+60>:  mov    x19, x0
+CortexService[0x101e7fc20] <+64>:  ldr    x8, [sp, #0x8]
+CortexService[0x101e7fc24] <+68>:  cbz    x8, 0x101e7fc4c           ; <+108>
+CortexService[0x101e7fc28] <+72>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7fc2c] <+76>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7fc30] <+80>:  cmp    w8, #0x1
+CortexService[0x101e7fc34] <+84>:  b.ne   0x101e7fc4c               ; <+108>
+CortexService[0x101e7fc38] <+88>:  ldr    x0, [sp, #0x8]
+CortexService[0x101e7fc3c] <+92>:  cbz    x0, 0x101e7fc60           ; <+128>
+CortexService[0x101e7fc40] <+96>:  ldr    w8, [x0]
+CortexService[0x101e7fc44] <+100>: cbnz   w8, 0x101e7fc64           ; <+132>
+CortexService[0x101e7fc48] <+104>: bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7fc4c] <+108>: mov    x0, x19
+CortexService[0x101e7fc50] <+112>: ldp    x29, x30, [sp, #0x30]
+CortexService[0x101e7fc54] <+116>: ldp    x20, x19, [sp, #0x20]
+CortexService[0x101e7fc58] <+120>: add    sp, sp, #0x40
+CortexService[0x101e7fc5c] <+124>: ret
+CortexService[0x101e7fc60] <+128>: bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e7fc64] <+132>: bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e7fc68] <+136>: mov    x19, x0
+CortexService[0x101e7fc6c] <+140>: add    x0, sp, #0x8
+CortexService[0x101e7fc70] <+144>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e7fc74] <+148>: mov    x0, x19
+CortexService[0x101e7fc78] <+152>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+(lldb) disassemble -s 0x101e7fc7c -e 0x101e80108
+CortexService`LocalFileStore::saveFile:
+CortexService[0x101e7fc7c] <+0>:    sub    sp, sp, #0xa0
+CortexService[0x101e7fc80] <+4>:    stp    x22, x21, [sp, #0x70]
+CortexService[0x101e7fc84] <+8>:    stp    x20, x19, [sp, #0x80]
+CortexService[0x101e7fc88] <+12>:   stp    x29, x30, [sp, #0x90]
+CortexService[0x101e7fc8c] <+16>:   add    x29, sp, #0x90
+CortexService[0x101e7fc90] <+20>:   ldrb   w8, [x0]
+CortexService[0x101e7fc94] <+24>:   cbnz   w8, 0x101e80040           ; <+964>
+CortexService[0x101e7fc98] <+28>:   mov    x20, x3
+CortexService[0x101e7fc9c] <+32>:   mov    x21, x2
+CortexService[0x101e7fca0] <+36>:   mov    x19, x1
+CortexService[0x101e7fca4] <+40>:   ldur   q0, [x0, #0x8]
+CortexService[0x101e7fca8] <+44>:   str    q0, [sp, #0x30]
+CortexService[0x101e7fcac] <+48>:   ldr    x8, [x0, #0x18]
+CortexService[0x101e7fcb0] <+52>:   str    x8, [sp, #0x40]
+CortexService[0x101e7fcb4] <+56>:   fmov   x8, d0
+CortexService[0x101e7fcb8] <+60>:   cbz    x8, 0x101e7fcc4           ; <+72>
+CortexService[0x101e7fcbc] <+64>:   mov    w9, #0x1                  ; =1
+CortexService[0x101e7fcc0] <+68>:   ldaddal w9, w8, [x8]
+CortexService[0x101e7fcc4] <+72>:   adrp   x1, 4499
+CortexService[0x101e7fcc8] <+76>:   add    x1, x1, #0x619            ; "'/'"
+CortexService[0x101e7fccc] <+80>:   add    x0, sp, #0x30
+CortexService[0x101e7fcd0] <+84>:   mov    w2, #0x1                  ; =1
+CortexService[0x101e7fcd4] <+88>:   bl     0x1024b57b8               ; symbol stub for: QString::append(QBasicUtf8StringView<false>)
+CortexService[0x101e7fcd8] <+92>:   add    x0, sp, #0x30
+CortexService[0x101e7fcdc] <+96>:   mov    x1, x19
+CortexService[0x101e7fce0] <+100>:  bl     0x1024b57d0               ; symbol stub for: QString::append(QString const&)
+CortexService[0x101e7fce4] <+104>:  ldr    q0, [x0]
+CortexService[0x101e7fce8] <+108>:  stp    xzr, xzr, [x0]
+CortexService[0x101e7fcec] <+112>:  str    q0, [sp]
+CortexService[0x101e7fcf0] <+116>:  ldr    x8, [x0, #0x10]
+CortexService[0x101e7fcf4] <+120>:  str    xzr, [x0, #0x10]
+CortexService[0x101e7fcf8] <+124>:  str    x8, [sp, #0x10]
+CortexService[0x101e7fcfc] <+128>:  mov    x0, sp
+CortexService[0x101e7fd00] <+132>:  mov    x1, x21
+CortexService[0x101e7fd04] <+136>:  bl     0x1024b57d0               ; symbol stub for: QString::append(QString const&)
+CortexService[0x101e7fd08] <+140>:  ldr    q0, [x0]
+CortexService[0x101e7fd0c] <+144>:  stp    xzr, xzr, [x0]
+CortexService[0x101e7fd10] <+148>:  stur   q0, [x29, #-0x40]
+CortexService[0x101e7fd14] <+152>:  ldr    x8, [x0, #0x10]
+CortexService[0x101e7fd18] <+156>:  str    xzr, [x0, #0x10]
+CortexService[0x101e7fd1c] <+160>:  stur   x8, [x29, #-0x30]
+CortexService[0x101e7fd20] <+164>:  ldr    x8, [sp]
+CortexService[0x101e7fd24] <+168>:  cbz    x8, 0x101e7fd4c           ; <+208>
+CortexService[0x101e7fd28] <+172>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7fd2c] <+176>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7fd30] <+180>:  cmp    w8, #0x1
+CortexService[0x101e7fd34] <+184>:  b.ne   0x101e7fd4c               ; <+208>
+CortexService[0x101e7fd38] <+188>:  ldr    x0, [sp]
+CortexService[0x101e7fd3c] <+192>:  cbz    x0, 0x101e80044           ; <+968>
+CortexService[0x101e7fd40] <+196>:  ldr    w8, [x0]
+CortexService[0x101e7fd44] <+200>:  cbnz   w8, 0x101e80048           ; <+972>
+CortexService[0x101e7fd48] <+204>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7fd4c] <+208>:  ldr    x8, [sp, #0x30]
+CortexService[0x101e7fd50] <+212>:  cbz    x8, 0x101e7fd78           ; <+252>
+CortexService[0x101e7fd54] <+216>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7fd58] <+220>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7fd5c] <+224>:  cmp    w8, #0x1
+CortexService[0x101e7fd60] <+228>:  b.ne   0x101e7fd78               ; <+252>
+CortexService[0x101e7fd64] <+232>:  ldr    x0, [sp, #0x30]
+CortexService[0x101e7fd68] <+236>:  cbz    x0, 0x101e8004c           ; <+976>
+CortexService[0x101e7fd6c] <+240>:  ldr    w8, [x0]
+CortexService[0x101e7fd70] <+244>:  cbnz   w8, 0x101e80050           ; <+980>
+CortexService[0x101e7fd74] <+248>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7fd78] <+252>:  ldur   q0, [x29, #-0x40]
+CortexService[0x101e7fd7c] <+256>:  str    q0, [sp]
+CortexService[0x101e7fd80] <+260>:  ldur   x8, [x29, #-0x30]
+CortexService[0x101e7fd84] <+264>:  str    x8, [sp, #0x10]
+CortexService[0x101e7fd88] <+268>:  fmov   x8, d0
+CortexService[0x101e7fd8c] <+272>:  cbz    x8, 0x101e7fd98           ; <+284>
+CortexService[0x101e7fd90] <+276>:  mov    w9, #0x1                  ; =1
+CortexService[0x101e7fd94] <+280>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7fd98] <+284>:  adrp   x1, 4632
+CortexService[0x101e7fd9c] <+288>:  add    x1, x1, #0xb07            ; ".lock"
+CortexService[0x101e7fda0] <+292>:  mov    x0, sp
+CortexService[0x101e7fda4] <+296>:  mov    w2, #0x5                  ; =5
+CortexService[0x101e7fda8] <+300>:  bl     0x1024b57b8               ; symbol stub for: QString::append(QBasicUtf8StringView<false>)
+CortexService[0x101e7fdac] <+304>:  add    x0, sp, #0x28
+CortexService[0x101e7fdb0] <+308>:  mov    x1, sp
+CortexService[0x101e7fdb4] <+312>:  mov    w2, #0x3e8                ; =1000
+CortexService[0x101e7fdb8] <+316>:  bl     0x101e7e5e8               ; FileLocker::FileLocker(QString const&, int)
+CortexService[0x101e7fdbc] <+320>:  ldr    x8, [sp]
+CortexService[0x101e7fdc0] <+324>:  cbz    x8, 0x101e7fde8           ; <+364>
+CortexService[0x101e7fdc4] <+328>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e7fdc8] <+332>:  ldaddal w9, w8, [x8]
+CortexService[0x101e7fdcc] <+336>:  cmp    w8, #0x1
+CortexService[0x101e7fdd0] <+340>:  b.ne   0x101e7fde8               ; <+364>
+CortexService[0x101e7fdd4] <+344>:  ldr    x0, [sp]
+CortexService[0x101e7fdd8] <+348>:  cbz    x0, 0x101e80054           ; <+984>
+CortexService[0x101e7fddc] <+352>:  ldr    w8, [x0]
+CortexService[0x101e7fde0] <+356>:  cbnz   w8, 0x101e80058           ; <+988>
+CortexService[0x101e7fde4] <+360>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e7fde8] <+364>:  add    x0, sp, #0x28
+CortexService[0x101e7fdec] <+368>:  bl     0x101e7e5ec               ; FileLocker::isLocked()
+CortexService[0x101e7fdf0] <+372>:  tbz    w0, #0x0, 0x101e7fe30     ; <+436>
+CortexService[0x101e7fdf4] <+376>:  add    x0, sp, #0x30
+CortexService[0x101e7fdf8] <+380>:  sub    x1, x29, #0x40
+CortexService[0x101e7fdfc] <+384>:  bl     0x1024b5398               ; symbol stub for: QFile::QFile(QString const&)
+CortexService[0x101e7fe00] <+388>:  add    x0, sp, #0x30
+CortexService[0x101e7fe04] <+392>:  mov    w1, #0xa                  ; =10
+CortexService[0x101e7fe08] <+396>:  bl     0x1024b535c               ; symbol stub for: QFile::open(QFlags<QIODeviceBase::OpenModeFlag>)
+CortexService[0x101e7fe0c] <+400>:  tbz    w0, #0x0, 0x101e7fe40     ; <+452>
+CortexService[0x101e7fe10] <+404>:  add    x0, sp, #0x30
+CortexService[0x101e7fe14] <+408>:  mov    x1, x20
+CortexService[0x101e7fe18] <+412>:  bl     0x1024b5c74               ; symbol stub for: QIODevice::write(QByteArray const&)
+CortexService[0x101e7fe1c] <+416>:  tbnz   x0, #0x3f, 0x101e7fecc    ; <+592>
+CortexService[0x101e7fe20] <+420>:  add    x0, sp, #0x30
+CortexService[0x101e7fe24] <+424>:  bl     0x1024b46e4               ; symbol stub for: QFileDevice::close()
+CortexService[0x101e7fe28] <+428>:  mov    w21, #0x1                 ; =1
+CortexService[0x101e7fe2c] <+432>:  b      0x101e7ff54               ; <+728>
+CortexService[0x101e7fe30] <+436>:  add    x0, sp, #0x28
+CortexService[0x101e7fe34] <+440>:  bl     0x101e7e674               ; FileLocker::~FileLocker()
+CortexService[0x101e7fe38] <+444>:  mov    w20, #0x3                 ; =3
+CortexService[0x101e7fe3c] <+448>:  b      0x101e7fffc               ; <+896>
+CortexService[0x101e7fe40] <+452>:  adrp   x8, 1989
+CortexService[0x101e7fe44] <+456>:  ldr    d0, [x8, #0xc88]
+CortexService[0x101e7fe48] <+460>:  adrp   x8, 4643
+CortexService[0x101e7fe4c] <+464>:  add    x8, x8, #0x966            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/UtilityFileStore/LocalFileStore.cpp"
+CortexService[0x101e7fe50] <+468>:  adrp   x9, 4643
+CortexService[0x101e7fe54] <+472>:  add    x9, x9, #0xcd6            ; "FileStoreError LocalFileStore::saveFile(const QString &, const QString &, const QByteArray &)"
+CortexService[0x101e7fe58] <+476>:  str    d0, [sp]
+CortexService[0x101e7fe5c] <+480>:  stp    x8, x9, [sp, #0x8]
+CortexService[0x101e7fe60] <+484>:  adrp   x8, 4496
+CortexService[0x101e7fe64] <+488>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x101e7fe68] <+492>:  str    x8, [sp, #0x18]
+CortexService[0x101e7fe6c] <+496>:  add    x8, sp, #0x20
+CortexService[0x101e7fe70] <+500>:  mov    x0, sp
+CortexService[0x101e7fe74] <+504>:  bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101e7fe78] <+508>:  adrp   x1, 4643
+CortexService[0x101e7fe7c] <+512>:  add    x1, x1, #0xd34            ; "[file_store] cannot open file to write, fileName:"
+CortexService[0x101e7fe80] <+516>:  add    x0, sp, #0x20
+CortexService[0x101e7fe84] <+520>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101e7fe88] <+524>:  mov    x20, x0
+CortexService[0x101e7fe8c] <+528>:  adrp   x8, 4766
+CortexService[0x101e7fe90] <+532>:  ldr    x8, [x8, #0xdc0]
+CortexService[0x101e7fe94] <+536>:  ldp    x9, x2, [x19, #0x8]
+CortexService[0x101e7fe98] <+540>:  cmp    x9, #0x0
+CortexService[0x101e7fe9c] <+544>:  csel   x1, x8, x9, eq
+CortexService[0x101e7fea0] <+548>:  bl     0x1024b541c               ; symbol stub for: QDebug::putString(QChar const*, unsigned long)
+CortexService[0x101e7fea4] <+552>:  ldr    x0, [x20]
+CortexService[0x101e7fea8] <+556>:  ldrb   w8, [x0, #0x30]
+CortexService[0x101e7feac] <+560>:  cbz    w8, 0x101e7feb8           ; <+572>
+CortexService[0x101e7feb0] <+564>:  mov    w1, #0x20                 ; =32
+CortexService[0x101e7feb4] <+568>:  bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101e7feb8] <+572>:  add    x0, sp, #0x20
+CortexService[0x101e7febc] <+576>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e7fec0] <+580>:  mov    w21, #0x0                 ; =0
+CortexService[0x101e7fec4] <+584>:  mov    w20, #0x3                 ; =3
+CortexService[0x101e7fec8] <+588>:  b      0x101e7ff54               ; <+728>
+CortexService[0x101e7fecc] <+592>:  adrp   x8, 1894
+CortexService[0x101e7fed0] <+596>:  ldr    d0, [x8, #0x5b8]
+CortexService[0x101e7fed4] <+600>:  adrp   x8, 4643
+CortexService[0x101e7fed8] <+604>:  add    x8, x8, #0x966            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/UtilityFileStore/LocalFileStore.cpp"
+CortexService[0x101e7fedc] <+608>:  adrp   x9, 4643
+CortexService[0x101e7fee0] <+612>:  add    x9, x9, #0xcd6            ; "FileStoreError LocalFileStore::saveFile(const QString &, const QString &, const QByteArray &)"
+CortexService[0x101e7fee4] <+616>:  str    d0, [sp]
+CortexService[0x101e7fee8] <+620>:  stp    x8, x9, [sp, #0x8]
+CortexService[0x101e7feec] <+624>:  adrp   x8, 4496
+CortexService[0x101e7fef0] <+628>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x101e7fef4] <+632>:  str    x8, [sp, #0x18]
+CortexService[0x101e7fef8] <+636>:  add    x8, sp, #0x20
+CortexService[0x101e7fefc] <+640>:  mov    x0, sp
+CortexService[0x101e7ff00] <+644>:  bl     0x1024b634c               ; symbol stub for: QMessageLogger::warning() const
+CortexService[0x101e7ff04] <+648>:  adrp   x1, 4643
+CortexService[0x101e7ff08] <+652>:  add    x1, x1, #0xd66            ; "[file_store] failed to write data, fileName:"
+CortexService[0x101e7ff0c] <+656>:  add    x0, sp, #0x20
+CortexService[0x101e7ff10] <+660>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101e7ff14] <+664>:  mov    x20, x0
+CortexService[0x101e7ff18] <+668>:  adrp   x8, 4766
+CortexService[0x101e7ff1c] <+672>:  ldr    x8, [x8, #0xdc0]
+CortexService[0x101e7ff20] <+676>:  ldp    x9, x2, [x19, #0x8]
+CortexService[0x101e7ff24] <+680>:  cmp    x9, #0x0
+CortexService[0x101e7ff28] <+684>:  csel   x1, x8, x9, eq
+CortexService[0x101e7ff2c] <+688>:  bl     0x1024b541c               ; symbol stub for: QDebug::putString(QChar const*, unsigned long)
+CortexService[0x101e7ff30] <+692>:  ldr    x0, [x20]
+CortexService[0x101e7ff34] <+696>:  ldrb   w8, [x0, #0x30]
+CortexService[0x101e7ff38] <+700>:  cbz    w8, 0x101e7ff44           ; <+712>
+CortexService[0x101e7ff3c] <+704>:  mov    w1, #0x20                 ; =32
+CortexService[0x101e7ff40] <+708>:  bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101e7ff44] <+712>:  add    x0, sp, #0x20
+CortexService[0x101e7ff48] <+716>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e7ff4c] <+720>:  mov    w21, #0x0                 ; =0
+CortexService[0x101e7ff50] <+724>:  mov    w20, #0x5                 ; =5
+CortexService[0x101e7ff54] <+728>:  add    x0, sp, #0x30
+CortexService[0x101e7ff58] <+732>:  bl     0x1024b53b0               ; symbol stub for: QFile::~QFile()
+CortexService[0x101e7ff5c] <+736>:  add    x0, sp, #0x28
+CortexService[0x101e7ff60] <+740>:  bl     0x101e7e674               ; FileLocker::~FileLocker()
+CortexService[0x101e7ff64] <+744>:  cbz    w21, 0x101e7fffc          ; <+896>
+CortexService[0x101e7ff68] <+748>:  adrp   x8, 1989
+CortexService[0x101e7ff6c] <+752>:  ldr    d0, [x8, #0x68]
+CortexService[0x101e7ff70] <+756>:  adrp   x8, 4643
+CortexService[0x101e7ff74] <+760>:  add    x8, x8, #0x966            ; "/Users/sdkteam/jenkins/workspace/cortex_service/src/ThirdParty/emotiv-utility-function/UtilityFileStore/LocalFileStore.cpp"
+CortexService[0x101e7ff78] <+764>:  adrp   x9, 4643
+CortexService[0x101e7ff7c] <+768>:  add    x9, x9, #0xcd6            ; "FileStoreError LocalFileStore::saveFile(const QString &, const QString &, const QByteArray &)"
+CortexService[0x101e7ff80] <+772>:  str    d0, [sp]
+CortexService[0x101e7ff84] <+776>:  stp    x8, x9, [sp, #0x8]
+CortexService[0x101e7ff88] <+780>:  adrp   x8, 4496
+CortexService[0x101e7ff8c] <+784>:  add    x8, x8, #0xa              ; "default"
+CortexService[0x101e7ff90] <+788>:  str    x8, [sp, #0x18]
+CortexService[0x101e7ff94] <+792>:  add    x8, sp, #0x30
+CortexService[0x101e7ff98] <+796>:  mov    x0, sp
+CortexService[0x101e7ff9c] <+800>:  bl     0x1024b631c               ; symbol stub for: QMessageLogger::info() const
+CortexService[0x101e7ffa0] <+804>:  adrp   x1, 4643
+CortexService[0x101e7ffa4] <+808>:  add    x1, x1, #0xd93            ; "[file_store] save json file:"
+CortexService[0x101e7ffa8] <+812>:  add    x0, sp, #0x30
+CortexService[0x101e7ffac] <+816>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101e7ffb0] <+820>:  mov    x20, x0
+CortexService[0x101e7ffb4] <+824>:  adrp   x8, 4766
+CortexService[0x101e7ffb8] <+828>:  ldr    x8, [x8, #0xdc0]
+CortexService[0x101e7ffbc] <+832>:  ldp    x9, x2, [x19, #0x8]
+CortexService[0x101e7ffc0] <+836>:  cmp    x9, #0x0
+CortexService[0x101e7ffc4] <+840>:  csel   x1, x8, x9, eq
+CortexService[0x101e7ffc8] <+844>:  bl     0x1024b541c               ; symbol stub for: QDebug::putString(QChar const*, unsigned long)
+CortexService[0x101e7ffcc] <+848>:  ldr    x0, [x20]
+CortexService[0x101e7ffd0] <+852>:  ldrb   w8, [x0, #0x30]
+CortexService[0x101e7ffd4] <+856>:  cbz    w8, 0x101e7ffe0           ; <+868>
+CortexService[0x101e7ffd8] <+860>:  mov    w1, #0x20                 ; =32
+CortexService[0x101e7ffdc] <+864>:  bl     0x1024b48d0               ; symbol stub for: QTextStream::operator<<(char)
+CortexService[0x101e7ffe0] <+868>:  adrp   x1, 4643
+CortexService[0x101e7ffe4] <+872>:  add    x1, x1, #0xa96            ; "successfully"
+CortexService[0x101e7ffe8] <+876>:  mov    x0, x20
+CortexService[0x101e7ffec] <+880>:  bl     0x10000e56c               ; ___lldb_unnamed_symbol_10000e56c
+CortexService[0x101e7fff0] <+884>:  add    x0, sp, #0x30
+CortexService[0x101e7fff4] <+888>:  bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e7fff8] <+892>:  mov    w20, #0x0                 ; =0
+CortexService[0x101e7fffc] <+896>:  ldur   x8, [x29, #-0x40]
+CortexService[0x101e80000] <+900>:  cbz    x8, 0x101e80028           ; <+940>
+CortexService[0x101e80004] <+904>:  mov    w9, #-0x1                 ; =-1
+CortexService[0x101e80008] <+908>:  ldaddal w9, w8, [x8]
+CortexService[0x101e8000c] <+912>:  cmp    w8, #0x1
+CortexService[0x101e80010] <+916>:  b.ne   0x101e80028               ; <+940>
+CortexService[0x101e80014] <+920>:  ldur   x0, [x29, #-0x40]
+CortexService[0x101e80018] <+924>:  cbz    x0, 0x101e8005c           ; <+992>
+CortexService[0x101e8001c] <+928>:  ldr    w8, [x0]
+CortexService[0x101e80020] <+932>:  cbnz   w8, 0x101e80060           ; <+996>
+CortexService[0x101e80024] <+936>:  bl     0x1024b7d98               ; symbol stub for: free
+CortexService[0x101e80028] <+940>:  mov    x0, x20
+CortexService[0x101e8002c] <+944>:  ldp    x29, x30, [sp, #0x90]
+CortexService[0x101e80030] <+948>:  ldp    x20, x19, [sp, #0x80]
+CortexService[0x101e80034] <+952>:  ldp    x22, x21, [sp, #0x70]
+CortexService[0x101e80038] <+956>:  add    sp, sp, #0xa0
+CortexService[0x101e8003c] <+960>:  ret
+CortexService[0x101e80040] <+964>:  bl     0x10249ed94               ; ___lldb_unnamed_symbol_10249ed94
+CortexService[0x101e80044] <+968>:  bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e80048] <+972>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e8004c] <+976>:  bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e80050] <+980>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e80054] <+984>:  bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e80058] <+988>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e8005c] <+992>:  bl     0x1022f6a94               ; ___lldb_unnamed_symbol_1022f6a94
+CortexService[0x101e80060] <+996>:  bl     0x1022f6ab0               ; ___lldb_unnamed_symbol_1022f6ab0
+CortexService[0x101e80064] <+1000>: b      0x101e800a4               ; <+1064>
+CortexService[0x101e80068] <+1004>: b      0x101e80080               ; <+1028>
+CortexService[0x101e8006c] <+1008>: mov    x19, x0
+CortexService[0x101e80070] <+1012>: sub    x0, x29, #0x40
+CortexService[0x101e80074] <+1016>: b      0x101e800fc               ; <+1152>
+CortexService[0x101e80078] <+1020>: b      0x101e800a4               ; <+1064>
+CortexService[0x101e8007c] <+1024>: b      0x101e800b4               ; <+1080>
+CortexService[0x101e80080] <+1028>: mov    x19, x0
+CortexService[0x101e80084] <+1032>: add    x0, sp, #0x20
+CortexService[0x101e80088] <+1036>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e8008c] <+1040>: b      0x101e800a8               ; <+1068>
+CortexService[0x101e80090] <+1044>: mov    x19, x0
+CortexService[0x101e80094] <+1048>: add    x0, sp, #0x30
+CortexService[0x101e80098] <+1052>: bl     0x1024b5428               ; symbol stub for: QDebug::~QDebug()
+CortexService[0x101e8009c] <+1056>: sub    x0, x29, #0x40
+CortexService[0x101e800a0] <+1060>: b      0x101e800fc               ; <+1152>
+CortexService[0x101e800a4] <+1064>: mov    x19, x0
+CortexService[0x101e800a8] <+1068>: add    x0, sp, #0x30
+CortexService[0x101e800ac] <+1072>: bl     0x1024b53b0               ; symbol stub for: QFile::~QFile()
+CortexService[0x101e800b0] <+1076>: b      0x101e800b8               ; <+1084>
+CortexService[0x101e800b4] <+1080>: mov    x19, x0
+CortexService[0x101e800b8] <+1084>: add    x0, sp, #0x28
+CortexService[0x101e800bc] <+1088>: bl     0x101e7e674               ; FileLocker::~FileLocker()
+CortexService[0x101e800c0] <+1092>: sub    x0, x29, #0x40
+CortexService[0x101e800c4] <+1096>: b      0x101e800fc               ; <+1152>
+CortexService[0x101e800c8] <+1100>: b      0x101e800cc               ; <+1104>
+CortexService[0x101e800cc] <+1104>: mov    x19, x0
+CortexService[0x101e800d0] <+1108>: mov    x0, sp
+CortexService[0x101e800d4] <+1112>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e800d8] <+1116>: sub    x0, x29, #0x40
+CortexService[0x101e800dc] <+1120>: b      0x101e800fc               ; <+1152>
+CortexService[0x101e800e0] <+1124>: mov    x19, x0
+CortexService[0x101e800e4] <+1128>: mov    x0, sp
+CortexService[0x101e800e8] <+1132>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e800ec] <+1136>: b      0x101e800f8               ; <+1148>
+CortexService[0x101e800f0] <+1140>: b      0x101e800f4               ; <+1144>
+CortexService[0x101e800f4] <+1144>: mov    x19, x0
+CortexService[0x101e800f8] <+1148>: add    x0, sp, #0x30
+CortexService[0x101e800fc] <+1152>: bl     0x10000b000               ; ___lldb_unnamed_symbol_10000b000
+CortexService[0x101e80100] <+1156>: mov    x0, x19
+CortexService[0x101e80104] <+1160>: bl     0x1024b40f0               ; symbol stub for: _Unwind_Resume
+(lldb) quit

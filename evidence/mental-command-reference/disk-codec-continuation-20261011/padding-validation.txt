@@ -1,0 +1,10 @@
+Own-fixture verification, no vendor values:
+key bytes 0..31; IV bytes0..15
+Ciphertext5a6e045708fb7196f02e553d02c3a692 via OpenSSL encrypt -nopad of16zero bytes.
+OpenSSL decrypt -nopad returns00000000000000000000000000000000.
+OpenSSL decrypt with default padding exits1 (bad decrypt).
+Native CommonCrypto CCCrypt PKCS7 decryption returned success and16zero bytes.
+Second authored plaintext finalbyte17 similarly accepted; third ending01,02 was truncated by2 despite inconsistent padding bytes.
+Therefore CommonCrypto PKCS7 native error semantics alone are not equivalent to strict OpenSSL EVP padding validation.
+Standalone swift script checked only own fixture; no package build executed.
+Correction: native decrypt options0, explicit strictPKCS7 validation. Standalone updatedscript rejects both zero padding and inconsistent01,02 withcode-4304. Root owns package test execution.

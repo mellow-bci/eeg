@@ -409,3 +409,39 @@ its return is ignored and the wrapper immediately returns0. Worker retries only
 still require tracing. Valid wrong-type QVariant conversion may return a default
 classifier while load reports type validity; no reliable model roundtrip follows.
 These findings are evidence only, not a copied vendor codec.
+
+
+## Disk codecs, inverse loading and training-save composition — 2026-10-11
+
+This checkpoint supersedes the append/codec/inverse gates in the preceding
+checkpoint for the explicitly bounded comparison contracts below. Acquisition
+and the independent live trainer are unchanged.
+
+| Area | Body-backed implementation and validation | Remaining boundary |
+| --- | --- | --- |
+| Compression and encryption | Gzip framing, CRC32/ISIZE, gzip/zlib inverse and IV-prefixed AES-256-CBC with explicit caller keys. Independently generated known answers cover valid envelopes and malformed padding. | Embedded 37-byte vendor salt/key derivation is excluded. Strict complete-stream parsing and resource caps are our documented policies. CBC is unauthenticated and is a comparison codec, not our recommended production storage format. |
+| Matrix/classifier inverse | Row-major matrix schema, nested weight/mean/variance conversion, ten classifier fields, signed count import and bounded unsigned-vector conversion. Own JSON→gzip→AES→inverse JSON/classifier roundtrip. | Qt fractional/overflow cases, full Armadillo materialization and runtime field compatibility remain explicit gates. Schema acceptance does not imply a valid model. |
+| Gaussian bank/profile inverse | GaussianData/Algebra fields reuse existing bank types; UInt32 timestamp bits survive signed JSON. Profile object dispatch follows Matrix→GaussianAlgebra→Classifier. Rejected nested distributions and omitted properties are observable. | Our supported row-statistics shapes are narrower than vendor generic matrices; partial bank schema acceptance is not training acceptance. |
+| Training acceptance | True append composes pending columns, typed feature/time and Gaussian writes, actual fitted transforms, cache invalidation and acceptance cleanup. Saves precede fit rejection, preserving the traced partial-write behavior. | Count/action/brain-map/settings operations remain explicit callbacks; no database transaction or durable file save is fabricated. |
+| Load/save IO | Cache miss checks metadata then attributes and caches only success; write worker retries only0x3303 up to six calls. Completion distinguishes file-write error from subsequent metadata-write error. | Direct vendor QFile save has no demonstrated atomic replacement or fsync guarantee. Callback success is not a durability receipt; complete application DB/locker scheduling is not implemented here. |
+
+The strict padding check was necessary: CommonCrypto's default PKCS7 handling
+accepted independently authored malformed envelopes that OpenSSL rejected.
+Decrypting raw CBC blocks and validating every final padding byte preserves the
+traced EVP finalization semantics; the original rejection fixture was retained.
+A separate test caught an ambiguous Swift UInt64→Double initializer and the
+conversion now explicitly uses numeric conversion rather than a bit pattern.
+
+Evidence directories: `disk-codec-continuation-20261011`,
+`inverse-profile-continuation-20261011`, `profile-io-orchestration-20261011`,
+`training-save-orchestration-20261011`. Reproduction:
+`swift test --package-path apple --filter 'Reference|Decoder'` and
+`swift test --package-path apple --filter EEGCoreTests`. Final counts and full
+logs are pinned in the training-save checkpoint evidence.
+
+No vendor binaries, model values, credentials or embedded salt are bundled.
+Exact vendor-file compatibility needs the salt-derived key; it is not necessary
+for caller-key codec verification. A trained Cortex profile and synchronized
+intermediate/prediction outputs are still missing for exact trained-profile
+comparison. Full physiological mental-command parity is not established by
+these offline tests.
