@@ -1,0 +1,20 @@
+# Current mental-command offline qualification boundary
+
+This is the current queue, not a replacement of frozen historical traces. Historical “unknown” notes are qualified by later body-derived continuations and their tests. Working EPOC X acquisition, decoder and independent live trainer remain unchanged.
+
+## Completed offline components and their limits
+
+The comparison kernels now cover explicit deployed filter recurrence, MatrixStream window/removal, median preprocessing, Hamming/FFT/band extraction, power and ratio coordinates, clean/background processing, pooling/ranking, explicit covariance PCA, low-epoch clipping, supported nonsingular canonical fitting, Gaussian projection/scoring, neutral branches and posterior smoothing. Training acceptance/save callbacks, append/refit, sensitivity/cache, profile codecs/runtime conversion, metadata and independent encrypted SQLite persistence have separate tests. Exact choices and limits are in the source-linked evidence; these are not a universal Cortex equivalence claim.
+
+ReferenceRawMentalWorkflow composes existing kernels from caller-selected decoded channel rows to diagnostic command candidates. The caller supplies the sample rate, window/step, bands, feature coordinates, reference-scale quality, background switch, activation setting and fitted runtime; no deployed recipe or learned parameters are manufactured. One invocation produces at most one epoch. Explicit backlog ticks are needed to compare transport partitions on the same epoch schedule. Original, filtered and transformed values remain distinct. Gap and invalid-quality resets are our explicit fail-closed policies. No command is dispatched and the qualified acquisition path is not changed.
+
+## Ordered remaining work
+
+1. **Recipe and lifecycle qualification.** Pin actual selected-channel mapping, bands/feature coordinates, window/step, manager cadence, sensitivity and reset triggers from the relevant deployed configuration/caller bodies. Test composition against those choices. A synthetic recipe proves plumbing only.
+2. **Raw quality and noise routing.** Derive and validate reference-scale overall contact quality from hardware inputs. Do not assume per-channel raw contact bytes equal the manager’s overallCQ >= 50 input. Noise class routing and error-set entry selection remain explicit inputs pending deployed evidence.
+3. **One independently trained persistent workflow.** Feed real labeled raw recordings through the same composition to collection/acceptance/refit, atomic persistence, restart/reload and inference. Existing fit/save/store primitives are tested separately; this complete real-recording manager workflow is not yet qualified. Keep output disabled until evaluation gates pass.
+4. **Same-input, same-model Cortex comparison.** Requires a trained reference profile’s PCA/canonical matrices, Gaussian parameters, exact feature recipe and synchronized intermediate/final Cortex outputs. The checked training-attributes store had no usable trained profile. Optional fixture comparison remains skipped without those inputs. Analytic fits and restart tests do not replace this gate.
+5. **Numerical edge qualification.** Resolve supported singular-covariance behavior and deployed numerical/library choices through body/oracle evidence. Our resource bounds and explicit rejection policies remain distinct from vendor behavior.
+6. **Prospective physiological qualification.** Separate recording/session holdouts, ordinary-activity false activations, command precision/recall, latency/calibration and cross-session robustness. Check blink, jaw and motion dependence; intentional gestures are a separate capability. Participant experiments are required and are not replaced by offline tests.
+
+No vendor assets are needed for the composition, our trained artifacts or our storage. The previously identified embedded salt is relevant only to exact vendor file-key compatibility, is excluded, and is not needed by our independent stack. Trained vendor comparison assets must be reported and remain local-only; no such model is introduced by this continuation.

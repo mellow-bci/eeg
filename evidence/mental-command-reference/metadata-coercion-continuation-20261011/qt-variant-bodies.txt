@@ -1,0 +1,74 @@
+(lldb) target create --arch arm64 "/Applications/EmotivApps/EMOTIV Launcher.app/Contents/Frameworks/QtCore.framework/Versions/A/QtCore"
+Current executable set to '/Applications/EmotivApps/EMOTIV Launcher.app/Contents/Frameworks/QtCore.framework/Versions/A/QtCore' (arm64).
+(lldb) disassemble -n _ZNK8QVariant6toBoolEv
+QtCore`QVariant::toBool:
+QtCore[0x100998] <+0>:   sub    sp, sp, #0x40
+QtCore[0x10099c] <+4>:   stp    x22, x21, [sp, #0x10]
+QtCore[0x1009a0] <+8>:   stp    x20, x19, [sp, #0x20]
+QtCore[0x1009a4] <+12>:  stp    x29, x30, [sp, #0x30]
+QtCore[0x1009a8] <+16>:  add    x29, sp, #0x30
+QtCore[0x1009ac] <+20>:  mov    x19, x0
+QtCore[0x1009b0] <+24>:  adrp   x8, 928
+QtCore[0x1009b4] <+28>:  ldr    x8, [x8, #0x8b0]
+QtCore[0x1009b8] <+32>:  ldr    x8, [x8]
+QtCore[0x1009bc] <+36>:  str    x8, [sp, #0x8]
+QtCore[0x1009c0] <+40>:  ldr    x8, [x0, #0x18]
+QtCore[0x1009c4] <+44>:  and    x0, x8, #0xfffffffffffffffc
+QtCore[0x1009c8] <+48>:  adrp   x21, 928
+QtCore[0x1009cc] <+52>:  ldr    x21, [x21, #0x608]
+QtCore[0x1009d0] <+56>:  cmp    x0, x21
+QtCore[0x1009d4] <+60>:  b.eq   0x1009f8                  ; <+96>
+QtCore[0x1009d8] <+64>:  cbz    x0, 0x100a3c              ; <+164>
+QtCore[0x1009dc] <+68>:  ldr    w20, [x0, #0xc]
+QtCore[0x1009e0] <+72>:  cbz    w20, 0x100a10             ; <+120>
+QtCore[0x1009e4] <+76>:  ldr    w0, [x21, #0xc]
+QtCore[0x1009e8] <+80>:  cbz    w0, 0x100a20              ; <+136>
+QtCore[0x1009ec] <+84>:  ldr    x8, [x19, #0x18]
+QtCore[0x1009f0] <+88>:  cmp    w20, w0
+QtCore[0x1009f4] <+92>:  b.ne   0x100a38                  ; <+160>
+QtCore[0x1009f8] <+96>:  tbz    w8, #0x0, 0x100a08        ; <+112>
+QtCore[0x1009fc] <+100>: ldr    x8, [x19]
+QtCore[0x100a00] <+104>: ldrsw  x9, [x8, #0x4]
+QtCore[0x100a04] <+108>: add    x19, x8, x9
+QtCore[0x100a08] <+112>: ldrb   w8, [x19]
+QtCore[0x100a0c] <+116>: b      0x100a68                  ; <+208>
+QtCore[0x100a10] <+120>: bl     0xb7954                   ; QMetaType::registerHelper(QtPrivate::QMetaTypeInterface const*)
+QtCore[0x100a14] <+124>: mov    x20, x0
+QtCore[0x100a18] <+128>: ldr    w0, [x21, #0xc]
+QtCore[0x100a1c] <+132>: cbnz   w0, 0x1009ec              ; <+84>
+QtCore[0x100a20] <+136>: adrp   x0, 928
+QtCore[0x100a24] <+140>: ldr    x0, [x0, #0x608]
+QtCore[0x100a28] <+144>: bl     0xb7954                   ; QMetaType::registerHelper(QtPrivate::QMetaTypeInterface const*)
+QtCore[0x100a2c] <+148>: ldr    x8, [x19, #0x18]
+QtCore[0x100a30] <+152>: cmp    w20, w0
+QtCore[0x100a34] <+156>: b.eq   0x1009f8                  ; <+96>
+QtCore[0x100a38] <+160>: and    x0, x8, #0xfffffffffffffffc
+QtCore[0x100a3c] <+164>: strb   wzr, [sp, #0x7]
+QtCore[0x100a40] <+168>: tbz    w8, #0x0, 0x100a50        ; <+184>
+QtCore[0x100a44] <+172>: ldr    x8, [x19]
+QtCore[0x100a48] <+176>: ldrsw  x9, [x8, #0x4]
+QtCore[0x100a4c] <+180>: add    x19, x8, x9
+QtCore[0x100a50] <+184>: adrp   x2, 928
+QtCore[0x100a54] <+188>: ldr    x2, [x2, #0x608]
+QtCore[0x100a58] <+192>: add    x3, sp, #0x7
+QtCore[0x100a5c] <+196>: mov    x1, x19
+QtCore[0x100a60] <+200>: bl     0xb9440                   ; QMetaType::convert(QMetaType, void const*, QMetaType, void*)
+QtCore[0x100a64] <+204>: ldrb   w8, [sp, #0x7]
+QtCore[0x100a68] <+208>: cmp    w8, #0x0
+QtCore[0x100a6c] <+212>: cset   w0, ne
+QtCore[0x100a70] <+216>: ldr    x8, [sp, #0x8]
+QtCore[0x100a74] <+220>: adrp   x9, 928
+QtCore[0x100a78] <+224>: ldr    x9, [x9, #0x8b0]
+QtCore[0x100a7c] <+228>: ldr    x9, [x9]
+QtCore[0x100a80] <+232>: cmp    x9, x8
+QtCore[0x100a84] <+236>: b.ne   0x100a9c                  ; <+260>
+QtCore[0x100a88] <+240>: ldp    x29, x30, [sp, #0x30]
+QtCore[0x100a8c] <+244>: ldp    x20, x19, [sp, #0x20]
+QtCore[0x100a90] <+248>: ldp    x22, x21, [sp, #0x10]
+QtCore[0x100a94] <+252>: add    sp, sp, #0x40
+QtCore[0x100a98] <+256>: ret
+QtCore[0x100a9c] <+260>: bl     0x358b10                  ; symbol stub for: __stack_chk_fail
+(lldb) disassemble -n _ZNK8QVariant8toStringEv
+QtCore`QVariant::toString:
+QtCore[0xfe86c] <+0>: b      0xfe870                   ; ___lldb_unnamed_symbol_fe870
+(lldb) quit

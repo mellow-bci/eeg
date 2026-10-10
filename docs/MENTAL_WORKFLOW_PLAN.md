@@ -30,3 +30,5 @@ The native reviewed-recording builder now validates with the same saved
 Processing settings source used by training. See
 [DATASET_PREPARATION_SETTINGS.md](DATASET_PREPARATION_SETTINGS.md) for resource-limit
 semantics and the distinction between preparation and freezing a fitted profile.
+
+Current body-derived comparison implementation and remaining qualification queue: [MENTAL_OFFLINE_GAPS.md](MENTAL_OFFLINE_GAPS.md). The independent live model and comparison workflow are distinct evidence scopes; neither is promoted by synthetic pipeline tests.
