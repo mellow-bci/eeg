@@ -118,28 +118,8 @@ enum ReferenceGaussianPipeline {
         // Reuse the scoring contract to validate finite, symmetric SPD input.
         // Strict SPD is our support policy, not a claim about vendor repair rules.
         _ = try gaussianDensity(component.mean, component: component)
-        let mean = try transform(component.mean, using: .init(mean: Array(repeating: 0, count: size), basis: basis))
-        var left = Array(repeating: Array(repeating: 0.0, count: size), count: outputs)
-        for output in 0..<outputs {
-            for column in 0..<size {
-                for row in 0..<size {
-                    left[output][column] += basis[row][output] * component.covariance[row][column]
-                }
-            }
-        }
-        var covariance = Array(repeating: Array(repeating: 0.0, count: outputs), count: outputs)
-        for row in 0..<outputs {
-            for column in row..<outputs {
-                var value = 0.0
-                for input in 0..<size { value += left[row][input] * basis[input][column] }
-                // Symmetric storage is our numerical convention: avoid roundoff
-                // asymmetry causing an otherwise valid projection to be rejected.
-                covariance[row][column] = value
-                covariance[column][row] = value
-            }
-        }
-        let projected = Component(weight: component.weight, mean: mean, covariance: covariance)
-        _ = try gaussianDensity(mean, component: projected)
+        let projected = try ReferenceGaussianProjection.arithmetic(component, basis: basis)
+        _ = try gaussianDensity(projected.mean, component: projected)
         return projected
     }
 

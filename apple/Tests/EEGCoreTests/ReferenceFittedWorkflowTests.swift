@@ -4,7 +4,12 @@ import XCTest
 /// Analytic composition check, not a recorded Cortex comparison or EEG experiment.
 final class ReferenceFittedWorkflowTests: XCTestCase {
     func testPooledFitThroughRuntimeCentersAndGaussianScoring() throws {
-        let covariance = [[4.0, 0, 0], [0, 2, 0], [0, 0, 1]]
+        try assertFittedWorkflow(covariance: [[4, 0, 0], [0, 2, 0], [0, 0, 1]])
+    }
+    func testSingularClassCovarianceFitsAndScoresInPositiveVarianceSubspace() throws {
+        try assertFittedWorkflow(covariance: [[4, 0, 0], [0, 2, 0], [0, 0, 0]])
+    }
+    private func assertFittedWorkflow(covariance: [[Double]]) throws {
         let classes: [ReferenceGaussianPooling.Distribution] = [
             .init(counts: [12, 12, 12], mean: [2, 4, 6], covariance: covariance, updateTime: 10),
             .init(counts: [12, 12, 12], mean: [4, 4, 6], covariance: covariance, updateTime: 20)]

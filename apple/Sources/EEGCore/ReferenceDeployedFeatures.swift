@@ -51,8 +51,8 @@ enum ReferenceDeployedFeatures {
     }
 }
 
-/// Training background subtraction updates its own state from clean features.
-/// Detection continues to receive the original feature vector (manager run).
+/// Background subtraction updates its state from clean features. Manager run
+/// passes the resulting processed vector to both training and detection.
 struct ReferenceTrainingBackground {
     private(set) var mean: [Double] = []
     private(set) var count: Int = 0
@@ -76,5 +76,24 @@ struct ReferenceTrainingBackground {
         }
         mean = updated; count = old + 1
         return output
+    }
+}
+
+/// Shared feature routing at manager run's sp+0x90 boundary. Preserves the input
+/// separately; invalid epochs do not update background state or reach consumers.
+struct ReferenceProcessedEpoch {
+    private(set) var background = ReferenceTrainingBackground()
+    struct Features: Equatable {
+        let original: [Double]
+        let processed: [Double]
+        let clean: Bool
+    }
+    mutating func process(_ original: [Double], clean: Bool, backgroundEnabled: Bool) throws -> Features {
+        guard clean, !original.isEmpty else {
+            return Features(original: original, processed: [], clean: clean)
+        }
+        guard original.allSatisfy(\.isFinite) else { throw ReferenceDeployedFeatures.InputError.nonFinite }
+        let processed = backgroundEnabled ? try background.process(original) : original
+        return Features(original: original, processed: processed, clean: clean)
     }
 }

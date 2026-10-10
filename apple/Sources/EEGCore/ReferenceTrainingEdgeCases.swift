@@ -37,9 +37,16 @@ enum ReferenceTrainingEdgeCases {
     /// Retains zero roots. Negative roots are rejected by OUR PSD support boundary;
     /// the vendor eig_sym routine itself does not establish that restriction.
     static func singularPCA(covariance: [[Double]], classCount: Int) throws -> PCAResult {
+        let eigenbasis = try psdEigenbasis(covariance: covariance)
+        return .init(eigenvalues: eigenbasis.eigenvalues, basis: eigenbasis.basis,
+                     selectedIndices: try pcaSelectedIndices(descendingEigenvalues: eigenbasis.eigenvalues,
+                                                            classCount: classCount))
+    }
+
+    /// Shared PSD eigensolver stage; rank selection happens after low-epoch clipping.
+    static func psdEigenbasis(covariance: [[Double]]) throws -> ReferenceGaussianPipeline.Eigenbasis {
         let size = covariance.count
         guard size > 0, size <= 70, covariance.allSatisfy({ $0.count == size }) else { throw EdgeError.invalidShape }
-        guard classCount >= 2, classCount - 1 <= size else { throw EdgeError.invalidConfiguration }
         guard covariance.allSatisfy({ $0.allSatisfy(\.isFinite) }) else { throw EdgeError.nonFinite }
         for row in 0..<size {
             for column in 0..<row where covariance[row][column] != covariance[column][row] { throw EdgeError.invalidShape }
@@ -59,16 +66,6 @@ enum ReferenceTrainingEdgeCases {
         guard values.allSatisfy(\.isFinite), vectors.allSatisfy(\.isFinite) else { throw EdgeError.numericalFailure }
         guard values.allSatisfy({ $0 >= 0 }) else { throw EdgeError.indefiniteCovariance }
         let roots = Array(values.reversed())
-        let total = roots.reduce(0, +)
-        guard total.isFinite else { throw EdgeError.numericalFailure }
-        var cumulative = 0.0
-        var selected = [Int]()
-        for (index, value) in roots.enumerated() {
-            cumulative += value * 100 / total
-            // Unordered NaN from 0/0 is skipped by the binary's ARM b.hi condition.
-            if cumulative <= 99 { selected.append(index) }
-        }
-        if !selected.isEmpty && selected.count < classCount { selected = Array(0..<(classCount - 1)) }
         var basis = Array(repeating: Array(repeating: 0.0, count: size), count: size)
         for column in 0..<size {
             let source = size - column - 1
@@ -76,7 +73,27 @@ enum ReferenceTrainingEdgeCases {
             let sign = vectors[source * size + largest] < 0 ? -1.0 : 1.0
             for row in 0..<size { basis[row][column] = sign * vectors[source * size + row] }
         }
-        return .init(eigenvalues: roots, basis: basis, selectedIndices: selected)
+        return .init(eigenvalues: roots, basis: basis)
+    }
+
+    /// runPCA rank after optional eigenpair clipping. Exact zero roots are kept;
+    /// all-zero spectra produce unordered percentages and an empty selection.
+    static func pcaSelectedIndices(descendingEigenvalues roots: [Double], classCount: Int) throws -> [Int] {
+        guard !roots.isEmpty, roots.count <= 70, classCount >= 2,
+              classCount - 1 <= roots.count else { throw EdgeError.invalidConfiguration }
+        guard roots.allSatisfy({ $0.isFinite && $0 >= 0 }) else { throw EdgeError.indefiniteCovariance }
+        guard zip(roots, roots.dropFirst()).allSatisfy({ $0 >= $1 }) else { throw EdgeError.invalidShape }
+        let total = roots.reduce(0, +)
+        guard total.isFinite else { throw EdgeError.numericalFailure }
+        var cumulative = 0.0
+        var selected = [Int]()
+        for (index, value) in roots.enumerated() {
+            // The binary computes scalar100 * root then divides by sum.
+            cumulative += 100 * value / total
+            if cumulative <= 99 { selected.append(index) }
+        }
+        if !selected.isEmpty && selected.count < classCount { selected = Array(0..<(classCount - 1)) }
+        return selected
     }
 
     /// Uses the traced 1e-10 diagonal addition, but an explicit caller budget replaces

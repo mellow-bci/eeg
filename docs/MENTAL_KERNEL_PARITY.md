@@ -296,9 +296,9 @@ and `swift test --package-path apple --filter 'Reference|Decoder'`.
 |---|---|---|
 | Deployed input filter | Order-two RealTimeFilter recurrence with captured b/a lists, first-sample seeded x/y history, row-count reset and chunk continuity. | Finite nonempty bounded support; alternate filter implementations and full raw correction/reset lifecycle still separate. |
 | Deployed feature recipe | Ordered power and ratio metadata coordinates; both wrappers use mode1: 10 log10(P) or 10 log10(Pnum/Pden); computation gate includes training with no classifier. Existing comparison pipeline reuses the extraction kernel. | Actual deployed coordinates/bands/settings must be supplied. Preprocessing and noise-derived detection validity remain separate from contact quality. |
-| Contact gate and training background | Default headset branch overallCQ>=50; optional training background subtraction initializes on first clean feature and saturates counter480 into (479*mean+x)/480. Detection uses original features. | Input CQ remains vendor numeric data; this is not raw quality decoder validation. Special untested headsets not enabled. |
+| Contact gate and training background | Default headset branch overallCQ>=50; optional training background subtraction initializes on first clean feature and saturates counter480 into (479*mean+x)/480. Both training and detection consume the processed clean features (corrected after tracing the stack arguments). | Input CQ remains vendor numeric data; this is not raw quality decoder validation. Special untested headsets not enabled. |
 | Epoch stream | Positive finite rate-duration products truncate; append columns; one window per next call; nextWithRemoval removes advanced cursor prefix; reset clears buffer. | Explicit caller capacity and step<=window are independent support boundaries. No guessed profile cadence. |
-| Low-epoch PCA | If every feature count<=p, clips descending eigenpairs using first feature scratch count min(n[0]-1,p), then inclusive endpoint trunc(scratch[0]-1). Wired before rank selection in ReferencePCAFitting. | Counts>=2 finite support only. Composed eigensolver still strict SPD; singular/exceptional conversion semantics are not silently approximated. |
+| Low-epoch PCA | If every feature count<=p, clips descending eigenpairs using first feature scratch count min(n[0]-1,p), then inclusive endpoint trunc(scratch[0]-1). Wired before rank selection in ReferencePCAFitting. | Counts>=2 finite support only. Shared PSD eigensolver now retains zero roots; singular downstream Gaussian scoring and exceptional conversion semantics remain explicit gates. |
 | Runtime centers | Original pooled mean is PCA center; canonical runtime center is zero on traced builder path. Final class mean=(projected class mean-pooled projected mean)*B; covariance=B'CB. | Heterogeneous-count training/runtime center differences are exposed, not corrected. LAPACK basis/sign policy remains independently chosen. |
 | Classifier cache | Ordered comma keys; exact action-vector insertion check; disable and size changes clear entries; minimum reuse-count eviction with lexical ties; manager reuse increment wrapsUInt64; dirty action removal. | Database cache serialization and full manager persistence integration remain documented boundaries. Zero vendor maximum is uncapped; our explicit storageLimit is a safety policy. |
 
@@ -312,9 +312,9 @@ it is not an observed Cortex comparison or participant experiment.
 No vendor learned asset was needed for these primitives. Completing comparison
 with a particular deployed Cortex classifier still requires its actual feature
 configuration, trained transforms/Gaussians and matched reference outputs. The
-checked training store was empty. Remaining offline questions include full
-singular decomposition composition, sensitivity/configuration values, error-set
-and noise handling, and persistence orchestration. Hardware and physiological
+checked training store was empty. Remaining offline questions include final singular class-density behavior, complete
+fitted-artifact/persistence orchestration and actual deployed parameter values.
+The next checkpoint below resolves bounded sensitivity and error-set routing contracts. Hardware and physiological
 validation remain separate. Full Cortex parity and production readiness are not
 claimed; optional unavailable Cortex fixtures are skipped, never counted passing.
 
@@ -330,3 +330,38 @@ executed335 tests:331 passed,4 skipped,0 failures in158.2seconds. This run inclu
 all new comparison kernels. The warm single-channel spectrum benchmark was
 4.96ms/window in this test build; it is not end-to-end command latency or hardware
 qualification. The test suite did not obtain missing trained Cortex fixtures.
+
+## Singular fitting, sensitivity and error sets — 2026-10-11
+
+| Area | Implemented comparison subset | Remaining qualification |
+|---|---|---|
+| Singular PCA | Shared symmetric PSD eigensolver preserves zero roots; pooled counts drive low-epoch clipping before rank selection. All-zero roots return nil basis. | Independent LAPACK/sign policy; negative-root rejection is our supported-domain policy. PSD projection now reaches scatter construction and bounded canonical retry; singular final class densities remain explicitly rejected. |
+| Sensitivity configuration | Fresh parsed-input resolver: nonempty INI map takes precedence over JSON; aliases/collisions, versions, selected-list refresh and API four-value 1…10 boundary. Existing class-weight lookup/fallback is reused. | No guessed lookup table. Qt file/token/QVariant conversion and repeated populated-map loading are outside this explicit-input boundary. |
+| Error-set cache | Ordered action/channel key, shared payload identity, reuse counts, least-used eviction with lexical ties, zero maximum uncapped under our explicit storage limit. | No vendor database serialization or guessed noisy-channel detector. |
+| Noisy detection overload | Base route without channel intersection; cache lookup before maximum check; duplicate IDs count; real rebuild callback; cache insertion/reuse or empty invalid result on rejected fitting. | Full noisy-specific refitting is not recovered. The traced manager run passes an empty noisy-ID vector, so that caller does not establish active channel-noise handling. |
+| Processed feature routing | Contact-invalid features are withheld; optional background subtraction produces a single vector consumed by auto-neutral, training and detection. Original features are retained separately. | Corrects the previous checkpoint's original-detection-vector interpretation. This is internal comparison orchestration, not a replacement live detector. |
+
+Evidence directories: `singular-continuation-20261011`,
+`sensitivity-continuation-20261011`, `error-set-continuation-20261011` and
+`noise-orchestration-continuation-20261011` and
+`projection-singular-continuation-20261011`. Every implemented branch cites
+static function bodies; the captures contain no vendor learned assets.
+
+No new vendor asset is needed to implement these arithmetic/state contracts.
+Exact comparison with a participant's deployed classifier still needs actual
+feature settings, trained transforms/Gaussians and synchronized reference outputs.
+The checked training store was empty; unavailable fixtures remain skipped.
+There is no claim of full Cortex parity, psychological validity or production
+readiness. Acquisition/decoding and the independent live trainer are unchanged.
+
+Final focused reproduction: `swift test --package-path apple --filter 'Reference|Decoder'`
+executed171 tests:169 passed,2 explicitly skipped,0 failures. Shared projection
+arithmetic is used by PSD fitting and the independently validated SPD density
+path; no duplicate projection formula is retained. Full core verification is
+recorded in the checkpoint evidence log.
+
+The broad core run executed361 tests:357 passed,4 explicitly skipped,0 failures.
+It preceded the final PSD-intermediate runtime projection adjustment; the final
+171-test focused run covers every affected reference kernel, including both new
+complete singular fitted-workflow and runtime-subspace cases. Original
+measurements and final singular-density rejection remain intact.

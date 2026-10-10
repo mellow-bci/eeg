@@ -2,6 +2,18 @@ import XCTest
 @testable import EEGCore
 
 final class ReferenceRuntimeTransformsTests: XCTestCase {
+    func testPSDIntermediateProjectsIntoScoreableFinalClassWithoutRepair() throws {
+        let scatter = try ReferenceCanonicalScatter.construct(classes: [
+            .init(counts: [8, 8], mean: [0, 0], covariance: [[4, 0], [0, 0]]),
+            .init(counts: [8, 8], mean: [2, 0], covariance: [[4, 0], [0, 0]])
+        ], pcaBasis: [[1, 0], [0, 1]], maximumClasses: 2)
+        let result = try ReferenceRuntimeTransforms.assemble(pcaCenter: [1, 0],
+            pcaBasis: [[1, 0], [0, 1]], scatter: scatter, canonicalBasis: [[1], [0]])
+        XCTAssertEqual(result.finalClasses[0].covariance, [[4]])
+        XCTAssertEqual(scatter.projectedClasses[0].covariance, [[4, 0], [0, 0]])
+        XCTAssertThrowsError(try ReferenceRuntimeTransforms.assemble(pcaCenter: [1, 0],
+            pcaBasis: [[1, 0], [0, 1]], scatter: scatter, canonicalBasis: [[0], [1]]))
+    }
     func testNonzeroTrainingCenterAndZeroRuntimeCanonicalCenter() throws {
         let scatter = try ReferenceCanonicalScatter.construct(classes: [
             .init(counts: [8], mean: [10], covariance: [[2]]),

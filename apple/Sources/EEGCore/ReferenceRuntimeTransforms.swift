@@ -29,7 +29,7 @@ enum ReferenceRuntimeTransforms {
             using: .init(mean: Array(repeating: 0, count: pcaCenter.count), basis: pcaBasis))
         let difference = zip(projectedPCACenter, scatter.pooled.mean).map { $0.0 - $0.1 }
         let components = try scatter.projectedClasses.map { value in
-            let projected = try ReferenceGaussianPipeline.projectDistribution(
+            let projected = try ReferenceGaussianProjection.project(
                 .init(weight: 1, mean: value.mean, covariance: value.covariance), basis: canonicalBasis)
             // manova1Cov final means subtract the pooled projected mean before
             // multiplication; do not put that same center in runtime canonical.
@@ -37,6 +37,8 @@ enum ReferenceRuntimeTransforms {
                 using: .init(mean: scatter.pooled.mean, basis: canonicalBasis))
             let result = ReferenceGaussianPipeline.Component(weight: 1, mean: mean,
                                                                covariance: projected.covariance)
+            // PSD intermediate statistics may project into an SPD final class.
+            // Only the final density must be scoreable; no covariance is repaired.
             _ = try ReferenceGaussianPipeline.gaussianDensity(mean, component: result)
             return result
         }

@@ -1,8 +1,8 @@
 import Foundation
 
 /// Comparison-only runPCA/princompMultiClass with finite low-epoch clipping.
-/// The covariance eigensolver remains strict positive definite; LAPACK/sign
-/// conventions remain our documented choices.
+/// The shared finite symmetric PSD eigensolver retains zero roots. LAPACK,
+/// sign conventions and rejection of negative roots are our support choices.
 enum ReferencePCAFitting {
     enum InputError: Error, Equatable {
         case invalidClasses
@@ -24,10 +24,10 @@ enum ReferencePCAFitting {
             pooled = try ReferenceGaussianPooling.combine(pooled, value, useFirstUpdateTime: false)
         }
         guard let pooled else { throw InputError.invalidClasses }
-        let eigenbasis = try ReferenceGaussianPipeline.covarianceEigenbasis(pooled.covariance)
+        let eigenbasis = try ReferenceTrainingEdgeCases.psdEigenbasis(covariance: pooled.covariance)
         let clipped = try ReferencePCALowEpoch.apply(counts: pooled.counts,
             descendingEigenvalues: eigenbasis.eigenvalues, basis: eigenbasis.basis)
-        let indices = try ReferenceCanonicalTraining.pcaSelectedIndices(
+        let indices = try ReferenceTrainingEdgeCases.pcaSelectedIndices(
             descendingEigenvalues: clipped.eigenvalues, classCount: classes.count)
         let transform: ReferenceGaussianPipeline.CenteredTransform? = indices.isEmpty ? nil :
             .init(mean: pooled.mean, basis: clipped.basis.map { row in indices.map { row[$0] } })

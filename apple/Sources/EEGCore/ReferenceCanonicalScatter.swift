@@ -23,7 +23,7 @@ enum ReferenceCanonicalScatter {
 
     static func construct(classes: [ClassStatistics], pcaBasis: [[Double]],
                           maximumClasses: Int) throws -> Construction {
-        // 70-dimensional finite/SPD support is our comparison boundary, not vendor policy.
+        // 70-dimensional finite/PSD support is our comparison boundary, not vendor policy.
         guard maximumClasses >= 2, classes.count <= maximumClasses else {
             throw ConstructionError.capacityExceeded
         }
@@ -39,7 +39,7 @@ enum ReferenceCanonicalScatter {
             guard value.mean.count == first.mean.count, value.counts.count == value.mean.count else {
                 throw ConstructionError.invalidShape
             }
-            let component = try ReferenceGaussianPipeline.projectDistribution(
+            let component = try ReferenceGaussianProjection.project(
                 .init(weight: 1, mean: value.mean, covariance: value.covariance), basis: pcaBasis)
             let counts = try ReferenceEpochCounts.projectedCounts([value.counts], outputDimension: dimension)
             let item = ClassStatistics(counts: counts, mean: component.mean, covariance: component.covariance)
