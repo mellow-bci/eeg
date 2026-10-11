@@ -51,19 +51,18 @@ enum ReferenceTrainingEdgeCases {
         for row in 0..<size {
             for column in 0..<row where covariance[row][column] != covariance[column][row] { throw EdgeError.invalidShape }
         }
-        var n = __LAPACK_int(size), lda = n, info: __LAPACK_int = 0
-        var values = Array(repeating: 0.0, count: size)
-        var vectors = (0..<size).flatMap { column in covariance.map { $0[column] } }
-        var job: Int8 = 86, triangle: Int8 = 85
-        var query = [0.0], workspaceSize: __LAPACK_int = -1
-        dsyev_(&job, &triangle, &n, &vectors, &lda, &values, &query, &workspaceSize, &info)
-        guard info == 0 else { throw EdgeError.decomposition(info) }
-        guard query[0].isFinite, query[0] >= 1, query[0] <= Double(Int32.max) else { throw EdgeError.numericalFailure }
-        workspaceSize = __LAPACK_int(ceil(query[0]))
-        var workspace = Array(repeating: 0.0, count: Int(workspaceSize))
-        dsyev_(&job, &triangle, &n, &vectors, &lda, &values, &workspace, &workspaceSize, &info)
-        guard info == 0 else { throw EdgeError.decomposition(info) }
-        guard values.allSatisfy(\.isFinite), vectors.allSatisfy(\.isFinite) else { throw EdgeError.numericalFailure }
+        let leaf: ReferenceNumericalLeaves.Eigenbasis
+        do {
+            leaf = try ReferenceNumericalLeaves.eigenbasis(
+                columnMajor: (0..<size).flatMap { column in covariance.map { $0[column] } },
+                dimension: size, method: .divideAndConquer, maximumDimension: 70)
+        } catch ReferenceNumericalLeaves.Failure.solverFailed(let codes) {
+            throw EdgeError.decomposition(codes.last ?? -1)
+        } catch {
+            throw EdgeError.numericalFailure
+        }
+        let values = leaf.ascendingValues
+        let vectors = leaf.columnMajorVectors
         guard values.allSatisfy({ $0 >= 0 }) else { throw EdgeError.indefiniteCovariance }
         let roots = Array(values.reversed())
         var basis = Array(repeating: Array(repeating: 0.0, count: size), count: size)

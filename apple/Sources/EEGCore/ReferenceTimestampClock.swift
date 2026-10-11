@@ -63,6 +63,8 @@ struct ReferenceTimestampClock {
               suppliedTime.isFinite, suppliedTime >= 0, lastDataTimestamp.isFinite else { throw Failure.invalidInput }
         guard let index = packets.lastIndex(where: { $0.type == 16 }) else { throw Failure.noEEGAnchor }
         guard lastDataTimestamp < suppliedTime else { throw Failure.resetRequired }
+        // Reverse scan decrements x22 by 0x3a0 before loading +0x39c.
+        // Relative to selected packet base this is +0xc, the ordinary counter.
         let clock = try Self(configuration: configuration, previousCounter: packets[index].counter,
                              eegTimestamp: suppliedTime, motionTimestamp: motionTimestamp,
                              cumulativeCounterDistance: 1)
