@@ -71,6 +71,20 @@ struct ReferenceTimestampClock {
         return (clock, index, try round(suppliedTime, decimalPrecision: configuration.decimalPrecision))
     }
 
+    /// Successful reanchor updates these fields only; existing diagnostic history
+    /// and correction counters survive. Caller owns startup/reset flags.
+    mutating func reanchor(counter: Int, time: Double) throws {
+        guard (0...configuration.maximumCounter).contains(counter), time.isFinite, time >= 0 else {
+            throw Failure.invalidInput
+        }
+        previousCounter = counter; eegTimestamp = time; cumulativeCounterDistance = 1
+    }
+
+    mutating func setWarmupTime(_ time: Double) throws {
+        guard time.isFinite, time >= 0 else { throw Failure.invalidInput }
+        eegTimestamp = time
+    }
+
     /// processEeg scalar contract. Duplicate counters have distance0; this method
     /// does not silently drop them. Parent's removeBadCounterSample is separate.
     mutating func process(_ packet: Packet, sampleRate: Double) throws -> Sample {

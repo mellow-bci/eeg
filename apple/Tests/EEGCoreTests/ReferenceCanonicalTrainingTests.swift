@@ -55,6 +55,24 @@ final class ReferenceCanonicalTrainingTests: XCTestCase {
         XCTAssertEqual(fitted.basis[0][0], sqrt(10), accuracy: 1e-13)
     }
 
+    func testIntegratedInverseAndDCEigenAcrossSmallAndTriangularRoutes() throws {
+        for n in [3,4,5] {
+            var e = Array(repeating: Array(repeating: 0.0,count: n),count: n)
+            var h = e
+            for r in 0..<n { for c in 0..<n {
+                e[r][c] = r == c ? Double(r + 3) : 0.1
+                h[r][c] = r == c ? Double(n - r + 2) : -0.05
+            } }
+            let fitted = try ReferenceCanonicalTraining.fit(within:e,between:h,
+                residualDegreesOfFreedom:20,directions:n)
+            for k in 0..<n { for r in 0..<n {
+                var hb = 0.0, eb = 0.0
+                for c in 0..<n { hb += h[r][c] * fitted.basis[c][k]; eb += e[r][c] * fitted.basis[c][k] }
+                XCTAssertEqual(hb,fitted.eigenvalues[k] * eb,accuracy:1e-10)
+            } }
+        }
+    }
+
     func testRejectsUnsupportedSingularAsymmetricAndNonFiniteInputs() {
         XCTAssertThrowsError(try ReferenceCanonicalTraining.fit(within: [[1, 1], [1, 1]],
             between: [[1, 0], [0, 1]], residualDegreesOfFreedom: 10, directions: 1))

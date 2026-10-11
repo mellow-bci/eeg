@@ -46,7 +46,7 @@ enum ReferenceCanonicalTraining {
 
     /// Strict SPD branch only. Vendor singular-matrix jitter and Bartlett
     /// significance selection are deliberately not approximated here.
-    /// Our choices: LAPACK dsyev, canonical sign and dimension limit 70.
+    /// Recovered dc eigensolver route; canonical sign and dimension limit70 are ours.
     static func fit(within: [[Double]], between: [[Double]],
                     residualDegreesOfFreedom: Double, directions: Int) throws -> Fit {
         let size = within.count
@@ -73,12 +73,13 @@ enum ReferenceCanonicalTraining {
             } else { lower[row][column] = value / lower[column][column] }
         } }
         // W = R'^-1 H R^-1; vendor averages W and W' before eig_sym.
-        var inverseLower = Array(repeating: Array(repeating: 0.0, count: size), count: size)
-        for column in 0..<size { for row in 0..<size {
-            var value = row == column ? 1.0 : 0.0
-            for inner in 0..<row { value -= lower[row][inner] * inverseLower[inner][column] }
-            inverseLower[row][column] = value / lower[row][row]
-        } }
+        let inverseFactor: [Double]
+        do {
+            inverseFactor = try ReferenceInverseDispatch.inverse(
+                columnMajor: (0..<size).flatMap { column in lower.map { $0[column] } },
+                dimension: size, maximumDimension: 70).columnMajor
+        } catch { throw InputError.numericalFailure }
+        let inverseLower = (0..<size).map { row in (0..<size).map { inverseFactor[$0 * size + row] } }
         var left = Array(repeating: Array(repeating: 0.0, count: size), count: size)
         for row in 0..<size { for column in 0..<size {
             var value = 0.0
@@ -95,23 +96,16 @@ enum ReferenceCanonicalTraining {
             let value = 0.5 * (whitened[row][column] + whitened[column][row])
             whitened[row][column] = value; whitened[column][row] = value
         } }
-        var n = __LAPACK_int(size), lda = n, info: __LAPACK_int = 0
-        var vectors = (0..<size).flatMap { column in whitened.map { $0[column] } }
-        var roots = Array(repeating: 0.0, count: size)
-        var job: Int8 = 86, triangle: Int8 = 85
-        var query = [0.0], workspaceSize: __LAPACK_int = -1
-        dsyev_(&job, &triangle, &n, &vectors, &lda, &roots, &query, &workspaceSize, &info)
-        guard info == 0 else { throw InputError.decomposition(info) }
-        guard query[0].isFinite, query[0] >= 1, query[0] <= Double(Int32.max) else {
-            throw InputError.numericalFailure
-        }
-        workspaceSize = __LAPACK_int(ceil(query[0]))
-        var workspace = Array(repeating: 0.0, count: Int(workspaceSize))
-        dsyev_(&job, &triangle, &n, &vectors, &lda, &roots, &workspace, &workspaceSize, &info)
-        guard info == 0 else { throw InputError.decomposition(info) }
-        guard roots.allSatisfy(\.isFinite), vectors.allSatisfy(\.isFinite) else {
-            throw InputError.numericalFailure
-        }
+        let eigensystem: ReferenceNumericalLeaves.Eigenbasis
+        do {
+            eigensystem = try ReferenceNumericalLeaves.eigenbasis(
+                columnMajor: (0..<size).flatMap { column in whitened.map { $0[column] } },
+                dimension: size, method: .divideAndConquer, maximumDimension: 70)
+        } catch ReferenceNumericalLeaves.Failure.solverFailed(let codes) {
+            throw InputError.decomposition(codes.last ?? -1)
+        } catch { throw InputError.numericalFailure }
+        let roots = eigensystem.ascendingValues
+        let vectors = eigensystem.columnMajorVectors
         var basis = Array(repeating: Array(repeating: 0.0, count: directions), count: size)
         for column in 0..<directions {
             let source = size - 1 - column

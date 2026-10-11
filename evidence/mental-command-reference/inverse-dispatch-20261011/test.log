@@ -1,0 +1,94 @@
+[0/1] Planning build
+Building for debugging...
+[0/4] Write sources
+[1/4] Write swift-version--58304C5D6DBC2206.txt
+[3/6] Emitting module EEGCore
+[4/6] Compiling EEGCore ReferenceInverseDispatch.swift
+/private/tmp/eeg-inverse-standalone/Sources/EEGCore/ReferenceInverseDispatch.swift:110:13: warning: 'dpotrf_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+108 |         case .positiveDefiniteCandidate:
+109 |             var a = input, size = Int32(n), lda = Int32(n), info:Int32 = 0, lower:Int8 = 76
+110 |             dpotrf_(&lower,&size,&a,&lda,&info)
+    |             `- warning: 'dpotrf_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+111 |             if info == 0 {
+112 |                 dpotri_(&lower,&size,&a,&lda,&info)
+
+/private/tmp/eeg-inverse-standalone/Sources/EEGCore/ReferenceInverseDispatch.swift:112:17: warning: 'dpotri_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+110 |             dpotrf_(&lower,&size,&a,&lda,&info)
+111 |             if info == 0 {
+112 |                 dpotri_(&lower,&size,&a,&lda,&info)
+    |                 `- warning: 'dpotri_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+113 |                 if info == 0 {
+114 |                     for c in 0..<n { for r in 0..<c { a[c*n+r] = a[r*n+c] } }
+
+/private/tmp/eeg-inverse-standalone/Sources/EEGCore/ReferenceInverseDispatch.swift:129:13: warning: 'dgetri_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+127 |         if n > 16 {
+128 |             var query = [0.0], queryCount:Int32 = -1
+129 |             dgetri_(&size,&a,&lda,&pivots,&query,&queryCount,&info)
+    |             `- warning: 'dgetri_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+130 |             guard info == 0 else { throw Failure.lapack(info) }
+131 |             guard query[0].isFinite, query[0] >= 1, query[0] <= Double(Int32.max), query[0] <= 16_777_216 else { throw Failure.resourceLimit }
+
+/private/tmp/eeg-inverse-standalone/Sources/EEGCore/ReferenceInverseDispatch.swift:136:9: warning: 'dgetrf_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+134 |         var work = [Double](repeating:0,count:Int(workCount))
+135 |         var rows = size
+136 |         dgetrf_(&rows,&size,&a,&lda,&pivots,&info)
+    |         `- warning: 'dgetrf_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+137 |         guard info == 0 else { throw Failure.lapack(info) }
+138 |         dgetri_(&size,&a,&lda,&pivots,&work,&workCount,&info)
+
+/private/tmp/eeg-inverse-standalone/Sources/EEGCore/ReferenceInverseDispatch.swift:138:9: warning: 'dgetri_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+136 |         dgetrf_(&rows,&size,&a,&lda,&pivots,&info)
+137 |         guard info == 0 else { throw Failure.lapack(info) }
+138 |         dgetri_(&size,&a,&lda,&pivots,&work,&workCount,&info)
+    |         `- warning: 'dgetri_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+139 |         guard info == 0 else { throw Failure.lapack(info) }
+140 |         return a
+
+/private/tmp/eeg-inverse-standalone/Sources/EEGCore/ReferenceInverseDispatch.swift:152:9: warning: 'dtrtri_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+150 |         var size = Int32(n), lda = Int32(n), info: Int32 = 0
+151 |         var triangle: Int8 = lower ? 76 : 85, diagonal: Int8 = 78
+152 |         dtrtri_(&triangle, &diagonal, &size, &matrix, &lda, &info)
+    |         `- warning: 'dtrtri_' was deprecated in macOS 13.3: The CLAPACK interface is deprecated.  Please compile with -DACCELERATE_NEW_LAPACK to access the new lapack headers. [#DeprecatedDeclaration]
+153 |         guard info == 0 else { throw Failure.lapack(info) }
+154 |         for c in 0..<n { for r in 0..<n where lower ? r < c : r > c { matrix[c*n+r] = 0 } }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+[5/7] Compiling EEGCore ReferenceSmallFourInverse.swift
+[6/9] Compiling EEGCoreTests ReferenceInverseDispatchTests.swift
+[7/9] Emitting module EEGCoreTests
+[8/11] Emitting module InverseValidationPackageTests
+[9/11] Compiling InverseValidationPackageTests runner.swift
+[9/11] Write Objects.LinkFileList
+[10/11] Linking InverseValidationPackageTests
+Build complete! (7.22s)
+Test Suite 'All tests' started at 2026-10-11 05:57:10.750.
+Test Suite 'InverseValidationPackageTests.xctest' started at 2026-10-11 05:57:10.756.
+Test Suite 'ReferenceInverseDispatchTests' started at 2026-10-11 05:57:10.756.
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testAbsoluteAndRelativeSymmetryTolerance]' started.
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testAbsoluteAndRelativeSymmetryTolerance]' passed (0.001 seconds).
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testCompositionFallbacksAndUnsupportedSmallFormula]' started.
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testCompositionFallbacksAndUnsupportedSmallFormula]' passed (0.002 seconds).
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testCompositionSPDAndQuerySizedGeneralInverse]' started.
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testCompositionSPDAndQuerySizedGeneralInverse]' passed (0.003 seconds).
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testDispatcherOrderAndExactTriangularZeros]' started.
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testDispatcherOrderAndExactTriangularZeros]' passed (0.000 seconds).
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testFourByFourScalarOrderResidualsAndLUBoundaryFallback]' started.
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testFourByFourScalarOrderResidualsAndLUBoundaryFallback]' passed (0.001 seconds).
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testPositiveDefiniteHeuristicStrictBoundariesAndNotProof]' started.
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testPositiveDefiniteHeuristicStrictBoundariesAndNotProof]' passed (0.000 seconds).
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testSmallDeterminantBoundaryDoesNotMeanSingular]' started.
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testSmallDeterminantBoundaryDoesNotMeanSingular]' passed (0.000 seconds).
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testThreeByThreeCompositionAndThresholdFallback]' started.
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testThreeByThreeCompositionAndThresholdFallback]' passed (0.000 seconds).
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testTriangularLeafResidualAndUnusedTriangleClearing]' started.
+Test Case '-[EEGCoreTests.ReferenceInverseDispatchTests testTriangularLeafResidualAndUnusedTriangleClearing]' passed (0.000 seconds).
+Test Suite 'ReferenceInverseDispatchTests' passed at 2026-10-11 05:57:10.764.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 0.007 (0.008) seconds
+Test Suite 'InverseValidationPackageTests.xctest' passed at 2026-10-11 05:57:10.764.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 0.007 (0.008) seconds
+Test Suite 'All tests' passed at 2026-10-11 05:57:10.764.
+	 Executed 9 tests, with 0 failures (0 unexpected) in 0.007 (0.015) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
